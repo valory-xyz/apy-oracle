@@ -195,7 +195,7 @@ def fix_header(check_info: Dict) -> bool:
     copyright_string = ""
     is_update_needed = False
 
-    if check_info["error_code"] in (
+    if check_info.get("error_code") in (
         ErrorTypes.END_YEAR_WRONG,
         ErrorTypes.END_YEAR_MISSING,
     ):
@@ -205,7 +205,7 @@ def fix_header(check_info: Dict) -> bool:
         )
         is_update_needed = True
 
-    elif check_info["error_code"] == ErrorTypes.START_YEAR_GT_END_YEAR:
+    elif check_info.get("error_code") == ErrorTypes.START_YEAR_GT_END_YEAR:
         copyright_string = "#   Copyright {end_year}-{start_year} Valory AG".format(
             start_year=check_info["start_year"],
             end_year=check_info["last_modification"].year,
@@ -327,19 +327,20 @@ def main() -> None:
     def _file_filter(file: Path) -> bool:
         """Filter for files."""
         file_str = str(file)
+        unwanted_parts = (
+            "connections",
+            "contracts",
+            "protocols",
+            "t_protocol",
+            "t_protocol_no_ct",
+            "build",
+        )
 
         # protocols are generated using generate_all_protocols.py
         return (
             not file_str.endswith("_pb2.py")
             and not file_str.endswith("_pb2_grpc.py")
-            and (
-                (
-                    "protocols" not in file.parts
-                    and "t_protocol" not in file.parts
-                    and "t_protocol_no_ct" not in file.parts
-                    and "build" not in file.parts
-                )
-            )
+            and not any(part in file.parts for part in unwanted_parts)
         )
 
     python_files_filtered = filter(_file_filter, python_files)

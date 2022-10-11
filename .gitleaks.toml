@@ -18,9 +18,6 @@ paths = [
     '''gitleaks.toml''',
     '''(.*?)(jpg|gif|doc|pdf|bin|svg|socket)$''',
     '''(go.mod|go.sum)$''',
-    '''deployments/keys/ropsten_keys.json''',
-    '''deployments/keys/cluster_ropsten_keys.json''',
-    '''deployments/keys/hardhat_keys.json''',
     '''(^(.*)\/node_modules(.))''',
 ]
 
