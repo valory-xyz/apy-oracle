@@ -2,7 +2,7 @@
 
 - Clone the repository:
 
-      git clone git@github.com:valory-xyz/apy.git
+      git clone git@github.com:valory-xyz/apy-oracle.git
 
 - System requirements:
 
