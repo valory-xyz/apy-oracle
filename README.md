@@ -28,4 +28,4 @@
 
 - Pull packages:
 
-      autonomy packages sync
+      autonomy packages sync --update-packages

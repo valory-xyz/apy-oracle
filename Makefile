@@ -37,6 +37,7 @@ clean-test:
 	rm -fr .hypothesis/
 	find . -name 'log.txt' -exec rm -fr {} +
 	find . -name 'log.*.txt' -exec rm -fr {} +
+	rm -rf leak_report
 
 # isort: fix import orders
 # black: format files according to the pep standards
@@ -58,6 +59,7 @@ code-checks:
 
 # safety: checks dependencies for known security vulnerabilities
 # bandit: security linter
+# gitleaks: checks for sensitive information
 .PHONY: security
 security:
 	tox -p -e safety -e bandit
@@ -66,8 +68,6 @@ security:
 # generate abci docstrings
 # update copyright headers
 # generate latest hashes for updated packages
-# generate docs for updated packages
-# fix hashes in docs
 .PHONY: generators
 generators:
 	tox -e abci-docstrings
