@@ -839,22 +839,25 @@ def batch() -> ResponseItemType:
 class DummyPipeline(Pipeline):
     """A dummy pipeline."""
 
-    def __init__(self) -> None:
+    def __init__(self, series_pred_type: bool = False) -> None:
         """Initialize Dummy Pipeline."""
         super().__init__([])
         self.updated: bool = False
+        self.series_pred_type: bool = series_pred_type
 
     def _validate_steps(self) -> None:
         """Dummy steps validation."""
 
-    @staticmethod
-    def predict(*args: Any) -> np.ndarray:
+    def predict(self, *args: Any) -> Union[np.ndarray, pd.Series]:
         """Predict `steps_forward` timesteps in the future.
 
         :param args: the args accepted by `pmdarima.Pipeline.predict`.
         :return: a `numpy` array with the dummy predictions.
         """
-        return np.ones(args[0])
+        y = np.ones(args[0])
+        if self.series_pred_type:
+            return pd.Series(y)
+        return y
 
     def update(self, *args: Any) -> None:
         """Update the dummy pipeline."""
