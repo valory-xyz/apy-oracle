@@ -57,15 +57,14 @@ from packages.valory.skills.apy_estimation_abci.ml.forecasting import (
     update_forecaster_per_pool,
     walk_forward_test,
 )
-from packages.valory.skills.apy_estimation_abci.tests.conftest import DummyPipeline
+from packages.valory.skills.apy_estimation_abci.tests.conftest import (
+    DummyPipeline,
+    dummy_pipelines,
+)
 
 
 class TestForecasting:
     """Tests for forecasting operations."""
-
-    def setup(self) -> None:
-        """Initialize class."""
-        self._pipeline = DummyPipeline()
 
     @staticmethod
     def test_init_forecaster(hyperparameters: Any) -> None:
@@ -190,31 +189,6 @@ class TestForecasting:
             str(metric_value) in report for metric_value in set(metrics_res.values())
         )
 
-    @pytest.mark.parametrize("steps_forward", (-2, 1, 6, 8))
-    def test_walk_forward_test(self, steps_forward: int) -> None:
-        """Test `walk_forward_test`."""
-        test_size = 5
-        params = self._pipeline, np.empty(test_size), steps_forward
-        expected_output_len = test_size if steps_forward <= test_size else steps_forward
-        if steps_forward < 0:
-            with pytest.raises(
-                ValueError, match="Timesteps to predict in the future cannot be -2 < 1."
-            ):
-                walk_forward_test(*params)
-        else:
-            if expected_output_len > test_size:
-                with pytest.warns(
-                    UserWarning,
-                    match="Timesteps to predict in the future are larger than the number of test samples "
-                    f"while using the Direct Multi-step Forecast Strategy: {steps_forward} > {test_size}",
-                ):
-                    predictions = walk_forward_test(*params)
-            else:
-                predictions = walk_forward_test(*params)
-
-            assert isinstance(predictions, np.ndarray)
-            assert len(predictions) == expected_output_len
-
     def test_test_forecaster_per_pool(
         self,
         train_task_input: PoolIdToTrainDataType,
@@ -229,69 +203,6 @@ class TestForecasting:
         )
         dummy_forecasters = {id_: trained_forecaster for id_ in train_task_input.keys()}
         _test_forecaster_per_pool(dummy_forecasters, train_task_input, train_task_input)
-
-    def test_test_forecaster(self, monkeypatch: MonkeyPatch) -> None:
-        """Test `test_forecaster`."""
-        for testing_method in ("baseline", "walk_forward_test"):
-            monkeypatch.setattr(
-                forecasting,
-                testing_method,
-                lambda *_: None,
-            )
-
-        monkeypatch.setattr(
-            forecasting,
-            "report_metrics",
-            lambda *_: "Report results.",
-        )
-
-        actual = _test_forecaster(self._pipeline, np.empty((5, 2)), np.empty(2), "test")
-
-        expected = {}
-        for testing_model in ("Baseline", "ARIMA"):
-            expected[testing_model] = "Report results."
-
-        assert actual == expected
-
-    @pytest.mark.parametrize("id_mismatch", (True, False))
-    def test_update_forecaster_per_pool(
-        self,
-        prepare_batch_task_result: pd.DataFrame,
-        monkeypatch: MonkeyPatch,
-        id_mismatch: bool,
-    ) -> None:
-        """Test `update_forecaster_per_pool`."""
-        mismatch = "test" if id_mismatch else ""
-        dummy_pipelines = {
-            pool_id + mismatch: deepcopy(self._pipeline)
-            for pool_id in prepare_batch_task_result["id"].values
-        }
-
-        if mismatch:
-            update_forecaster_per_pool(prepare_batch_task_result, dummy_pipelines)
-            assert not any(pipeline.updated for pipeline in dummy_pipelines.values())
-
-        else:
-            update_forecaster_per_pool(prepare_batch_task_result, dummy_pipelines)
-            assert all(pipeline.updated for pipeline in dummy_pipelines.values())
-
-    @pytest.mark.parametrize("steps_forward", (0, 1, 5))
-    def test_estimate_apy_per_pool(
-        self,
-        monkeypatch: MonkeyPatch,
-        steps_forward: int,
-    ) -> None:
-        """Test `estimate_apy_per_pool`."""
-        dummy_pipelines = {
-            f"pool{pool_id}": deepcopy(self._pipeline) for pool_id in range(3)
-        }
-
-        estimates = estimate_apy_per_pool(dummy_pipelines, steps_forward)
-        expected_estimates = pd.DataFrame(
-            {f"pool{pool_id}": np.ones(steps_forward) for pool_id in range(3)},
-            index=[f"Step{i + 1} into the future" for i in range(steps_forward)],
-        )
-        pd.testing.assert_frame_equal(estimates, expected_estimates)
 
     @pytest.mark.parametrize("fitted", (True, False))
     def test_predict_safely(self, fitted: bool) -> None:
@@ -359,3 +270,114 @@ class TestForecasting:
 
         else:
             model.predict(steps_forward)
+
+
+@dummy_pipelines
+class TestForecastingWithEstimator:
+    """Tests for forecasting operations that can be performed with a dummy estimator."""
+
+    @pytest.mark.parametrize("steps_forward", (-2, 1, 6, 8))
+    def test_walk_forward_test(
+        self, steps_forward: int, dummy_pipeline: DummyPipeline
+    ) -> None:
+        """Test `walk_forward_test`."""
+
+        test_size = 5
+        params = dummy_pipeline, np.empty(test_size), steps_forward
+        expected_output_len = test_size if steps_forward <= test_size else steps_forward
+        if steps_forward < 0:
+            with pytest.raises(
+                ValueError, match="Timesteps to predict in the future cannot be -2 < 1."
+            ):
+                walk_forward_test(*params)
+        else:
+            if expected_output_len > test_size:
+                with pytest.warns(
+                    UserWarning,
+                    match="Timesteps to predict in the future are larger than the number of test samples "
+                    f"while using the Direct Multi-step Forecast Strategy: {steps_forward} > {test_size}",
+                ):
+                    predictions = walk_forward_test(*params)
+            else:
+                predictions = walk_forward_test(*params)
+
+            assert isinstance(predictions, np.ndarray)
+            assert len(predictions) == expected_output_len
+
+    def test_test_forecaster(
+        self, monkeypatch: MonkeyPatch, dummy_pipeline: DummyPipeline
+    ) -> None:
+        """Test `test_forecaster`."""
+
+        for testing_method in ("baseline", "walk_forward_test"):
+            monkeypatch.setattr(
+                forecasting,
+                testing_method,
+                lambda *_: None,
+            )
+
+        monkeypatch.setattr(
+            forecasting,
+            "report_metrics",
+            lambda *_: "Report results.",
+        )
+
+        actual = _test_forecaster(dummy_pipeline, np.empty((5, 2)), np.empty(2), "test")
+
+        expected = {}
+        for testing_model in ("Baseline", "ARIMA"):
+            expected[testing_model] = "Report results."
+
+        assert actual == expected
+
+    @pytest.mark.parametrize("id_mismatch", (True, False))
+    def test_update_forecaster_per_pool(
+        self,
+        prepare_batch_task_result: pd.DataFrame,
+        monkeypatch: MonkeyPatch,
+        id_mismatch: bool,
+        dummy_pipeline: DummyPipeline,
+    ) -> None:
+        """Test `update_forecaster_per_pool`."""
+
+        mismatch = "test" if id_mismatch else ""
+        pools_to_dummy_pipelines = {
+            pool_id + mismatch: deepcopy(dummy_pipeline)
+            for pool_id in prepare_batch_task_result["id"].values
+        }
+
+        if mismatch:
+            update_forecaster_per_pool(
+                prepare_batch_task_result, pools_to_dummy_pipelines
+            )
+            assert not any(
+                pipeline.updated for pipeline in pools_to_dummy_pipelines.values()
+            )
+
+        else:
+            update_forecaster_per_pool(
+                prepare_batch_task_result, pools_to_dummy_pipelines
+            )
+            assert all(
+                pipeline.updated for pipeline in pools_to_dummy_pipelines.values()
+            )
+
+    @pytest.mark.parametrize("steps_forward", (0, 1, 5))
+    def test_estimate_apy_per_pool(
+        self,
+        monkeypatch: MonkeyPatch,
+        steps_forward: int,
+        dummy_pipeline: DummyPipeline,
+    ) -> None:
+        """Test `estimate_apy_per_pool`."""
+
+        pools_to_dummy_pipelines = {
+            f"pool{pool_id}": deepcopy(dummy_pipeline) for pool_id in range(3)
+        }
+
+        estimates = estimate_apy_per_pool(pools_to_dummy_pipelines, steps_forward)
+        expected_estimates = pd.DataFrame(
+            {f"pool{pool_id}": np.ones(steps_forward) for pool_id in range(3)},
+            index=[f"Step{i + 1} into the future" for i in range(steps_forward)],
+        )
+        pd.testing.assert_frame_equal(estimates, expected_estimates)
