@@ -328,7 +328,7 @@ def estimate_apy_per_pool(
     )
 
 
-def predict_safely(forecaster: Pipeline, steps_forward: int) -> Any:
+def predict_safely(forecaster: Pipeline, steps_forward: int) -> list:
     """
     Overcomes an issue of the `pmdarima` library.
 
@@ -341,7 +341,8 @@ def predict_safely(forecaster: Pipeline, steps_forward: int) -> Any:
     :return: the predicted values.
     """
     try:
-        y_hat = forecaster.predict(steps_forward)
+        # `tolist()` is valid for both numpy arrays and pandas Series.
+        y_hat = forecaster.predict(steps_forward).tolist()
     except NotFittedError:
         # raise `NotFittedError` here so that it does not get caught from `ValueError` below which it inherits from
         raise
