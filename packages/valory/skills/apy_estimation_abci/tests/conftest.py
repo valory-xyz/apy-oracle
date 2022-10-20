@@ -31,6 +31,7 @@ import numpy as np
 import optuna
 import pandas as pd
 import pytest
+from _pytest.fixtures import SubRequest
 from aea.skills.base import SkillContext
 from optuna.distributions import UniformDistribution
 from optuna.exceptions import ExperimentalWarning
@@ -873,3 +874,32 @@ def is_list_of_strings(lst: Any) -> bool:
         res = all(isinstance(elem, str) for elem in lst)
 
     return res
+
+
+@pytest.fixture
+def dummy_pipeline_np_preds() -> DummyPipeline:
+    """A dummy pipeline."""
+    return DummyPipeline()
+
+
+@pytest.fixture
+def dummy_pipeline_pd_preds() -> DummyPipeline:
+    """A dummy pipeline."""
+    return DummyPipeline(series_pred_type=True)
+
+
+@pytest.fixture
+def dummy_pipeline(request: SubRequest) -> DummyPipeline:
+    """
+    Get a dummy pipeline base on the given parametrization.
+
+    Available pipelines are `dummy_pipeline_np_preds` and `dummy_pipeline_pd_preds`.
+    """
+    return request.getfixturevalue(request.param)
+
+
+dummy_pipelines = pytest.mark.parametrize(
+    "dummy_pipeline",
+    ("dummy_pipeline_np_preds", "dummy_pipeline_pd_preds"),
+    indirect=True,
+)
