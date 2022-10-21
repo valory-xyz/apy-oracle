@@ -119,7 +119,16 @@ fix-abci-app-specs:
 	autonomy analyse abci generate-app-specs packages.valory.skills.apy_estimation_abci.rounds.APYEstimationAbciApp packages/valory/skills/apy_estimation_abci/fsm_specification.yaml || (echo "Failed to check apy_estimation_abci consistency" && exit 1)
 	echo "Successfully validated abcis!"
 
-AEA_AGENT_APY_ESTIMATION:=valory/apy_estimation:latest:$(shell cat packages/packages.json | grep "agent/valory/apy_estimation" | cut -d "\"" -f4 )
+PACKAGES_PATH := packages/packages.json
+RELEASE_VERSION := latest
+APY_ORACLE_AGENT_NAME := valory/apy_estimation
+APY_ORACLE_IMAGE_NAME := valory/oar-apy_estimation
 release-image:
-	export AEA_AGENT_APY_ESTIMATION=${AEA_AGENT_APY_ESTIMATION}
-	skaffold build -p release --cache-artifacts=false && skaffold build -p release-latest
+	$(eval APY_ORACLE_AGENT_HASH := $(shell cat ${PACKAGES_PATH} | grep "agent/${APY_ORACLE_AGENT_NAME}" | cut -d "\"" -f4 ))
+	$(eval APY_ORACLE_AGENT_PUBLIC_ID := ${APY_ORACLE_AGENT_NAME}:${RELEASE_VERSION}:${APY_ORACLE_AGENT_HASH})
+	# we first need to push all the packages in order to be able to build the image,
+	# because the command pulls the agent from the registry.
+	# Please make sure to run this command only from a release branch.
+	autonomy push-all
+	autonomy build-image ${APY_ORACLE_AGENT_PUBLIC_ID}
+	docker push ${APY_ORACLE_IMAGE_NAME}:${APY_ORACLE_AGENT_HASH}
