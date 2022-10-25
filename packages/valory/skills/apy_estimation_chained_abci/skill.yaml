@@ -204,6 +204,9 @@ models:
   state:
     args: {}
     class_name: SharedState
+  tendermint_dialogues:
+    args: {}
+    class_name: TendermintDialogues
   uniswap_subgraph:
     args:
       api_id: uniswap
