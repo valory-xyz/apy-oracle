@@ -550,6 +550,8 @@ class TestCycleResetRound(BaseCollectSameUntilThresholdRoundTest):
                 latest_observation_hist_hash="x0",
                 most_voted_models="",
                 full_training=True,
+                most_voted_transform="x1",
+                latest_transformation_period=10,
             ),
             self.consensus_params,
         )
@@ -561,7 +563,14 @@ class TestCycleResetRound(BaseCollectSameUntilThresholdRoundTest):
                     full_training=False,
                 ),
                 synchronized_data_attr_checks=[
-                    lambda _synchronized_data: _synchronized_data.full_training
+                    lambda _synchronized_data: _synchronized_data.latest_observation_hist_hash,
+                    lambda _synchronized_data: _synchronized_data.models_hash,
+                    lambda _synchronized_data: _synchronized_data.full_training,
+                    lambda _synchronized_data: _synchronized_data.transformed_history_hash,
+                    lambda _synchronized_data: _synchronized_data.latest_transformation_period,
+                    lambda _synchronized_data: _synchronized_data.n_estimations,
+                    lambda _synchronized_data: _synchronized_data.participants,
+                    lambda _synchronized_data: _synchronized_data.all_participants,
                 ],
                 most_voted_payload=1,
                 exit_event=Event.DONE,
@@ -587,7 +596,10 @@ class TestFreshModelResetRound(BaseCollectSameUntilThresholdRoundTest):
 
         test_round = FreshModelResetRound(
             self.synchronized_data.update(
-                n_estimations=1, full_training=True, most_voted_models=""
+                n_estimations=1,
+                full_training=True,
+                most_voted_models="",
+                latest_transformation_period=10,
             ),
             self.consensus_params,
         )
@@ -599,7 +611,8 @@ class TestFreshModelResetRound(BaseCollectSameUntilThresholdRoundTest):
                     full_training=False,
                 ),
                 synchronized_data_attr_checks=[
-                    lambda _synchronized_data: _synchronized_data.full_training
+                    lambda _synchronized_data: _synchronized_data.full_training,
+                    lambda _synchronized_data: _synchronized_data.latest_transformation_period,
                 ],
                 most_voted_payload=1,
                 exit_event=Event.DONE,
