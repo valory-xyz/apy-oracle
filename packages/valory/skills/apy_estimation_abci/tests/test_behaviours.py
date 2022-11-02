@@ -1529,7 +1529,13 @@ class TestPreprocessBehaviour(APYEstimationFSMBehaviourBaseCase):
         self.fast_forward_to_behaviour(
             self.behaviour,
             self.behaviour_class.behaviour_id,
-            SynchronizedData(AbciAppDB(setup_data=dict(most_voted_transform=["test"]))),
+            SynchronizedData(
+                AbciAppDB(
+                    setup_data=dict(
+                        most_voted_transform=["test"], latest_transformation_period=[0]
+                    )
+                )
+            ),
         )
         behaviour = cast(PreprocessBehaviour, self.behaviour.current_behaviour)
         assert behaviour.behaviour_id == self.behaviour_class.behaviour_id
@@ -2685,6 +2691,7 @@ class TestEstimateBehaviour(APYEstimationFSMBehaviourBaseCase):
                     setup_data=dict(
                         most_voted_models=[hashes["models"]],
                         most_voted_transform=[hashes["transform"]],
+                        latest_transformation_period=[0],
                     ),
                 )
             ),
