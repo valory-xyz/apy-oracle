@@ -598,6 +598,7 @@ class FetchBehaviour(
             pairs[i]["blockNumber"] = str(block["number"])
             pairs[i]["blockTimestamp"] = str(block["timestamp"])
             pairs[i]["ethPrice"] = str(eth_price)
+            pairs[i]["dex"] = self.current_dex.api_id
 
         self._pairs_hist.extend(pairs)
 

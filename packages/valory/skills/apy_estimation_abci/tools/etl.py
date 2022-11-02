@@ -52,6 +52,7 @@ HIST_DTYPES = {
     "ethPrice": float,
     "token0": object,
     "token1": object,
+    "dex": str,
 }
 
 # Define a dictionary with the data types of the columns of the transformed historical data.
