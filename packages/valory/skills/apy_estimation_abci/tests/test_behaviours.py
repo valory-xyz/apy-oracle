@@ -1445,6 +1445,9 @@ class TestTransformBehaviour(APYEstimationFSMBehaviourBaseCase):
         self._fast_forward(tmp_path)
         self.behaviour.context.task_manager.start()
         monkeypatch.setattr(AsyncResult, "ready", lambda *_: False)
+        cast(
+            TransformBehaviour, self.behaviour.current_behaviour
+        ).params.sleep_time = SLEEP_TIME_TWEAK
 
         with caplog.at_level(
             logging.DEBUG,
@@ -1458,6 +1461,15 @@ class TestTransformBehaviour(APYEstimationFSMBehaviourBaseCase):
             "[test_agent_name] The transform task is not finished yet." in caplog.text
         )
 
+        time.sleep(SLEEP_TIME_TWEAK + 0.01)
+        self.behaviour.act_wrapper()
+
+        assert (
+            cast(
+                APYEstimationBaseBehaviour, self.behaviour.current_behaviour
+            ).behaviour_id
+            == self.behaviour_class.behaviour_id
+        )
         self.end_round()
 
     @pytest.mark.parametrize("ipfs_succeed", (True, False))
