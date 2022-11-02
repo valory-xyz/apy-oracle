@@ -97,6 +97,11 @@ class SynchronizedData(BaseSynchronizedData):
         return cast(str, self.db.get_strict("latest_observation_hist_hash"))
 
     @property
+    def latest_transformation_period(self) -> int:
+        """Get the latest period for which a transformation took place."""
+        return cast(int, self.db.get_strict("latest_transformation_period"))
+
+    @property
     def train_hash(self) -> str:
         """Get the most voted train hash."""
         split = cast(str, self.db.get_strict("most_voted_split"))
@@ -227,6 +232,7 @@ class TransformRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound)
                 latest_observation_hist_hash=cast(
                     TransformationPayload, list(self.collection.values())[0]
                 ).latest_observation_hist_hash,
+                latest_transformation_period=self.synchronized_data.period_count,
             )
             return synchronized_data, Event.DONE
 
@@ -449,6 +455,7 @@ class BaseResetRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound)
                 full_training=False,
                 n_estimations=self.synchronized_data.n_estimations,
                 most_voted_models=self.synchronized_data.models_hash,
+                latest_transformation_period=self.synchronized_data.latest_transformation_period,
             )
             if self.round_id == "cycle_reset":
                 cycle_reset_kwargs = dict(
