@@ -276,16 +276,29 @@ class TestTransformRound(BaseCollectSameUntilThresholdRoundTest):
         expected_event: Event,
     ) -> None:
         """Runs test."""
+        previous_period = 8
+        latest_transformation_period = 0
+        current_period = previous_period + 1
 
-        test_round = TransformRound(self.synchronized_data, self.consensus_params)
+        test_round = TransformRound(
+            self.synchronized_data.update(
+                latest_transformation_period=latest_transformation_period,
+                period_count=previous_period,
+            ),
+            self.consensus_params,
+        )
         self._complete_run(
             self._test_round(
                 test_round=test_round,
                 round_payloads=get_transformation_payload(
                     self.participants, most_voted_payload
                 ),
-                synchronized_data_update_fn=lambda _synchronized_data, _: _synchronized_data,
-                synchronized_data_attr_checks=[],
+                synchronized_data_update_fn=lambda _synchronized_data, _: _synchronized_data.update(
+                    period_count=current_period
+                ),
+                synchronized_data_attr_checks=[
+                    lambda _synchronized_data: _synchronized_data.latest_transformation_period,
+                ],
                 most_voted_payload=most_voted_payload,
                 exit_event=expected_event,
             )
