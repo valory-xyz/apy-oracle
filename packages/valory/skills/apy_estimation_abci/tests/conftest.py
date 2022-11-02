@@ -857,7 +857,7 @@ class DummyPipeline(Pipeline):
         :param args: the args accepted by `pmdarima.Pipeline.predict`.
         :return: a `numpy` array with the dummy predictions.
         """
-        y = np.ones(args[0])
+        y = np.asarray([i for i in range(args[0])])
         if self.series_pred_type:
             return pd.Series(y)
         return y
