@@ -451,9 +451,11 @@ class BaseResetRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound)
                 most_voted_models=self.synchronized_data.models_hash,
             )
             if self.round_id == "cycle_reset":
-                kwargs[
-                    "latest_observation_hist_hash"
-                ] = self.synchronized_data.latest_observation_hist_hash
+                cycle_reset_kwargs = dict(
+                    most_voted_transform=self.synchronized_data.transformed_history_hash,
+                    latest_observation_hist_hash=self.synchronized_data.latest_observation_hist_hash,
+                )
+                kwargs.update(cycle_reset_kwargs)
 
             synchronized_data = self.synchronized_data.create(
                 synchronized_data_class=SynchronizedData,
