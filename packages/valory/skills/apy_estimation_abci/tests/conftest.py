@@ -727,6 +727,7 @@ def historical_data() -> HistoricalDataType:
             {"id": "y", "name": "y", "symbol": "y"},
             {"id": "y", "name": "y", "symbol": "y"},
         ],
+        "dex": [f"test_DEX{i % 2 + 1}" for i in range(10)],
     }
 
 
@@ -831,6 +832,7 @@ def batch() -> ResponseItemType:
         "APY": "0.1",
         "token0": {"id": "x", "name": "x", "symbol": "x"},
         "token1": {"id": "y", "name": "y", "symbol": "y"},
+        "dex": "test_dex",
     }
     pool2_batch = pool1_batch.copy()
     pool2_batch["id"] = "x3"
