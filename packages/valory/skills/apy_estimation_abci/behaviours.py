@@ -206,6 +206,17 @@ class APYEstimationBaseBehaviour(BaseBehaviour, ABC):
             filetype=ExtendedSupportedFiletype.CSV,
         )
 
+    def load_transformed_hist_data(self) -> Optional[pd.DataFrame]:
+        """Load the transformed historical data."""
+        return self.get_from_ipfs(
+            self.synchronized_data.transformed_history_hash,
+            self.context.data_dir,
+            filename=TRANSFORMED_HISTORICAL_DATA_PATH_TEMPLATE.substitute(
+                period_count=self.synchronized_data.latest_transformation_period
+            ),
+            custom_loader=load_hist,
+        )
+
 
 class FetchBehaviour(
     APYEstimationBaseBehaviour, SubgraphsMixin
@@ -797,15 +808,7 @@ class PreprocessBehaviour(APYEstimationBaseBehaviour):
 
     def setup(self) -> None:
         """Setup behaviour."""
-        # get the transformed historical data.
-        self._pairs_hist = self.get_from_ipfs(
-            self.synchronized_data.transformed_history_hash,
-            self.context.data_dir,
-            filename=TRANSFORMED_HISTORICAL_DATA_PATH_TEMPLATE.substitute(
-                period_count=self.synchronized_data.period_count
-            ),
-            custom_loader=load_hist,
-        )
+        self._pairs_hist = self.load_transformed_hist_data()
 
         if self._pairs_hist is not None:
             preprocess_task = PreprocessTask()
