@@ -368,16 +368,32 @@ class TestForecastingWithEstimator:
         monkeypatch: MonkeyPatch,
         steps_forward: int,
         dummy_pipeline: DummyPipeline,
+        transformed_historical_data: pd.DataFrame,
     ) -> None:
         """Test `estimate_apy_per_pool`."""
+        expected_estimates = transformed_historical_data.loc[
+            :, ["dex", "id", "pairName"]
+        ].drop_duplicates(subset=["id"], ignore_index=True)
+        ids = expected_estimates["id"].values
 
         pools_to_dummy_pipelines = {
-            f"pool{pool_id}": deepcopy(dummy_pipeline) for pool_id in range(3)
+            f"{pool_id}.joblib": deepcopy(dummy_pipeline) for pool_id in ids
         }
 
-        estimates = estimate_apy_per_pool(pools_to_dummy_pipelines, steps_forward)
-        expected_estimates = pd.DataFrame(
-            {f"pool{pool_id}": np.ones(steps_forward) for pool_id in range(3)},
-            index=[f"Step{i + 1} into the future" for i in range(steps_forward)],
+        if steps_forward == 0:
+            with pytest.raises(ValueError, match="Steps forward should be > 0."):
+                estimate_apy_per_pool(
+                    transformed_historical_data, pools_to_dummy_pipelines, steps_forward
+                )
+            return
+
+        estimates = estimate_apy_per_pool(
+            transformed_historical_data, pools_to_dummy_pipelines, steps_forward
         )
-        pd.testing.assert_frame_equal(estimates, expected_estimates)
+        prediction_column_name_template = "APY_future_step_{i}"
+        dummy_predictions = {
+            prediction_column_name_template.format(i=i + 1): dummy_prediction
+            for i, dummy_prediction in enumerate(dummy_pipeline.predict(steps_forward))
+        }
+        expected_estimates = expected_estimates.assign(**dummy_predictions)
+        pd.testing.assert_frame_equal(estimates, expected_estimates, check_dtype=False)
