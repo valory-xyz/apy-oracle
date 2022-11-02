@@ -1372,12 +1372,14 @@ class EstimateBehaviour(APYEstimationBaseBehaviour):
         """Initialize Behaviour."""
         super().__init__(**kwargs)
         self._async_result: Optional[AsyncResult] = None
+        self._transformed_data: Optional[pd.DataFrame] = None
         self._forecasters: Optional[PoolIdToForecasterType] = None
         self._estimations_hash: Optional[str] = None
 
     def setup(self) -> None:
         """Setup behaviour."""
-        # Load forecasters.
+        # load transformed historical data and forecasters
+        self._transformed_data = self.load_transformed_hist_data()
         self._forecasters = self.get_from_ipfs(
             self.synchronized_data.models_hash,
             self.from_data_dir_with_period_specifier(FULLY_TRAINED_FORECASTERS_PATH),
@@ -1385,10 +1387,15 @@ class EstimateBehaviour(APYEstimationBaseBehaviour):
             filetype=ExtendedSupportedFiletype.PM_PIPELINE,
         )
 
-        if self._forecasters is not None:
+        if not any(arg is None for arg in (self._transformed_data, self._forecasters)):
             estimate_task = EstimateTask()
             task_id = self.context.task_manager.enqueue_task(
-                estimate_task, args=(self._forecasters,), kwargs=self.params.estimation
+                estimate_task,
+                args=(
+                    self._transformed_data,
+                    self._forecasters,
+                ),
+                kwargs=self.params.estimation,
             )
             self._async_result = self.context.task_manager.get_task_result(task_id)
 
