@@ -789,7 +789,7 @@ class PreprocessBehaviour(APYEstimationBaseBehaviour):
         super().__init__(**kwargs)
         self._preprocessed_pairs_save_path = ""
         self._async_result: Optional[AsyncResult] = None
-        self._pairs_hist: Optional[ResponseItemType] = None
+        self._pairs_hist: Optional[pd.DataFrame] = None
         self._preprocessed_pairs_hashes: Dict[str, Optional[str]] = {
             "train_hash": None,
             "test_hash": None,
