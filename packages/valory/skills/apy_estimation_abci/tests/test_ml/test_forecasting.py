@@ -342,7 +342,7 @@ class TestForecastingWithEstimator:
 
         mismatch = "test" if id_mismatch else ""
         pools_to_dummy_pipelines = {
-            pool_id + mismatch: deepcopy(dummy_pipeline)
+            "".join((pool_id, ".joblib", mismatch)): deepcopy(dummy_pipeline)
             for pool_id in prepare_batch_task_result["id"].values
         }
 
