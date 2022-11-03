@@ -206,6 +206,17 @@ class APYEstimationBaseBehaviour(BaseBehaviour, ABC):
             filetype=ExtendedSupportedFiletype.CSV,
         )
 
+    def load_transformed_hist_data(self) -> Optional[pd.DataFrame]:
+        """Load the transformed historical data."""
+        return self.get_from_ipfs(
+            self.synchronized_data.transformed_history_hash,
+            self.context.data_dir,
+            filename=TRANSFORMED_HISTORICAL_DATA_PATH_TEMPLATE.substitute(
+                period_count=self.synchronized_data.latest_transformation_period
+            ),
+            custom_loader=load_hist,
+        )
+
 
 class FetchBehaviour(
     APYEstimationBaseBehaviour, SubgraphsMixin
@@ -598,6 +609,7 @@ class FetchBehaviour(
             pairs[i]["blockNumber"] = str(block["number"])
             pairs[i]["blockTimestamp"] = str(block["timestamp"])
             pairs[i]["ethPrice"] = str(eth_price)
+            pairs[i]["dex"] = self.current_dex.api_id
 
         self._pairs_hist.extend(pairs)
 
@@ -788,7 +800,7 @@ class PreprocessBehaviour(APYEstimationBaseBehaviour):
         super().__init__(**kwargs)
         self._preprocessed_pairs_save_path = ""
         self._async_result: Optional[AsyncResult] = None
-        self._pairs_hist: Optional[ResponseItemType] = None
+        self._pairs_hist: Optional[pd.DataFrame] = None
         self._preprocessed_pairs_hashes: Dict[str, Optional[str]] = {
             "train_hash": None,
             "test_hash": None,
@@ -796,15 +808,7 @@ class PreprocessBehaviour(APYEstimationBaseBehaviour):
 
     def setup(self) -> None:
         """Setup behaviour."""
-        # get the transformed historical data.
-        self._pairs_hist = self.get_from_ipfs(
-            self.synchronized_data.transformed_history_hash,
-            self.context.data_dir,
-            filename=TRANSFORMED_HISTORICAL_DATA_PATH_TEMPLATE.substitute(
-                period_count=self.synchronized_data.period_count
-            ),
-            custom_loader=load_hist,
-        )
+        self._pairs_hist = self.load_transformed_hist_data()
 
         if self._pairs_hist is not None:
             preprocess_task = PreprocessTask()
@@ -1368,12 +1372,14 @@ class EstimateBehaviour(APYEstimationBaseBehaviour):
         """Initialize Behaviour."""
         super().__init__(**kwargs)
         self._async_result: Optional[AsyncResult] = None
+        self._transformed_data: Optional[pd.DataFrame] = None
         self._forecasters: Optional[PoolIdToForecasterType] = None
         self._estimations_hash: Optional[str] = None
 
     def setup(self) -> None:
         """Setup behaviour."""
-        # Load forecasters.
+        # load transformed historical data and forecasters
+        self._transformed_data = self.load_transformed_hist_data()
         self._forecasters = self.get_from_ipfs(
             self.synchronized_data.models_hash,
             self.from_data_dir_with_period_specifier(FULLY_TRAINED_FORECASTERS_PATH),
@@ -1381,10 +1387,15 @@ class EstimateBehaviour(APYEstimationBaseBehaviour):
             filetype=ExtendedSupportedFiletype.PM_PIPELINE,
         )
 
-        if self._forecasters is not None:
+        if not any(arg is None for arg in (self._transformed_data, self._forecasters)):
             estimate_task = EstimateTask()
             task_id = self.context.task_manager.enqueue_task(
-                estimate_task, args=(self._forecasters,), kwargs=self.params.estimation
+                estimate_task,
+                args=(
+                    self._transformed_data,
+                    self._forecasters,
+                ),
+                kwargs=self.params.estimation,
             )
             self._async_result = self.context.task_manager.get_task_result(task_id)
 

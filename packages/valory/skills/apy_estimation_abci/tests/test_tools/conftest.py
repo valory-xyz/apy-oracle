@@ -33,8 +33,9 @@ def transformed_history() -> pd.DataFrame:
     :return: a test transformed history.
     """
     hist_li: List[Union[int, float, str]] = [10] * 21
+    hist_li.append("test_DEX")
     hist_li.extend(["x"] * 4)
-    hist_li.insert(23, "X")
+    hist_li.insert(24, "X")
     hist_li.append("X")
     hist_li.append("x - x")
     hist_li.append(10.0)

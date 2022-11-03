@@ -276,16 +276,29 @@ class TestTransformRound(BaseCollectSameUntilThresholdRoundTest):
         expected_event: Event,
     ) -> None:
         """Runs test."""
+        previous_period = 8
+        latest_transformation_period = 0
+        current_period = previous_period + 1
 
-        test_round = TransformRound(self.synchronized_data, self.consensus_params)
+        test_round = TransformRound(
+            self.synchronized_data.update(
+                latest_transformation_period=latest_transformation_period,
+                period_count=previous_period,
+            ),
+            self.consensus_params,
+        )
         self._complete_run(
             self._test_round(
                 test_round=test_round,
                 round_payloads=get_transformation_payload(
                     self.participants, most_voted_payload
                 ),
-                synchronized_data_update_fn=lambda _synchronized_data, _: _synchronized_data,
-                synchronized_data_attr_checks=[],
+                synchronized_data_update_fn=lambda _synchronized_data, _: _synchronized_data.update(
+                    period_count=current_period
+                ),
+                synchronized_data_attr_checks=[
+                    lambda _synchronized_data: _synchronized_data.latest_transformation_period,
+                ],
                 most_voted_payload=most_voted_payload,
                 exit_event=expected_event,
             )
@@ -550,6 +563,8 @@ class TestCycleResetRound(BaseCollectSameUntilThresholdRoundTest):
                 latest_observation_hist_hash="x0",
                 most_voted_models="",
                 full_training=True,
+                most_voted_transform="x1",
+                latest_transformation_period=10,
             ),
             self.consensus_params,
         )
@@ -561,7 +576,14 @@ class TestCycleResetRound(BaseCollectSameUntilThresholdRoundTest):
                     full_training=False,
                 ),
                 synchronized_data_attr_checks=[
-                    lambda _synchronized_data: _synchronized_data.full_training
+                    lambda _synchronized_data: _synchronized_data.latest_observation_hist_hash,
+                    lambda _synchronized_data: _synchronized_data.models_hash,
+                    lambda _synchronized_data: _synchronized_data.full_training,
+                    lambda _synchronized_data: _synchronized_data.transformed_history_hash,
+                    lambda _synchronized_data: _synchronized_data.latest_transformation_period,
+                    lambda _synchronized_data: _synchronized_data.n_estimations,
+                    lambda _synchronized_data: _synchronized_data.participants,
+                    lambda _synchronized_data: _synchronized_data.all_participants,
                 ],
                 most_voted_payload=1,
                 exit_event=Event.DONE,
@@ -587,7 +609,10 @@ class TestFreshModelResetRound(BaseCollectSameUntilThresholdRoundTest):
 
         test_round = FreshModelResetRound(
             self.synchronized_data.update(
-                n_estimations=1, full_training=True, most_voted_models=""
+                n_estimations=1,
+                full_training=True,
+                most_voted_models="",
+                latest_transformation_period=10,
             ),
             self.consensus_params,
         )
@@ -599,7 +624,8 @@ class TestFreshModelResetRound(BaseCollectSameUntilThresholdRoundTest):
                     full_training=False,
                 ),
                 synchronized_data_attr_checks=[
-                    lambda _synchronized_data: _synchronized_data.full_training
+                    lambda _synchronized_data: _synchronized_data.full_training,
+                    lambda _synchronized_data: _synchronized_data.latest_transformation_period,
                 ],
                 most_voted_payload=1,
                 exit_event=Event.DONE,

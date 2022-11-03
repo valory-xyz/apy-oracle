@@ -310,22 +310,35 @@ def update_forecaster_per_pool(
 
 
 def estimate_apy_per_pool(
+    transformed_data: pd.DataFrame,
     forecasters: PoolIdToForecasterType,
     steps_forward: int,
 ) -> pd.DataFrame:
     """Estimate the APY per pool.
 
+    :param transformed_data: the transformed historical data.
     :param forecasters: the forecasters to update.
     :param steps_forward: the number of periods in the future to forecast.
     :return: a dataframe with the APY predictions per pool, for each step forward.
     """
-    estimates = {}
+    if steps_forward == 0:
+        raise ValueError("Steps forward should be > 0.")
+
+    estimates: pd.DataFrame = transformed_data.loc[:, ["dex", "id", "pairName"]]
+    prediction_column_names = [f"APY_future_step_{i + 1}" for i in range(steps_forward)]
+    predictions_initialization = {
+        col_name: None for col_name in prediction_column_names
+    }
+    estimates = estimates.assign(**predictions_initialization)
+    estimates.drop_duplicates(subset=["id"], ignore_index=True, inplace=True)
+
     for id_, forecaster in forecasters.items():
         id_ = id_.replace(".joblib", "")
-        estimates[id_] = predict_safely(forecaster, steps_forward)
-    return pd.DataFrame(
-        estimates, index=[f"Step{i + 1} into the future" for i in range(steps_forward)]
-    )
+        apy = predict_safely(forecaster, steps_forward)
+        current_ids = estimates["id"] == id_
+        estimates.loc[current_ids, prediction_column_names] = apy
+
+    return estimates
 
 
 def predict_safely(forecaster: Pipeline, steps_forward: int) -> list:

@@ -13,9 +13,9 @@
     "skill/valory/abstract_abci/0.1.0": "bafybeiagrbn76jal52v2egtuwelcam3e2huzc6pwjtux2dh5hktxn7em3y",
     "connection/valory/p2p_libp2p_client/0.1.0": "bafybeihf35zfr35qsvfte4vbi7njvuzfx4httysw7owmlux53gvxh2or54",
     "skill/valory/abstract_round_abci/0.1.0": "bafybeicwhcpuov2bvfwvzxdvmy6fhmijdhqi3uthee3bv4cfe7wm5fsbjy",
-    "skill/valory/apy_estimation_abci/0.1.0": "bafybeieqzekji2vwmro7pdqibcfe37porr55an2rjlz4x2rnjmbccneafu",
+    "skill/valory/apy_estimation_abci/0.1.0": "bafybeidzqjl6kbawjuh26gk7glcnhqifhqxs3rrli6i47r627en4dnhy5m",
     "skill/valory/registration_abci/0.1.0": "bafybeievtpfxmzrdueqgisebeqkefukvfhzhiczvmdnp4rerwup4v6karm",
-    "skill/valory/apy_estimation_chained_abci/0.1.0": "bafybeidbie44laptqjzikpt2zengsnozc6psavwu3553wmu42hdti4eeii",
-    "agent/valory/apy_estimation/0.1.0": "bafybeifrdypiiabayjdwt63exjoa6ahrsq2suptphju4jmuinwl6kpnnl4",
-    "service/valory/apy_estimation/0.1.0": "bafybeibsrbfwagayxfgyredrkzatokeqq4ydirz7yydx4xry26snvsunxm"
+    "skill/valory/apy_estimation_chained_abci/0.1.0": "bafybeifkoegkmhzqw2456bkfufztyjr7wxzosunqujhil2dvhnel6y42om",
+    "agent/valory/apy_estimation/0.1.0": "bafybeidxc6uc6mpdtq5mfsvrl36bmgmds6kjxn7m452nu3nopikkblt5y4",
+    "service/valory/apy_estimation/0.1.0": "bafybeicgmidc56sm36omqp3ldo6662qdbdep3deb6xnx52qzl2u4s5nsq4"
 }

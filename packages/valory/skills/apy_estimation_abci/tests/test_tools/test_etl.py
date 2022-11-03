@@ -101,6 +101,7 @@ class TestProcessing:
         invalid_types: Dict[str, Union[int, str, Dict[str, str]]] = {
             key: 10 for key in HIST_DTYPES.keys()
         }
+        invalid_types["dex"] = transformed_history.iloc[0]["dex"]
         with pytest.raises(TypeError):
             transform_hist_data([invalid_types])  # type: ignore
 

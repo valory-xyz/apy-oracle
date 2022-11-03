@@ -103,6 +103,7 @@ from packages.valory.skills.apy_estimation_abci.constants import (
     HISTORICAL_DATA_PATH_TEMPLATE,
     LATEST_OBSERVATIONS_PATH_TEMPLATE,
     PERIOD_SPECIFIER_TEMPLATE,
+    TRANSFORMED_HISTORICAL_DATA_PATH_TEMPLATE,
     Y_SPLIT_TEMPLATE,
 )
 from packages.valory.skills.apy_estimation_abci.io_.store import (
@@ -1444,6 +1445,9 @@ class TestTransformBehaviour(APYEstimationFSMBehaviourBaseCase):
         self._fast_forward(tmp_path)
         self.behaviour.context.task_manager.start()
         monkeypatch.setattr(AsyncResult, "ready", lambda *_: False)
+        cast(
+            TransformBehaviour, self.behaviour.current_behaviour
+        ).params.sleep_time = SLEEP_TIME_TWEAK
 
         with caplog.at_level(
             logging.DEBUG,
@@ -1457,6 +1461,15 @@ class TestTransformBehaviour(APYEstimationFSMBehaviourBaseCase):
             "[test_agent_name] The transform task is not finished yet." in caplog.text
         )
 
+        time.sleep(SLEEP_TIME_TWEAK + 0.01)
+        self.behaviour.act_wrapper()
+
+        assert (
+            cast(
+                APYEstimationBaseBehaviour, self.behaviour.current_behaviour
+            ).behaviour_id
+            == self.behaviour_class.behaviour_id
+        )
         self.end_round()
 
     @pytest.mark.parametrize("ipfs_succeed", (True, False))
@@ -1528,7 +1541,13 @@ class TestPreprocessBehaviour(APYEstimationFSMBehaviourBaseCase):
         self.fast_forward_to_behaviour(
             self.behaviour,
             self.behaviour_class.behaviour_id,
-            SynchronizedData(AbciAppDB(setup_data=dict(most_voted_transform=["test"]))),
+            SynchronizedData(
+                AbciAppDB(
+                    setup_data=dict(
+                        most_voted_transform=["test"], latest_transformation_period=[0]
+                    )
+                )
+            ),
         )
         behaviour = cast(PreprocessBehaviour, self.behaviour.current_behaviour)
         assert behaviour.behaviour_id == self.behaviour_class.behaviour_id
@@ -2628,34 +2647,64 @@ class TestEstimateBehaviour(APYEstimationFSMBehaviourBaseCase):
     behaviour_class = EstimateBehaviour
     next_behaviour_class = FreshModelResetBehaviour
 
-    def _fast_forward(self, tmp_path: PosixPath, ipfs_succeed: bool = True) -> None:
+    def _fast_forward(
+        self,
+        tmp_path: PosixPath,
+        transformed_historical_data_no_datetime_conversion: pd.DataFrame,
+        ipfs_succeed: bool = True,
+    ) -> None:
         """Setup `TestTransformBehaviour`."""
         # Set data directory to a temporary path for tests.
         self.behaviour.context._agent_context._data_dir = tmp_path  # type: ignore
 
-        # Send dummy forecasters to IPFS and get the hash.
-        if ipfs_succeed:
-            hash_ = cast(BaseBehaviour, self.behaviour.current_behaviour).send_to_ipfs(
-                os.path.join(
+        # Create a dictionary with all the dummy data to send to IPFS.
+        data_to_send = {
+            "models": {
+                "filepath": os.path.join(
                     tmp_path,
                     FULLY_TRAINED_FORECASTERS_PATH,
                     PERIOD_SPECIFIER_TEMPLATE.substitute(
                         period_count=self.synchronized_data.period_count
                     ),
                 ),
-                {f"pool{i}.joblib": DummyPipeline() for i in range(3)},
-                multiple=True,
-                filetype=ExtendedSupportedFiletype.PM_PIPELINE,
-            )
+                "obj": {f"pool{i}.joblib": DummyPipeline() for i in range(3)},
+                "multiple": True,
+                "filetype": ExtendedSupportedFiletype.PM_PIPELINE,
+            },
+            "transform": {
+                "filepath": os.path.join(
+                    tmp_path,
+                    TRANSFORMED_HISTORICAL_DATA_PATH_TEMPLATE.substitute(
+                        period_count=self.synchronized_data.period_count
+                    ),
+                ),
+                "obj": transformed_historical_data_no_datetime_conversion,
+                "filetype": ExtendedSupportedFiletype.CSV,
+            },
+        }
+
+        # Send dummy data to IPFS and get the hashes.
+        if ipfs_succeed:
+            hashes = {}
+            for item_name, item_args in data_to_send.items():
+                hashes[item_name] = cast(
+                    BaseBehaviour, self.behaviour.current_behaviour
+                ).send_to_ipfs(**item_args)
         else:
-            hash_ = "non_existing"
+            hashes = {
+                item_name: "non_existing" for item_name, _ in data_to_send.items()
+            }
 
         self.fast_forward_to_behaviour(
             self.behaviour,
             self.behaviour_class.behaviour_id,
             SynchronizedData(
                 AbciAppDB(
-                    setup_data=dict(most_voted_models=[hash_]),
+                    setup_data=dict(
+                        most_voted_models=[hashes["models"]],
+                        most_voted_transform=[hashes["transform"]],
+                        latest_transformation_period=[0],
+                    ),
                 )
             ),
         )
@@ -2673,10 +2722,13 @@ class TestEstimateBehaviour(APYEstimationFSMBehaviourBaseCase):
         monkeypatch: MonkeyPatch,
         tmp_path: PosixPath,
         no_action: Callable[[Any], None],
+        transformed_historical_data_no_datetime_conversion: pd.DataFrame,
         ipfs_succeed: bool,
     ) -> None:
         """Run test for `EstimateBehaviour`'s setup method."""
-        self._fast_forward(tmp_path, ipfs_succeed)
+        self._fast_forward(
+            tmp_path, transformed_historical_data_no_datetime_conversion, ipfs_succeed
+        )
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 0)
         monkeypatch.setattr(TaskManager, "get_task_result", no_action)
 
@@ -2695,9 +2747,10 @@ class TestEstimateBehaviour(APYEstimationFSMBehaviourBaseCase):
         self,
         monkeypatch: MonkeyPatch,
         tmp_path: PosixPath,
+        transformed_historical_data_no_datetime_conversion: pd.DataFrame,
     ) -> None:
         """Run test for behaviour when task result is not ready."""
-        self._fast_forward(tmp_path)
+        self._fast_forward(tmp_path, transformed_historical_data_no_datetime_conversion)
 
         self.behaviour.context.task_manager.start()
 
@@ -2722,10 +2775,13 @@ class TestEstimateBehaviour(APYEstimationFSMBehaviourBaseCase):
         self,
         monkeypatch: MonkeyPatch,
         tmp_path: PosixPath,
+        transformed_historical_data_no_datetime_conversion: pd.DataFrame,
         ipfs_succeed: bool,
     ) -> None:
         """Run test for `EstimateBehaviour`."""
-        self._fast_forward(tmp_path, ipfs_succeed)
+        self._fast_forward(
+            tmp_path, transformed_historical_data_no_datetime_conversion, ipfs_succeed
+        )
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 0)
         monkeypatch.setattr(
             TaskManager, "get_task_result", lambda *_: DummyAsyncResult(pd.DataFrame())
