@@ -1298,7 +1298,7 @@ class UpdateForecasterBehaviour(APYEstimationBaseBehaviour):
         """Initialize Behaviour."""
         super().__init__(**kwargs)
         self._async_result: Optional[AsyncResult] = None
-        self._y: Optional[PoolIdToTrainDataType] = None
+        self._y: Optional[pd.DataFrame] = None
         self._forecasters: Optional[PoolIdToForecasterType] = None
         self._models_hash: Optional[str] = None
 

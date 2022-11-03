@@ -342,25 +342,17 @@ class TestForecastingWithEstimator:
 
         mismatch = "test" if id_mismatch else ""
         pools_to_dummy_pipelines = {
-            pool_id + mismatch: deepcopy(dummy_pipeline)
+            "".join((pool_id, ".joblib", mismatch)): deepcopy(dummy_pipeline)
             for pool_id in prepare_batch_task_result["id"].values
         }
 
-        if mismatch:
-            update_forecaster_per_pool(
-                prepare_batch_task_result, pools_to_dummy_pipelines
-            )
-            assert not any(
-                pipeline.updated for pipeline in pools_to_dummy_pipelines.values()
-            )
+        update_forecaster_per_pool(prepare_batch_task_result, pools_to_dummy_pipelines)
+        updated = (pipeline.updated for pipeline in pools_to_dummy_pipelines.values())
 
+        if mismatch:
+            assert not any(updated)
         else:
-            update_forecaster_per_pool(
-                prepare_batch_task_result, pools_to_dummy_pipelines
-            )
-            assert all(
-                pipeline.updated for pipeline in pools_to_dummy_pipelines.values()
-            )
+            assert all(updated)
 
     @pytest.mark.parametrize("steps_forward", (0, 1, 5))
     def test_estimate_apy_per_pool(
