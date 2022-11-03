@@ -305,7 +305,7 @@ def update_forecaster_per_pool(
     :param forecasters: the forecasters to update.
     """
     for id_ in forecasters.keys():
-        apy = y.loc[y["id"] == id_.replace(".joblib", ".csv"), "APY"]
+        apy = y.loc[y["id"] == id_.replace(".joblib", ""), "APY"]
         forecasters[id_].update(apy)
 
 
