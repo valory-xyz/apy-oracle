@@ -85,6 +85,7 @@ from packages.valory.skills.apy_estimation_abci.models import (
     DEXSubgraph,
     SharedState,
     SubgraphsMixin,
+    DAY_IN_UNIX,
 )
 from packages.valory.skills.apy_estimation_abci.payloads import (
     BatchPreparationPayload,
@@ -238,6 +239,8 @@ class FetchBehaviour(
         n_fetched = 0
         call_failed = False
         initialized = False
+        # whether we need to fetch a block 24h in the past in order to calculate the APY value for the current timestamp
+        apy_shift = False
 
         @property
         def can_continue(self) -> bool:
@@ -306,6 +309,21 @@ class FetchBehaviour(
         return any(
             subgraph.is_retries_exceeded() for subgraph in self.utilized_subgraphs
         )
+
+    @property
+    def is_apy_shift_necessary(self) -> bool:
+        """Whether a 24h shift needs to be downloaded in order to calculate the APY for the current timestamp."""
+        return self.params.interval_not_acceptable and self._progress.apy_shift
+
+    @property
+    def full_without_shift(self) -> bool:
+        """Whether we are fetching full historical data which do not require a shift."""
+        return not all((self.batch, self.is_apy_shift_necessary))
+
+    @property
+    def batch_without_shift(self) -> bool:
+        """Whether we are fetching a batch which does not require a shift."""
+        return self.batch and not self.is_apy_shift_necessary
 
     def setup(self) -> None:
         """Set the behaviour up."""
@@ -376,7 +394,10 @@ class FetchBehaviour(
         start = cast(int, self.params.start)
         end = cast(int, self.params.end)
 
-        if self.batch:
+        if self.batch and self.params.interval_not_acceptable:
+            # we need `end` one extra time, for the 24h shift
+            self._progress.timestamps_iterator = iter((end, end))
+        elif self.batch:
             self._progress.timestamps_iterator = iter((end,))
         else:
             self._progress.timestamps_iterator = gen_unix_timestamps(
@@ -389,7 +410,7 @@ class FetchBehaviour(
             if (
                 self.currently_downloaded == 0
                 or self.currently_downloaded == self._target_per_pool
-                or self.batch
+                or self.batch_without_shift
             ):
                 self._progress.current_dex_name = next(
                     cast(Iterator[str], self._progress.dex_names_iterator),
@@ -401,6 +422,12 @@ class FetchBehaviour(
             self._progress.current_timestamp = next(
                 cast(Iterator[int], self._progress.timestamps_iterator),
                 None,
+            )
+            # we need to flip the apy shift flag so that we always store the values and their 24h shifts in pairs
+            # e.g., [data_point_k_24_h_shift, data_point_k, data_point_j_24_h_shift, data_point_j, ...]
+            self._progress.apy_shift = not self._progress.apy_shift
+            self._progress.current_timestamp -= (
+                DAY_IN_UNIX if self.is_apy_shift_necessary else 0
             )
 
         if self.retries_exceeded:
@@ -466,7 +493,7 @@ class FetchBehaviour(
         else:
             query = (
                 latest_block_q()
-                if self.batch
+                if self.batch_without_shift
                 else block_from_timestamp_q(cast(int, self._progress.current_timestamp))
             )
 
@@ -605,6 +632,8 @@ class FetchBehaviour(
 
         # Add extra fields to the pairs.
         for i in range(len(pairs)):  # pylint: disable=C0200
+            # we drop the "24HShift" entry when transforming the data and after calculating the APY
+            pairs[i]["24HShift"] = self.is_apy_shift_necessary
             pairs[i]["forTimestamp"] = str(self._progress.current_timestamp)
             pairs[i]["blockNumber"] = str(block["number"])
             pairs[i]["blockTimestamp"] = str(block["timestamp"])
@@ -613,7 +642,7 @@ class FetchBehaviour(
 
         self._pairs_hist.extend(pairs)
 
-        if not self.batch:
+        if self.full_without_shift:
             self.context.logger.info(
                 f"Fetched {self._unit} {self.currently_downloaded}/{self._target_per_pool} "
                 f"from {self._progress.current_dex_name}."

@@ -24,7 +24,7 @@ from typing import Callable, Dict, List, Optional, Union, cast
 import pandas as pd
 
 
-ResponseItemType = List[Dict[str, Union[str, Dict[str, str]]]]
+ResponseItemType = List[Dict[str, Union[bool, str, Dict[str, str]]]]
 
 UNIX_TIME_START = "1970-01-01"
 # Define a dictionary with the data types for each column of the historical data.
@@ -46,6 +46,7 @@ HIST_DTYPES = {
     "volumeToken0": float,
     "volumeToken1": float,
     "volumeUSD": float,
+    "24HShift": bool,
     "forTimestamp": int,
     "blockNumber": int,
     "blockTimestamp": int,
