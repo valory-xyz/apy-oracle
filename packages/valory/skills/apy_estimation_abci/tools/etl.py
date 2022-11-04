@@ -72,6 +72,7 @@ NEW_STR_COLS = (
 NEW_FLOAT_COLS = ("updatedVolumeUSD", "updatedReserveUSD", "currentChange", "APY")
 
 TOKEN_COL_NAMES = ("token0", "token1")
+DROP_COL_NAMES = TOKEN_COL_NAMES + ("24HShift",)
 
 for new_str_col in NEW_STR_COLS:
     TRANSFORMED_HIST_DTYPES[new_str_col] = str
@@ -79,7 +80,7 @@ for new_str_col in NEW_STR_COLS:
 for new_float_col in NEW_FLOAT_COLS:
     TRANSFORMED_HIST_DTYPES[new_float_col] = float
 
-for old_col in TOKEN_COL_NAMES:
+for old_col in DROP_COL_NAMES:
     del TRANSFORMED_HIST_DTYPES[old_col]
 
 
@@ -160,8 +161,6 @@ def transform_hist_data(
         pairs_hist[f"{token_col}Symbol"] = (
             pairs_hist[token_col].apply(lambda x: x["symbol"]).astype(str)
         )
-    # Drop the original dictionary-like token cols.
-    pairs_hist.drop(columns=list(TOKEN_COL_NAMES), inplace=True)
 
     # Create pair's name.
     pairs_hist["pairName"] = pairs_hist["token0Name"] + " - " + pairs_hist["token1Name"]
@@ -186,6 +185,11 @@ def transform_hist_data(
     if not batch:
         apply_hist_based_calculations(pairs_hist)
 
+    # Drop the columns which are not needed anymore, **after** applying historical based calculations.
+    # Ignore the `KeyError` which may be raised if the "24HShift" column does not exist,
+    # which will be the case if the given interval is 24H.
+    pairs_hist.drop(columns=list(DROP_COL_NAMES), inplace=True, errors="ignore")
+
     # Sort the dictionary.
     pairs_hist.sort_values(
         by=["blockTimestamp", "token0Symbol", "token1Symbol"],
@@ -207,8 +211,13 @@ def prepare_batch(
     """
     # Transform the current batch.
     current_batch = transform_hist_data(current_batch_raw, batch=True)
-    # Append the current batch to the previous batch.
-    batches = pd.concat([previous_batch, current_batch])
+
+    # Append the current batch to the previous batch only if the shift is not contained already.
+    if "24HShift" in current_batch_raw:
+        batches = current_batch
+    else:
+        batches = pd.concat([previous_batch, current_batch])
+
     # Calculate the last APY value per pool, using the batches.
     prepared_batches = []
     for pool_id, pool_batch in batches.groupby("id"):
