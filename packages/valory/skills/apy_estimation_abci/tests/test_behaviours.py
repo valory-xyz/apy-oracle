@@ -719,6 +719,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             self.behaviour, FetchBehaviour.behaviour_id, self.synchronized_data
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
+        behaviour.params.interval = 60 * 60
         behaviour.params.pair_ids = pairs_ids
         # we do this because of https://github.com/valory-xyz/open-autonomy/pull/646
         behaviour._check_given_pairs = mock.MagicMock()  # type: ignore
@@ -785,6 +786,11 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
                 response_kwargs["body"] = json.dumps(res).encode("utf-8")
                 behaviour.act_wrapper()
                 self.mock_http_request(request_kwargs, response_kwargs)
+
+        assert all(
+            int(str(t2["forTimestamp"])) - int(str(t1["forTimestamp"])) == 60 * 60 * 24
+            for t1, t2 in zip(behaviour._pairs_hist[::2], behaviour._pairs_hist[1::2])
+        )
 
         behaviour.act_wrapper()
         self.mock_a2a_transaction()
