@@ -19,7 +19,6 @@
 
 """This module contains the behaviours for the APY estimation skill."""
 import calendar
-import itertools
 import json
 import os
 import re
@@ -389,17 +388,26 @@ class FetchBehaviour(
         start = cast(int, self.params.start)
         end = cast(int, self.params.end)
 
-        if self.batch and self.params.interval_not_acceptable:
-            # we need `end` one extra time, for the 24h shift
-            self._progress.timestamps_iterator = itertools.product(
-                (end,), (True, False)
-            )
-        elif self.batch:
-            self._progress.timestamps_iterator = iter(((end, False),))
+        if self.batch:
+            # the value for this interval does not matter as long as it is valid
+            # we just need it to generate the batch's timestamps
+            valid_interval_in_sec = 1
+            # we need to get only the end timestamp, therefore,
+            # we use end as a start and add the interval to the end value in order to create the end argument
+            unix_gen_params = {
+                "start": end,
+                "interval_in_unix": valid_interval_in_sec,
+                "end": end + valid_interval_in_sec,
+            }
         else:
-            self._progress.timestamps_iterator = gen_unix_timestamps(
-                start, self.params.interval, end, self.shift
-            )
+            unix_gen_params = {
+                "start": start,
+                "interval_in_unix": self.params.interval,
+                "end": end,
+            }
+
+        unix_gen_params["shift"] = self.shift
+        self._progress.timestamps_iterator = gen_unix_timestamps(**unix_gen_params)
 
     def _set_current_progress(self) -> None:
         """Set the progress for the current timestep in the async act."""

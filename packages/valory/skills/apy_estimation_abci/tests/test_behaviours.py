@@ -575,7 +575,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
 
         start = end - n_observations * interval
         if batch and interval_not_acceptable:
-            expected = list(itertools.product((end,), (True, False)))
+            expected = [(end - DAY_IN_UNIX, True), (end, False)]
         elif batch:
             expected = [(end, False)]
         elif interval_not_acceptable:
