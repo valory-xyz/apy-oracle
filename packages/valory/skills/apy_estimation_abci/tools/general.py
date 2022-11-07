@@ -20,7 +20,7 @@
 
 """Tools for the APY skill."""
 
-from typing import Iterator, Optional
+from typing import Iterator, Optional, Tuple
 
 
 DEFAULT_UNIT = "seconds"
@@ -33,13 +33,16 @@ UNITS_TO_UNIX = {
 AVAILABLE_UNITS = frozenset({DEFAULT_UNIT} | set(UNITS_TO_UNIX.keys()))
 
 
-def gen_unix_timestamps(start: int, interval_in_unix: int, end: int) -> Iterator[int]:
+def gen_unix_timestamps(
+    start: int, interval_in_unix: int, end: int, shift: int = 0
+) -> Iterator[Tuple[int, bool]]:
     """Generate the Unix timestamps from start to end with the given interval.
 
     :param start: the start date for the generated timestamps.
     :param interval_in_unix: the interval to use in order to generate the timestamps.
     :param end: the end date for the generated timestamps.
-    :yields: the UNIX timestamps.
+    :param shift: a shift in UNIX, for each timestamp.
+    :yields: a tuple with the UNIX timestamps and a flag indicating if this is a timestamp for a shift.
     """
     if interval_in_unix <= 0:
         raise ValueError(
@@ -47,7 +50,9 @@ def gen_unix_timestamps(start: int, interval_in_unix: int, end: int) -> Iterator
         )
 
     for timestamp in range(start, end, interval_in_unix):
-        yield timestamp
+        if shift > 0:
+            yield timestamp - shift, True
+        yield timestamp, False
 
 
 def sec_to_unit(sec: int) -> str:
