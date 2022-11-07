@@ -157,11 +157,13 @@ class TestProcessing:
 
     @staticmethod
     @pytest.mark.parametrize("invalid", (True, False))
+    @pytest.mark.parametrize("with_shift", (True, False))
     def test_prepare_batch(
         monkeypatch: MonkeyPatch,
         transformed_historical_data_no_datetime_conversion: pd.DataFrame,
         batch: ResponseItemType,
         invalid: bool,
+        with_shift: bool,
     ) -> None:
         """Test `prepare_batch`."""
         previous_batch = transformed_historical_data_no_datetime_conversion.iloc[
@@ -177,14 +179,22 @@ class TestProcessing:
                 ValueError, match="Could not find any previous history in "
             ):
                 prepare_batch(previous_batch, batch)
+            return
+
+        if with_shift:
+            # duplicate all entries so that we
+            batch.extend(batch)
 
         else:
-            prepared_batches = prepare_batch(previous_batch, batch).groupby("id")
-            assert len(prepared_batches) == 2
-            expected_ids = {"0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c", "x3"}
-            assert expected_ids == set(prepared_batches.groups.keys())
-            for id_ in expected_ids:
-                assert len(prepared_batches.get_group(id_).index) == 1
+            for i in range(len(batch)):
+                del batch[i]["24HShift"]
+
+        prepared_batches = prepare_batch(previous_batch, batch).groupby("id")
+        assert len(prepared_batches) == 2
+        expected_ids = {"0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c", "x3"}
+        assert expected_ids == set(prepared_batches.groups.keys())
+        for id_ in expected_ids:
+            assert len(prepared_batches.get_group(id_).index) == 1
 
     @staticmethod
     def test_apply_revert_token_cols_wrapper() -> None:
