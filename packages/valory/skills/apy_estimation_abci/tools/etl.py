@@ -129,12 +129,15 @@ def apply_hist_based_calculations(pairs_hist: pd.DataFrame) -> None:
 
 
 def transform_hist_data(
-    pairs_hist_raw: ResponseItemType, batch: bool = False
+    pairs_hist_raw: ResponseItemType,
+    batch: bool = False,
+    with_shift: bool = True,
 ) -> pd.DataFrame:
     """Transform pairs' history into a dataframe and add extra fields.
 
     :param pairs_hist_raw: the pairs historical data non-transformed.
     :param batch: whether the input is a batch which contains single a data point per pool.
+    :param with_shift: whether the input contains a 24HShift.
     :return: a dataframe with the given historical data, containing extra fields. These are:
          * [token0ID, token0Name, token0Symbol]: split from `token0`.
          * [token1ID, token1Name, token1Symbol]: split from `token1`.
@@ -148,7 +151,10 @@ def transform_hist_data(
          and the entries for which the APY cannot be calculated are being dropped.
     """
     # Convert history to a dataframe.
-    pairs_hist = pd.DataFrame(pairs_hist_raw).astype(HIST_DTYPES)
+    dtypes = HIST_DTYPES.copy()
+    if not with_shift:
+        del dtypes["24HShift"]
+    pairs_hist = pd.DataFrame(pairs_hist_raw).astype(dtypes)
 
     # Split the dictionary-like token cols.
     for token_col in TOKEN_COL_NAMES:
@@ -209,11 +215,15 @@ def prepare_batch(
     :param current_batch_raw: the currently fetched data, non-transformed.
     :return: a dictionary with the pool ids, mapped to their current data point of the timeseries.
     """
+    with_shift = all("24HShift" in batch for batch in current_batch_raw)
+
     # Transform the current batch.
-    current_batch = transform_hist_data(current_batch_raw, batch=True)
+    current_batch = transform_hist_data(
+        current_batch_raw, batch=True, with_shift=with_shift
+    )
 
     # Append the current batch to the previous batch only if the shift is not contained already.
-    if "24HShift" in current_batch_raw:
+    if with_shift:
         batches = current_batch
     else:
         batches = pd.concat([previous_batch, current_batch])
