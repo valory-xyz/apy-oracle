@@ -210,7 +210,7 @@ def uni_specs_pairs_extended(uni_specs: SpecsType) -> SpecsType:
     return _response_key_extension(uni_specs, ":pairs")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def eth_price_usd_q() -> str:
     """Query string for fetching ethereum price in USD."""
     return (
@@ -429,13 +429,13 @@ def _pairs_q(dex_id_name: str) -> str:
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def spooky_pairs_q() -> str:
     """Query to get data for a SpookySwap pool at a specific block."""
     return _pairs_q("spooky_id")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def uni_pairs_q() -> str:
     """Query to get data for a Uniswap pool at a specific block."""
     return _pairs_q("uni_id")
@@ -481,7 +481,7 @@ def pairs_ids() -> Dict[str, List[str]]:
     }
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def pool_fields() -> Tuple[str, ...]:
     """The fields of a pool."""
     return (
@@ -798,7 +798,7 @@ def transformed_historical_data(
 @pytest.fixture
 def batch() -> ResponseItemType:
     """Create a dummy batch of data."""
-    pool1_batch: Dict[str, Union[str, Dict[str, str]]] = {
+    pool1_batch: Dict[str, Union[bool, str, Dict[str, str]]] = {
         "createdAtBlockNumber": "1",
         "createdAtTimestamp": "1",
         "id": "0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c",
@@ -816,6 +816,7 @@ def batch() -> ResponseItemType:
         "volumeToken0": "1.2",
         "volumeToken1": "1.2",
         "volumeUSD": "1.2",
+        "24HShift": True,
         "forTimestamp": "1",
         "blockNumber": "1",
         "blockTimestamp": "100000000",

@@ -22,6 +22,7 @@
 # pylint: skip-file
 
 import binascii
+import itertools
 import json
 import logging
 import os
@@ -31,6 +32,7 @@ from contextlib import suppress
 from datetime import datetime
 from enum import Enum
 from itertools import product
+from math import ceil
 from multiprocessing.pool import AsyncResult
 from pathlib import Path, PosixPath
 from typing import (
@@ -119,10 +121,14 @@ from packages.valory.skills.apy_estimation_abci.ml.optimization import (
 from packages.valory.skills.apy_estimation_abci.ml.preprocessing import (
     prepare_pair_data,
 )
-from packages.valory.skills.apy_estimation_abci.models import SubgraphsMixin
+from packages.valory.skills.apy_estimation_abci.models import (
+    DAY_IN_UNIX,
+    SubgraphsMixin,
+)
 from packages.valory.skills.apy_estimation_abci.rounds import Event, SynchronizedData
 from packages.valory.skills.apy_estimation_abci.tests.conftest import DummyPipeline
 from packages.valory.skills.apy_estimation_abci.tools.etl import ResponseItemType
+from packages.valory.skills.apy_estimation_abci.tools.general import UNITS_TO_UNIX
 from packages.valory.skills.apy_estimation_abci.tools.queries import SAFE_BLOCK_TIME
 
 
@@ -210,6 +216,7 @@ class APYEstimationFSMBehaviourBaseCase(FSMBehaviourBaseCase):
         self.behaviour.current_behaviour.params.n_observations = N_OBSERVATIONS
         self.behaviour.current_behaviour.params.interval = HISTORY_INTERVAL
         self.behaviour.current_behaviour.params.end = HISTORY_END
+        self.behaviour.current_behaviour.params.interval_not_acceptable = False
         self.synchronized_data = SynchronizedData(
             AbciAppDB(
                 setup_data={"full_training": [False]},
@@ -391,7 +398,6 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         assert behaviour.total_downloaded == len(pairs_hist)
         self.end_round()
 
-    #
     @given(st.lists(st.booleans(), max_size=50))
     @settings(deadline=None, database=database.InMemoryExampleDatabase())
     def test_retries_exceeded(
@@ -415,6 +421,25 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         expected = any(is_exceeded_per_subgraph)
         assert behaviour.retries_exceeded == expected
         behaviour._utilized_subgraphs = {}
+        self.end_round()
+
+    @pytest.mark.parametrize(
+        "interval_not_acceptable, expected", ((True, DAY_IN_UNIX), (False, 0))
+    )
+    def test_shift(
+        self,
+        interval_not_acceptable: bool,
+        expected: int,
+    ) -> None:
+        """Test `retries_exceeded`."""
+        self.fast_forward_to_behaviour(
+            self.behaviour,
+            self.behaviour_class.behaviour_id,
+            self.synchronized_data,
+        )
+        behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
+        behaviour.params.interval_not_acceptable = interval_not_acceptable
+        assert behaviour.shift == expected
         self.end_round()
 
     @pytest.mark.parametrize("batch_flag", (True, False))
@@ -509,6 +534,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         self.end_round()
 
     @pytest.mark.parametrize("batch", (True, False))
+    @pytest.mark.parametrize("interval_not_acceptable", (True, False))
     @given(
         # set max data points to 1000
         st.integers(min_value=0, max_value=1000),
@@ -524,6 +550,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
     def test_reset_timestamps_iterator(
         self,
         batch: bool,
+        interval_not_acceptable: bool,
         n_observations: int,
         interval: int,
         end: int,
@@ -542,11 +569,25 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         behaviour.params.n_observations = n_observations
         behaviour.params.interval = interval
         behaviour.params.end = end
-        #
+        behaviour.params.interval_not_acceptable = interval_not_acceptable
+
         behaviour._reset_timestamps_iterator()
-        #
+
         start = end - n_observations * interval
-        expected = [end] if batch else [i for i in range(start, end, interval)]
+        if batch and interval_not_acceptable:
+            expected = [(end - DAY_IN_UNIX, True), (end, False)]
+        elif batch:
+            expected = [(end, False)]
+        elif interval_not_acceptable:
+            timestamps = tuple(range(start, end, interval))
+            expected = [
+                (timestamp, flag)
+                for value in timestamps
+                for timestamp, flag in ((value - behaviour.shift, True), (value, False))
+            ]
+        else:
+            timestamps_iterator = range(start, end, interval)
+            expected = list(itertools.product(timestamps_iterator, (False,)))
         assert behaviour._progress.timestamps_iterator is not None
         assert list(behaviour._progress.timestamps_iterator) == expected
         self.end_round()
@@ -554,24 +595,28 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
     @given(
         st.booleans(),
         st.booleans(),
+        st.booleans(),
+        st.booleans(),
         st.integers(max_value=50),
         st.integers(),
         st.booleans(),
         st.text(min_size=1),
-        st.integers(),
+        st.tuples(st.integers(), st.booleans()),
         st.lists(st.text(min_size=1)),
     )
     @settings(deadline=None, database=database.InMemoryExampleDatabase())
     def test_set_current_progress(
         self,
         pairs_ids: Dict[str, List[str]],
+        apy_shift: bool,
+        interval_not_acceptable: bool,
         retries_exceeded: bool,
         call_failed: bool,
         currently_downloaded: int,
         target_per_pool: int,
         batch: bool,
         expected_dex_name: str,
-        expected_timestamp: int,
+        expected_timestamp: Tuple[int, bool],
         pairs_hist: ResponseItemType,
     ) -> None:
         """Test `_set_current_progress`."""
@@ -581,6 +626,8 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             self.synchronized_data,
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
+        behaviour._progress.apy_shift = apy_shift
+        behaviour.params.interval_not_acceptable = interval_not_acceptable
         behaviour._utilized_subgraphs["test"] = ApiSpecs(
             name="",
             skill_context=mock.MagicMock(),
@@ -590,14 +637,14 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         )
         assert behaviour._utilized_subgraphs["test"] is not None
         behaviour.batch = batch
-        #
+
         # start of setting the `currently_downloaded`
         # we cannot simply mock because of https://github.com/valory-xyz/open-autonomy/pull/646
         behaviour.params.pair_ids = pairs_ids
         behaviour._progress.current_dex_name = "uniswap_subgraph"
         behaviour._pairs_hist = [{"test": "test"} for _ in range(currently_downloaded)]
         # end of setting the `currently_downloaded`
-        #
+
         behaviour._target_per_pool = target_per_pool
         behaviour._pairs_hist = pairs_hist
         behaviour._progress.call_failed = call_failed
@@ -611,7 +658,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         behaviour._reset_timestamps_iterator = mock.MagicMock()  # type: ignore
         # we do this because of https://github.com/valory-xyz/open-autonomy/pull/646
         behaviour.clean_up = mock.MagicMock()  # type: ignore
-        #
+
         if retries_exceeded:
             # exceed the retries before calling the method
             for _ in range(behaviour._utilized_subgraphs["test"]._retries + 1):
@@ -622,27 +669,32 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             assert behaviour._progress.current_timestamp is None
             assert behaviour._progress.current_dex_name is None
             behaviour.clean_up.assert_called_once()
-        #
+
         elif not call_failed:
             # call the tested method
             behaviour._set_current_progress()
-            #
+
             if (
                 currently_downloaded == 0
                 or currently_downloaded == target_per_pool
                 or batch
-            ):
+            ) and not apy_shift:
                 # assert its results
                 assert behaviour._progress.current_dex_name == expected_dex_name
                 behaviour._reset_timestamps_iterator.assert_called_once()
-                assert behaviour._progress.n_fetched == len(pairs_hist)
-            #
-            assert behaviour._progress.current_timestamp == expected_timestamp
-        #
+                assert (
+                    behaviour._progress.n_fetched == ceil(len(pairs_hist) / 2)
+                    if interval_not_acceptable
+                    else 1
+                )
+
+            assert behaviour._progress.current_timestamp == expected_timestamp[0]
+            assert behaviour._progress.apy_shift == expected_timestamp[1]
+
         else:
             # call the tested method
             behaviour._set_current_progress()
-        #
+
         assert behaviour._progress.initialized
         self.end_round()
 
@@ -703,6 +755,9 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
 
         self.end_round()
 
+    @pytest.mark.parametrize(
+        "interval, interval_not_acceptable", ((UNITS_TO_UNIX["hour"], True),)
+    )
     def test_fetch_behaviour(
         self,
         block_from_timestamp_q: str,
@@ -713,20 +768,26 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         uni_pairs_q: str,
         pairs_ids: Dict[str, List[str]],
         pool_fields: Tuple[str, ...],
+        interval_not_acceptable: bool,
+        interval: int,
     ) -> None:
         """Run tests."""
         self.fast_forward_to_behaviour(
             self.behaviour, FetchBehaviour.behaviour_id, self.synchronized_data
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
+        behaviour.params.interval = interval
         behaviour.params.pair_ids = pairs_ids
+        behaviour.params.interval_not_acceptable = interval_not_acceptable
         # we do this because of https://github.com/valory-xyz/open-autonomy/pull/646
         behaviour._check_given_pairs = mock.MagicMock()  # type: ignore
         behaviour._pairs_exist = True
+        n_iterations = N_OBSERVATIONS
+        n_iterations *= 2 if interval_not_acceptable else 1
 
         # for every subgraph and every iteration that will be performed, we test fetching a single batch
         for subgraph_name in ("uniswap_subgraph", "spooky_subgraph"):
-            for _ in range(N_OBSERVATIONS):
+            for _ in range(n_iterations):
                 behaviour.act_wrapper()
                 subgraph = getattr(behaviour.context, subgraph_name)
                 request_kwargs: Dict[str, Union[str, bytes]] = dict(
@@ -785,6 +846,11 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
                 response_kwargs["body"] = json.dumps(res).encode("utf-8")
                 behaviour.act_wrapper()
                 self.mock_http_request(request_kwargs, response_kwargs)
+
+        assert all(
+            int(str(t2["forTimestamp"])) - int(str(t1["forTimestamp"])) == DAY_IN_UNIX
+            for t1, t2 in zip(behaviour._pairs_hist[::2], behaviour._pairs_hist[1::2])
+        )
 
         behaviour.act_wrapper()
         self.mock_a2a_transaction()
@@ -862,7 +928,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         behaviour._progress.initialized = True
         behaviour._progress.current_dex_name = "uniswap_subgraph"
         expected_timestamp = 1
-        behaviour._progress.timestamps_iterator = iter((expected_timestamp,))
+        behaviour._progress.timestamps_iterator = iter(((expected_timestamp, False),))
 
         request_kwargs: Dict[str, Union[str, bytes]] = dict(
             method="POST",
@@ -993,7 +1059,9 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         behaviour._progress.current_dex_name = "uniswap_subgraph"
         expected_timestamp = 1
         behaviour._progress.timestamps_iterator = (
-            iter((expected_timestamp,)) if expected_timestamp is not None else iter(())
+            iter(((expected_timestamp, False),))
+            if expected_timestamp is not None
+            else iter(())
         )
 
         request_kwargs: Dict[str, Union[str, bytes]] = dict(
@@ -1182,7 +1250,9 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         behaviour._progress.current_dex_name = "uniswap_subgraph"
         expected_timestamp = 1
         behaviour._progress.timestamps_iterator = (
-            iter((expected_timestamp,)) if expected_timestamp is not None else iter(())
+            iter(((expected_timestamp, False),))
+            if expected_timestamp is not None
+            else iter(())
         )
 
         request_kwargs: Dict[str, Union[str, bytes]] = dict(

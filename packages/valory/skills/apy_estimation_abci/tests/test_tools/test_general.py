@@ -19,13 +19,11 @@
 
 """Test the `tools/general.py` module of the skill."""
 
-# pylint: skip-file
 
 import os
 from pathlib import PosixPath
 
 import pytest
-from _pytest.monkeypatch import MonkeyPatch
 
 from packages.valory.skills.abstract_round_abci.io_.paths import create_pathdirs
 from packages.valory.skills.apy_estimation_abci.tools.general import (
@@ -43,24 +41,48 @@ class TestGeneral:
 
     @staticmethod
     @pytest.mark.parametrize(
-        "start, interval, end",
-        ((0, 0, 0), (1, 0, 0), (1, 10, 200), (1, 10, 1), (1, 10, 10), (1, 10, -3)),
+        "start, interval, end, shift",
+        (
+            (0, 0, 0, 0),
+            (1, 0, 0, 0),
+            (1, 10, 200, 0),
+            (1, 10, 1, 0),
+            (1, 10, 10, 0),
+            (1, 10, -3, 0),
+            (1, 10, 200, 5),
+            (1, 10, 1, 5),
+            (1, 10, 10, 5),
+        ),
     )
     def test_gen_unix_timestamps(
-        monkeypatch: MonkeyPatch, start: int, interval: int, end: int
+        start: int, interval: int, end: int, shift: int
     ) -> None:
         """Test get UNIX timestamps."""
-        gen = gen_unix_timestamps(start, interval, end)
+        gen = gen_unix_timestamps(start, interval, end, shift)
         if interval <= 0:
             with pytest.raises(
                 ValueError,
                 match=f"Interval cannot be less than 1. {interval} was given.",
             ):
                 next(gen)
-        else:
-            expected = list(range(start, end, interval))
+            return
+
+        if shift <= 0:
+            expected = list(
+                (timestamp, False) for timestamp in range(start, end, interval)
+            )
             actual = list(gen)
             assert expected == actual
+            return
+
+        timestamps = tuple(range(start, end, interval))
+        expected = [
+            (timestamp, flag)
+            for value in timestamps
+            for timestamp, flag in ((value - shift, True), (value, False))
+        ]
+        actual = list(gen)
+        assert expected == actual
 
     @staticmethod
     def test_sec_to_unit() -> None:

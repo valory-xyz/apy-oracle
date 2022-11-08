@@ -24,7 +24,7 @@ from typing import Callable, Dict, List, Optional, Union, cast
 import pandas as pd
 
 
-ResponseItemType = List[Dict[str, Union[str, Dict[str, str]]]]
+ResponseItemType = List[Dict[str, Union[bool, str, Dict[str, str]]]]
 
 UNIX_TIME_START = "1970-01-01"
 # Define a dictionary with the data types for each column of the historical data.
@@ -46,6 +46,7 @@ HIST_DTYPES = {
     "volumeToken0": float,
     "volumeToken1": float,
     "volumeUSD": float,
+    "24HShift": bool,
     "forTimestamp": int,
     "blockNumber": int,
     "blockTimestamp": int,
@@ -71,6 +72,7 @@ NEW_STR_COLS = (
 NEW_FLOAT_COLS = ("updatedVolumeUSD", "updatedReserveUSD", "currentChange", "APY")
 
 TOKEN_COL_NAMES = ("token0", "token1")
+DROP_COL_NAMES = TOKEN_COL_NAMES + ("24HShift",)
 
 for new_str_col in NEW_STR_COLS:
     TRANSFORMED_HIST_DTYPES[new_str_col] = str
@@ -78,7 +80,7 @@ for new_str_col in NEW_STR_COLS:
 for new_float_col in NEW_FLOAT_COLS:
     TRANSFORMED_HIST_DTYPES[new_float_col] = float
 
-for old_col in TOKEN_COL_NAMES:
+for old_col in DROP_COL_NAMES:
     del TRANSFORMED_HIST_DTYPES[old_col]
 
 
@@ -127,12 +129,15 @@ def apply_hist_based_calculations(pairs_hist: pd.DataFrame) -> None:
 
 
 def transform_hist_data(
-    pairs_hist_raw: ResponseItemType, batch: bool = False
+    pairs_hist_raw: ResponseItemType,
+    batch: bool = False,
+    with_shift: bool = True,
 ) -> pd.DataFrame:
     """Transform pairs' history into a dataframe and add extra fields.
 
     :param pairs_hist_raw: the pairs historical data non-transformed.
     :param batch: whether the input is a batch which contains single a data point per pool.
+    :param with_shift: whether the input contains a 24HShift.
     :return: a dataframe with the given historical data, containing extra fields. These are:
          * [token0ID, token0Name, token0Symbol]: split from `token0`.
          * [token1ID, token1Name, token1Symbol]: split from `token1`.
@@ -146,7 +151,10 @@ def transform_hist_data(
          and the entries for which the APY cannot be calculated are being dropped.
     """
     # Convert history to a dataframe.
-    pairs_hist = pd.DataFrame(pairs_hist_raw).astype(HIST_DTYPES)
+    dtypes = HIST_DTYPES.copy()
+    if not with_shift:
+        del dtypes["24HShift"]
+    pairs_hist = pd.DataFrame(pairs_hist_raw).astype(dtypes)
 
     # Split the dictionary-like token cols.
     for token_col in TOKEN_COL_NAMES:
@@ -159,8 +167,6 @@ def transform_hist_data(
         pairs_hist[f"{token_col}Symbol"] = (
             pairs_hist[token_col].apply(lambda x: x["symbol"]).astype(str)
         )
-    # Drop the original dictionary-like token cols.
-    pairs_hist.drop(columns=list(TOKEN_COL_NAMES), inplace=True)
 
     # Create pair's name.
     pairs_hist["pairName"] = pairs_hist["token0Name"] + " - " + pairs_hist["token1Name"]
@@ -185,6 +191,11 @@ def transform_hist_data(
     if not batch:
         apply_hist_based_calculations(pairs_hist)
 
+    # Drop the columns which are not needed anymore, **after** applying historical based calculations.
+    # Ignore the `KeyError` which may be raised if the "24HShift" column does not exist,
+    # which will be the case if the given interval is 24H.
+    pairs_hist.drop(columns=list(DROP_COL_NAMES), inplace=True, errors="ignore")
+
     # Sort the dictionary.
     pairs_hist.sort_values(
         by=["blockTimestamp", "token0Symbol", "token1Symbol"],
@@ -204,10 +215,19 @@ def prepare_batch(
     :param current_batch_raw: the currently fetched data, non-transformed.
     :return: a dictionary with the pool ids, mapped to their current data point of the timeseries.
     """
+    with_shift = all("24HShift" in batch for batch in current_batch_raw)
+
     # Transform the current batch.
-    current_batch = transform_hist_data(current_batch_raw, batch=True)
-    # Append the current batch to the previous batch.
-    batches = pd.concat([previous_batch, current_batch])
+    current_batch = transform_hist_data(
+        current_batch_raw, batch=True, with_shift=with_shift
+    )
+
+    # Append the current batch to the previous batch only if the shift is not contained already.
+    if with_shift:
+        batches = current_batch
+    else:
+        batches = pd.concat([previous_batch, current_batch])
+
     # Calculate the last APY value per pool, using the batches.
     prepared_batches = []
     for pool_id, pool_batch in batches.groupby("id"):

@@ -84,7 +84,7 @@ class BaseTestABCIAPYEstimationSkillNormalExecution(BaseTestEnd2EndExecution):
             "value": 1,
         },
     ]
-    package_registry_src_rel = Path(__file__).parent.parent.parent.parent.parent
+    package_registry_src_rel = Path(__file__).parents[4]
 
 
 @pytest.mark.parametrize("nb_nodes", (1,))

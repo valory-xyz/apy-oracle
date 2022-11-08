@@ -8,7 +8,7 @@ fingerprint:
   README.md: bafybeihxalbstbm7kufnxftkn6mrvculqxyibsk4tzhrq5jbdh5ihejteq
   __init__.py: bafybeieqcegj4n54zhu376tlt6ydyavz5la7o465cofm5zj4vj4urs65oe
   tests/__ini__.py: bafybeihv3hw6rgpini4hovtge7oru3pzxv2gyzd6pnh6ypwdtmkradkgim
-  tests/test_apy_estimation.py: bafybeih6htcccg32eaobm5x2y6whg5vscrgk4lcb3eqxejdzktvoptwc3q
+  tests/test_apy_estimation.py: bafybeiaopqurxrtawwvzfk34ms67sgvxsp4k2jt4nkpiwboyoo27jxwcu4
 fingerprint_ignore_patterns: []
 connections:
 - valory/abci:0.1.0:bafybeiav3mywaeik35huowg6vjekllqiaeorxlc6eesc6aftlb7msh6mdu
@@ -28,8 +28,8 @@ protocols:
 skills:
 - valory/abstract_abci:0.1.0:bafybeidsvczp2wdu63eic7ytv2tdioscr2flaqfys755j5775xqotxqd54
 - valory/abstract_round_abci:0.1.0:bafybeihx3owgbdtbu4zr6v5gaqk6ur6er4wynameikbq6ndi2kfk5vovnu
-- valory/apy_estimation_abci:0.1.0:bafybeib4pkxt7q5pk7yduwe3mpswgthwus7djp4cs3osw22osbsztpv7s4
-- valory/apy_estimation_chained_abci:0.1.0:bafybeict5ulstvaojxctzfax3wbzswyhbp7qisauvds3veun52vzmywbka
+- valory/apy_estimation_abci:0.1.0:bafybeihia3tgujecn4ow7xrlmeytnc2mcl36fneyseuos4yx6cofad35ai
+- valory/apy_estimation_chained_abci:0.1.0:bafybeihg2bzdpkalsfffqwehfjkwy4hpw272vfyjs46h5c63jlx73nuaxe
 - valory/registration_abci:0.1.0:bafybeiee4hlizshxa55a2fego65glek6dkkafamuo4wxwnpp2prqlhximi
 default_ledger: ethereum
 required_ledgers:
@@ -97,7 +97,7 @@ models:
       estimation:
         steps_forward: ${SKILL_APY_ESTIMATION_ABCI_MODELS_PARAMS_ARGS_ESTIMATION_STEPS_FORWARD:int:1}
       history_end: ${SKILL_APY_ESTIMATION_ABCI_MODELS_PARAMS_ARGS_HISTORY_END:int:1654136875}
-      history_interval_in_unix: ${SKILL_APY_ESTIMATION_ABCI_MODELS_PARAMS_ARGS_HISTORY_INTERVAL_IN_UNIX:int:86400}
+      history_interval_in_unix: ${SKILL_APY_ESTIMATION_ABCI_MODELS_PARAMS_ARGS_HISTORY_INTERVAL_IN_UNIX:int:3600}
       n_observations: ${SKILL_APY_ESTIMATION_ABCI_MODELS_PARAMS_ARGS_N_OBSERVATIONS:int:10}
       optimizer:
         n_trials: ${SKILL_APY_ESTIMATION_ABCI_MODELS_PARAMS_ARGS_OPTIMIZER_N_TRIALS:int:10}

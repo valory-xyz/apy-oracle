@@ -24,6 +24,7 @@ import os
 import re
 from abc import ABC
 from dataclasses import dataclass
+from math import ceil
 from multiprocessing.pool import AsyncResult
 from typing import (
     Any,
@@ -82,6 +83,7 @@ from packages.valory.skills.apy_estimation_abci.ml.preprocessing import (
 )
 from packages.valory.skills.apy_estimation_abci.models import (
     APYParams,
+    DAY_IN_UNIX,
     DEXSubgraph,
     SharedState,
     SubgraphsMixin,
@@ -231,13 +233,15 @@ class FetchBehaviour(
     class Progress:
         """A class to keep track of the download progress."""
 
-        timestamps_iterator: Optional[Iterator[int]] = None
+        timestamps_iterator: Optional[Iterator[Tuple[int, bool]]] = None
         current_timestamp: Optional[int] = None
         dex_names_iterator: Optional[Iterator[str]] = None
         current_dex_name: Optional[str] = None
         n_fetched = 0
         call_failed = False
         initialized = False
+        # whether we need to fetch a block 24h in the past in order to calculate the APY value for the current timestamp
+        apy_shift = False
 
         @property
         def can_continue(self) -> bool:
@@ -286,19 +290,22 @@ class FetchBehaviour(
         return self.get_subgraph(self.current_dex.chain_subgraph_name)
 
     @property
+    def total_downloaded(self) -> int:
+        """Get the number of the downloaded unit, in total."""
+        total_downloaded = len(self._pairs_hist)
+        if self.params.interval_not_acceptable:
+            total_downloaded = ceil(total_downloaded / 2)
+        return total_downloaded
+
+    @property
     def currently_downloaded(self) -> int:
         """Get the number of the currently downloaded unit, for the current pool."""
         if self._progress.initialized:
             return int(
-                (len(self._pairs_hist) - self._progress.n_fetched)
+                (self.total_downloaded - self._progress.n_fetched)
                 / len(self.current_pair_ids)
             )
         return 0
-
-    @property
-    def total_downloaded(self) -> int:
-        """Get the number of the downloaded unit, in total."""
-        return len(self._pairs_hist)
 
     @property
     def retries_exceeded(self) -> bool:
@@ -306,6 +313,11 @@ class FetchBehaviour(
         return any(
             subgraph.is_retries_exceeded() for subgraph in self.utilized_subgraphs
         )
+
+    @property
+    def shift(self) -> int:
+        """The shift to apply."""
+        return DAY_IN_UNIX if self.params.interval_not_acceptable else 0
 
     def setup(self) -> None:
         """Set the behaviour up."""
@@ -377,11 +389,25 @@ class FetchBehaviour(
         end = cast(int, self.params.end)
 
         if self.batch:
-            self._progress.timestamps_iterator = iter((end,))
+            # the value for this interval does not matter as long as it is valid
+            # we just need it to generate the batch's timestamps
+            valid_interval_in_sec = 1
+            # we need to get only the end timestamp, therefore,
+            # we use end as a start and add the interval to the end value in order to create the end argument
+            unix_gen_params = {
+                "start": end,
+                "interval_in_unix": valid_interval_in_sec,
+                "end": end + valid_interval_in_sec,
+            }
         else:
-            self._progress.timestamps_iterator = gen_unix_timestamps(
-                start, self.params.interval, end
-            )
+            unix_gen_params = {
+                "start": start,
+                "interval_in_unix": self.params.interval,
+                "end": end,
+            }
+
+        unix_gen_params["shift"] = self.shift
+        self._progress.timestamps_iterator = gen_unix_timestamps(**unix_gen_params)
 
     def _set_current_progress(self) -> None:
         """Set the progress for the current timestep in the async act."""
@@ -390,17 +416,17 @@ class FetchBehaviour(
                 self.currently_downloaded == 0
                 or self.currently_downloaded == self._target_per_pool
                 or self.batch
-            ):
+            ) and not self._progress.apy_shift:
                 self._progress.current_dex_name = next(
                     cast(Iterator[str], self._progress.dex_names_iterator),
                     None,
                 )
                 self._reset_timestamps_iterator()
-                self._progress.n_fetched = len(self._pairs_hist)
+                self._progress.n_fetched = self.total_downloaded
 
-            self._progress.current_timestamp = next(
-                cast(Iterator[int], self._progress.timestamps_iterator),
-                None,
+            self._progress.current_timestamp, self._progress.apy_shift = next(
+                cast(Iterator[Tuple[int, bool]], self._progress.timestamps_iterator),
+                (None, False),
             )
 
         if self.retries_exceeded:
@@ -466,7 +492,7 @@ class FetchBehaviour(
         else:
             query = (
                 latest_block_q()
-                if self.batch
+                if self.batch and not self._progress.apy_shift
                 else block_from_timestamp_q(cast(int, self._progress.current_timestamp))
             )
 
@@ -588,6 +614,20 @@ class FetchBehaviour(
 
         return pairs
 
+    def _log_progress(self) -> None:
+        """Log the fetching progress."""
+        if self._progress.apy_shift:
+            self.context.logger.info(
+                f"Fetched time shift {self.currently_downloaded}/{self._target_per_pool} for the APY calculation "
+                f"from {self._progress.current_dex_name}."
+            )
+
+        else:
+            self.context.logger.info(
+                f"Fetched {self._unit} {self.currently_downloaded}/{self._target_per_pool} "
+                f"from {self._progress.current_dex_name}."
+            )
+
     def _fetch_batch(self) -> Generator[None, None, None]:
         """Fetch a single batch of the historical data, for the current DEX."""
         block = yield from self._fetch_block()
@@ -604,7 +644,11 @@ class FetchBehaviour(
             return
 
         # Add extra fields to the pairs.
+        # We always store the values and their 24h shifts in pairs
+        # e.g., [data_point_k_24_h_shift, data_point_k, data_point_j_24_h_shift, data_point_j, ...]
         for i in range(len(pairs)):  # pylint: disable=C0200
+            # we drop the "24HShift" entry when transforming the data and after calculating the APY
+            pairs[i]["24HShift"] = self._progress.apy_shift
             pairs[i]["forTimestamp"] = str(self._progress.current_timestamp)
             pairs[i]["blockNumber"] = str(block["number"])
             pairs[i]["blockTimestamp"] = str(block["timestamp"])
@@ -614,10 +658,7 @@ class FetchBehaviour(
         self._pairs_hist.extend(pairs)
 
         if not self.batch:
-            self.context.logger.info(
-                f"Fetched {self._unit} {self.currently_downloaded}/{self._target_per_pool} "
-                f"from {self._progress.current_dex_name}."
-            )
+            self._log_progress()
 
     def async_act(  # pylint: disable=too-many-locals,too-many-statements
         self,

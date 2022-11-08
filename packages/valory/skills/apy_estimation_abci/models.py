@@ -32,6 +32,13 @@ from packages.valory.skills.abstract_round_abci.models import (
     SharedState as BaseSharedState,
 )
 from packages.valory.skills.apy_estimation_abci.rounds import APYEstimationAbciApp
+from packages.valory.skills.apy_estimation_abci.tools.general import UNITS_TO_UNIX
+
+
+# A tolerance in seconds.
+# It is *not* acceptable to calculate the APY value if the diff between two timestamps is not in 24h +- tolerance
+APY_TOLERANCE = 0.5 * UNITS_TO_UNIX["hour"]
+DAY_IN_UNIX = UNITS_TO_UNIX["day"]
 
 
 Requests = BaseRequests
@@ -180,6 +187,9 @@ class APYParams(BaseParams):  # pylint: disable=too-many-instance-attributes
         # It is set in the behaviour using the last synced timestamp among the agents
         self.end: Optional[int] = kwargs.pop("history_end", None)
         self.interval: int = self._ensure("history_interval_in_unix", kwargs)
+        self.interval_not_acceptable = not (
+            DAY_IN_UNIX - APY_TOLERANCE <= self.interval <= DAY_IN_UNIX + APY_TOLERANCE
+        )
         self.n_observations: int = self._ensure("n_observations", kwargs)
         self.optimizer_params: Dict[
             str, Union[None, bool, int, float, str]
