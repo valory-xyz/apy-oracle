@@ -25,8 +25,9 @@ from packages.valory.skills.abstract_round_abci.abci_app_chain import (
 )
 from packages.valory.skills.apy_estimation_abci.rounds import (
     APYEstimationAbciApp,
-    CollectHistoryRound,
     FailedAPYRound,
+    FinishedAPYEstimationRound,
+    ModelStrategyRound,
 )
 from packages.valory.skills.registration_abci.rounds import (
     AgentRegistrationAbciApp,
@@ -43,15 +44,19 @@ from packages.valory.skills.reset_pause_abci.rounds import (
 
 
 abci_app_transition_mapping: AbciAppTransitionMapping = {
-    FinishedRegistrationRound: CollectHistoryRound,
-    FinishedRegistrationFFWRound: CollectHistoryRound,
-    FailedAPYRound: RegistrationRound,
+    FinishedRegistrationRound: ModelStrategyRound,
+    FinishedRegistrationFFWRound: ModelStrategyRound,
+    FinishedAPYEstimationRound: ResetAndPauseRound,
+    FailedAPYRound: ResetAndPauseRound,
+    FinishedResetAndPauseRound: ModelStrategyRound,
+    FinishedResetAndPauseErrorRound: RegistrationRound,
 }
 
 APYEstimationAbciAppChained = chain(
     (
         AgentRegistrationAbciApp,
         APYEstimationAbciApp,
+        ResetPauseABCIApp,
     ),
     abci_app_transition_mapping,
 )
