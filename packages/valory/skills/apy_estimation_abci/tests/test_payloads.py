@@ -23,12 +23,13 @@
 
 from packages.valory.skills.apy_estimation_abci.payloads import (
     BatchPreparationPayload,
+    EmitPayload,
     EstimatePayload,
     FetchingPayload,
+    ModelStrategyPayload,
     OptimizationPayload,
     PreprocessPayload,
     RandomnessPayload,
-    ResetPayload,
 )
 from packages.valory.skills.apy_estimation_abci.payloads import (
     TestingPayload as _TestingPayload,
@@ -52,6 +53,16 @@ class TestTransactionType:
 
 class TestPayloads:
     """Test for `Payloads`."""
+
+    @staticmethod
+    def test_model_strategy_payload() -> None:
+        """Test `ModelStrategyPayload`"""
+        payload = ModelStrategyPayload(sender="sender", vote=True, id_="id")
+
+        assert payload.transaction_type == TransactionType.MODEL_STRATEGY
+        assert payload.vote is True
+        assert payload.id_ == "id"
+        assert payload.data == {"vote": True}
 
     @staticmethod
     def test_fetching_payload() -> None:
@@ -189,11 +200,11 @@ class TestPayloads:
         assert payload.data == {"estimations_hash": "test_hash"}
 
     @staticmethod
-    def test_reset_payload() -> None:
-        """Test `ResetPayload`"""
-        payload = ResetPayload(sender="sender", period_count=0, id_="id")
+    def test_emit_payload() -> None:
+        """Test `EmitPayload`"""
+        payload = EmitPayload(sender="sender", period_count=0, id_="id")
 
-        assert payload.transaction_type == TransactionType.RESET
+        assert payload.transaction_type == TransactionType.EMIT
         assert payload.period_count == 0
         assert payload.id_ == "id"
         assert payload.data == {"period_count": 0}
