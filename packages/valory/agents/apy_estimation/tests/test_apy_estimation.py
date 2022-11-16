@@ -19,7 +19,6 @@
 
 """Integration tests for the valory/apy_estimation_abci skill."""
 
-# pylint: skip-file
 
 from pathlib import Path
 
@@ -48,6 +47,7 @@ from packages.valory.skills.abstract_round_abci.tests.test_io.test_ipfs import (
 
 
 HAPPY_PATH = (
+    RoundChecks("model_strategy"),
     RoundChecks("collect_history"),
     RoundChecks("transform"),
     RoundChecks("preprocess"),
@@ -56,8 +56,10 @@ HAPPY_PATH = (
     RoundChecks("train"),
     RoundChecks("train", success_event="FULLY_TRAINED"),
     RoundChecks("test"),
-    RoundChecks("estimate", n_periods=2, success_event="ESTIMATION_CYCLE"),
-    RoundChecks("cycle_reset", n_periods=2),
+    RoundChecks("estimate", n_periods=2),
+    RoundChecks("emit", n_periods=2),
+    RoundChecks("reset_and_pause", n_periods=2),
+    RoundChecks("model_strategy", n_periods=2, success_event="NEGATIVE"),
     RoundChecks("collect_batch", n_periods=2),
     RoundChecks("prepare_batch", n_periods=2),
     RoundChecks("update_forecaster", n_periods=2),
