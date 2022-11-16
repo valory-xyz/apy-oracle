@@ -53,9 +53,6 @@ from packages.valory.skills.apy_estimation_abci.payloads import (
 from packages.valory.skills.apy_estimation_abci.tools.general import filter_out_numbers
 
 
-N_ESTIMATIONS_BEFORE_RETRAIN = 60
-
-
 class Event(Enum):
     """Event enumeration for the APY estimation demo."""
 
@@ -64,7 +61,6 @@ class Event(Enum):
     NO_MAJORITY = "no_majority"
     RESET_TIMEOUT = "reset_timeout"
     FULLY_TRAINED = "fully_trained"
-    ESTIMATION_CYCLE = "estimation_cycle"
     RANDOMNESS_INVALID = "randomness_invalid"
     FILE_ERROR = "file_error"
     NETWORK_ERROR = "network_error"
@@ -423,14 +419,7 @@ class EstimateRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
                 most_voted_estimate=self.most_voted_payload,
             )
 
-            if (
-                cast(SynchronizedData, synchronized_data).n_estimations
-                % N_ESTIMATIONS_BEFORE_RETRAIN
-                == 0
-            ):
-                return synchronized_data, Event.DONE
-
-            return synchronized_data, Event.ESTIMATION_CYCLE
+            return synchronized_data, Event.DONE
 
         if not self.is_majority_possible(
             self.collection, self.synchronized_data.nb_participants
