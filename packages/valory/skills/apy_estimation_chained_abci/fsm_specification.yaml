@@ -1,12 +1,14 @@
 alphabet_in:
 - DONE
-- ESTIMATION_CYCLE
 - FAST_FORWARD
 - FILE_ERROR
 - FULLY_TRAINED
+- NEGATIVE
 - NETWORK_ERROR
+- NONE
 - NO_MAJORITY
 - RANDOMNESS_INVALID
+- RESET_AND_PAUSE_TIMEOUT
 - ROUND_TIMEOUT
 default_start_state: RegistrationStartupRound
 final_states: []
@@ -16,75 +18,80 @@ start_states:
 states:
 - CollectHistoryRound
 - CollectLatestHistoryBatchRound
-- CycleResetRound
+- EmitRound
 - EstimateRound
-- FreshModelResetRound
+- ModelStrategyRound
 - OptimizeRound
 - PrepareBatchRound
 - PreprocessRound
 - RandomnessRound
 - RegistrationRound
 - RegistrationStartupRound
+- ResetAndPauseRound
 - TestRound
 - TrainRound
 - TransformRound
 - UpdateForecasterRound
 transition_func:
     (CollectHistoryRound, DONE): TransformRound
-    (CollectHistoryRound, FILE_ERROR): RegistrationRound
-    (CollectHistoryRound, NETWORK_ERROR): RegistrationRound
+    (CollectHistoryRound, FILE_ERROR): ResetAndPauseRound
+    (CollectHistoryRound, NETWORK_ERROR): ResetAndPauseRound
     (CollectHistoryRound, NO_MAJORITY): CollectHistoryRound
     (CollectHistoryRound, ROUND_TIMEOUT): CollectHistoryRound
     (CollectLatestHistoryBatchRound, DONE): PrepareBatchRound
-    (CollectLatestHistoryBatchRound, FILE_ERROR): RegistrationRound
-    (CollectLatestHistoryBatchRound, NETWORK_ERROR): RegistrationRound
+    (CollectLatestHistoryBatchRound, FILE_ERROR): ResetAndPauseRound
+    (CollectLatestHistoryBatchRound, NETWORK_ERROR): ResetAndPauseRound
     (CollectLatestHistoryBatchRound, NO_MAJORITY): CollectLatestHistoryBatchRound
     (CollectLatestHistoryBatchRound, ROUND_TIMEOUT): CollectLatestHistoryBatchRound
-    (CycleResetRound, DONE): CollectLatestHistoryBatchRound
-    (CycleResetRound, NO_MAJORITY): CycleResetRound
-    (CycleResetRound, ROUND_TIMEOUT): CycleResetRound
-    (EstimateRound, DONE): FreshModelResetRound
-    (EstimateRound, ESTIMATION_CYCLE): CycleResetRound
-    (EstimateRound, FILE_ERROR): RegistrationRound
+    (EmitRound, DONE): ResetAndPauseRound
+    (EmitRound, NO_MAJORITY): EmitRound
+    (EmitRound, ROUND_TIMEOUT): EmitRound
+    (EstimateRound, DONE): EmitRound
+    (EstimateRound, FILE_ERROR): ResetAndPauseRound
     (EstimateRound, NO_MAJORITY): EstimateRound
     (EstimateRound, ROUND_TIMEOUT): EstimateRound
-    (FreshModelResetRound, DONE): CollectHistoryRound
-    (FreshModelResetRound, NO_MAJORITY): FreshModelResetRound
-    (FreshModelResetRound, ROUND_TIMEOUT): FreshModelResetRound
+    (ModelStrategyRound, DONE): CollectHistoryRound
+    (ModelStrategyRound, NEGATIVE): CollectLatestHistoryBatchRound
+    (ModelStrategyRound, NONE): ModelStrategyRound
+    (ModelStrategyRound, NO_MAJORITY): ModelStrategyRound
+    (ModelStrategyRound, ROUND_TIMEOUT): ModelStrategyRound
     (OptimizeRound, DONE): TrainRound
-    (OptimizeRound, FILE_ERROR): RegistrationRound
+    (OptimizeRound, FILE_ERROR): ResetAndPauseRound
     (OptimizeRound, NO_MAJORITY): OptimizeRound
     (OptimizeRound, ROUND_TIMEOUT): OptimizeRound
     (PrepareBatchRound, DONE): UpdateForecasterRound
-    (PrepareBatchRound, FILE_ERROR): RegistrationRound
+    (PrepareBatchRound, FILE_ERROR): ResetAndPauseRound
     (PrepareBatchRound, NO_MAJORITY): PrepareBatchRound
     (PrepareBatchRound, ROUND_TIMEOUT): PrepareBatchRound
     (PreprocessRound, DONE): RandomnessRound
-    (PreprocessRound, FILE_ERROR): RegistrationRound
+    (PreprocessRound, FILE_ERROR): ResetAndPauseRound
     (PreprocessRound, NO_MAJORITY): PreprocessRound
     (PreprocessRound, ROUND_TIMEOUT): PreprocessRound
     (RandomnessRound, DONE): OptimizeRound
     (RandomnessRound, NO_MAJORITY): RandomnessRound
     (RandomnessRound, RANDOMNESS_INVALID): RandomnessRound
     (RandomnessRound, ROUND_TIMEOUT): RandomnessRound
-    (RegistrationRound, DONE): CollectHistoryRound
+    (RegistrationRound, DONE): ModelStrategyRound
     (RegistrationRound, NO_MAJORITY): RegistrationRound
-    (RegistrationStartupRound, DONE): CollectHistoryRound
-    (RegistrationStartupRound, FAST_FORWARD): CollectHistoryRound
+    (RegistrationStartupRound, DONE): ModelStrategyRound
+    (RegistrationStartupRound, FAST_FORWARD): ModelStrategyRound
+    (ResetAndPauseRound, DONE): ModelStrategyRound
+    (ResetAndPauseRound, NO_MAJORITY): RegistrationRound
+    (ResetAndPauseRound, RESET_AND_PAUSE_TIMEOUT): RegistrationRound
     (TestRound, DONE): TrainRound
-    (TestRound, FILE_ERROR): RegistrationRound
+    (TestRound, FILE_ERROR): ResetAndPauseRound
     (TestRound, NO_MAJORITY): TestRound
     (TestRound, ROUND_TIMEOUT): TestRound
     (TrainRound, DONE): TestRound
-    (TrainRound, FILE_ERROR): RegistrationRound
+    (TrainRound, FILE_ERROR): ResetAndPauseRound
     (TrainRound, FULLY_TRAINED): EstimateRound
     (TrainRound, NO_MAJORITY): TrainRound
     (TrainRound, ROUND_TIMEOUT): TrainRound
     (TransformRound, DONE): PreprocessRound
-    (TransformRound, FILE_ERROR): RegistrationRound
+    (TransformRound, FILE_ERROR): ResetAndPauseRound
     (TransformRound, NO_MAJORITY): TransformRound
     (TransformRound, ROUND_TIMEOUT): TransformRound
     (UpdateForecasterRound, DONE): EstimateRound
-    (UpdateForecasterRound, FILE_ERROR): RegistrationRound
+    (UpdateForecasterRound, FILE_ERROR): ResetAndPauseRound
     (UpdateForecasterRound, NO_MAJORITY): UpdateForecasterRound
     (UpdateForecasterRound, ROUND_TIMEOUT): UpdateForecasterRound

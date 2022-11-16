@@ -6,12 +6,12 @@ description: This skill implements the APY estimation chained for an AEA.
 license: Apache-2.0
 aea_version: '>=1.0.0, <2.0.0'
 fingerprint:
-  README.md: bafybeicl5q6oodvqdz5a3u6cmrdmxrswzbahgyiwsozwrxop2asrlea37q
+  README.md: bafybeic3ztoxxldipv6v6h6ovpmto6ifhqi2mdkl5hhaaeymbwrw7wf7km
   __init__.py: bafybeidae7gbyipqow44nxwnrvd5jyllepqbfq6xwako2o4bv2mjiwwo4u
-  behaviours.py: bafybeibrg5xt2j4i7whhwu5pw5ptb4p2siyyyf3nbj5kmptixttaivxg2i
-  composition.py: bafybeibiomuvvsltb7gfmsjgh2ugfdpps6xwb3agd4fkn2cqhxzzss2iay
+  behaviours.py: bafybeiefkxsdgpmhkuzkijz53sxgnyijp74putt5aly25x5ys75ain22la
+  composition.py: bafybeic2ye4nzl2ptuwdpmaqvnvvct724x2ohavzpg2hepkyacef7bfgca
   dialogues.py: bafybeielsp4eu7gr7lelednobuq32bav5kp7so4geut7j2rg7bkn2wuzee
-  fsm_specification.yaml: bafybeid4iuax46gzkeb77g6ezs2arae43lmv3qk36dk7kityg2iwyr2v4a
+  fsm_specification.yaml: bafybeif7yveau6mu3z25ovoitxruzohh4uvvfkr4sw7zg3gcnrij5la2wq
   handlers.py: bafybeibmzghvqekt7iymu6s6yn5tk7lpdmejba4n7dpsz2do3cgfqz7b2a
   models.py: bafybeihiisetyfiqfp6sysgp6frg4g6xiwxxfmpxfzb6g3ew63drei36ky
   tests/__init__.py: bafybeiapnbylokinzkfybybxsuoz5sdwmfw7rzctbqhvnt2ydvvy5twhaa
@@ -25,7 +25,7 @@ contracts: []
 protocols: []
 skills:
 - valory/abstract_round_abci:0.1.0:bafybeigqcsyldiu4arougcfaz4kgqa37ko4gzkrrup22hwz344nuv3qx5q
-- valory/apy_estimation_abci:0.1.0:bafybeifpzwkvduug6a74dyefvurjo4ztvvcoyxw4g57o2xnuuyapo7zzky
+- valory/apy_estimation_abci:0.1.0:bafybeifpqmzmbgt4xlzostanidh2uznv7ov6k6ytiwtaxmrl2lvuzdl6h4
 - valory/registration_abci:0.1.0:bafybeibbyutireqtu2nlhsafexqu5dqepwrzhwmr6yjgrdneed7nntypba
 - valory/reset_pause_abci:0.1.0:bafybeihu52fdmjslyvf6tpwa7sic4usde5uu5jtscpyjgqwaji53httw3q
 behaviours:

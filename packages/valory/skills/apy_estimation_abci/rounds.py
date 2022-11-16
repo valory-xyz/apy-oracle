@@ -473,81 +473,83 @@ class FailedAPYRound(DegenerateRound, ABC):
 class APYEstimationAbciApp(AbciApp[Event]):  # pylint: disable=too-few-public-methods
     """APYEstimationAbciApp
 
-    Initial round: CollectHistoryRound
+    Initial round: ModelStrategyRound
 
-    Initial states: {CollectHistoryRound}
+    Initial states: {ModelStrategyRound}
 
     Transition states:
-        0. CollectHistoryRound
+        0. ModelStrategyRound
             - done: 1.
-            - no majority: 0.
+            - negative: 10.
+            - none: 0.
             - round timeout: 0.
-            - file error: 13.
-            - network error: 13.
-        1. TransformRound
+            - no majority: 0.
+        1. CollectHistoryRound
             - done: 2.
             - no majority: 1.
             - round timeout: 1.
-            - file error: 13.
-        2. PreprocessRound
+            - file error: 14.
+            - network error: 14.
+        2. TransformRound
             - done: 3.
             - no majority: 2.
             - round timeout: 2.
-            - file error: 13.
-        3. RandomnessRound
+            - file error: 14.
+        3. PreprocessRound
             - done: 4.
-            - randomness invalid: 3.
             - no majority: 3.
             - round timeout: 3.
-        4. OptimizeRound
+            - file error: 14.
+        4. RandomnessRound
             - done: 5.
+            - randomness invalid: 4.
             - no majority: 4.
             - round timeout: 4.
-            - file error: 13.
-        5. TrainRound
-            - fully trained: 7.
+        5. OptimizeRound
             - done: 6.
             - no majority: 5.
             - round timeout: 5.
-            - file error: 13.
-        6. TestRound
-            - done: 5.
+            - file error: 14.
+        6. TrainRound
+            - fully trained: 8.
+            - done: 7.
             - no majority: 6.
             - round timeout: 6.
-            - file error: 13.
-        7. EstimateRound
-            - done: 8.
-            - estimation cycle: 9.
-            - round timeout: 7.
+            - file error: 14.
+        7. TestRound
+            - done: 6.
             - no majority: 7.
-            - file error: 13.
-        8. FreshModelResetRound
-            - done: 0.
+            - round timeout: 7.
+            - file error: 14.
+        8. EstimateRound
+            - done: 9.
             - round timeout: 8.
             - no majority: 8.
-        9. CycleResetRound
-            - done: 10.
+            - file error: 14.
+        9. EmitRound
+            - done: 13.
             - round timeout: 9.
             - no majority: 9.
         10. CollectLatestHistoryBatchRound
             - done: 11.
             - round timeout: 10.
             - no majority: 10.
-            - file error: 13.
-            - network error: 13.
+            - file error: 14.
+            - network error: 14.
         11. PrepareBatchRound
             - done: 12.
             - round timeout: 11.
             - no majority: 11.
-            - file error: 13.
+            - file error: 14.
         12. UpdateForecasterRound
-            - done: 7.
+            - done: 8.
             - round timeout: 12.
             - no majority: 12.
-            - file error: 13.
-        13. FailedAPYRound
+            - file error: 14.
+        13. FinishedAPYEstimationRound
+        14. FailedAPYRound
 
-    Final states: {FailedAPYRound}
+    Final states: {FailedAPYRound, FinishedAPYEstimationRound}
 
     Timeouts:
         round timeout: 30.0

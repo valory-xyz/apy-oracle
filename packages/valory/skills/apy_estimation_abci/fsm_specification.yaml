@@ -1,25 +1,28 @@
 alphabet_in:
 - DONE
-- ESTIMATION_CYCLE
 - FILE_ERROR
 - FULLY_TRAINED
+- NEGATIVE
 - NETWORK_ERROR
+- NONE
 - NO_MAJORITY
 - RANDOMNESS_INVALID
 - ROUND_TIMEOUT
-default_start_state: CollectHistoryRound
+default_start_state: ModelStrategyRound
 final_states:
 - FailedAPYRound
+- FinishedAPYEstimationRound
 label: packages.valory.skills.apy_estimation_abci.rounds.APYEstimationAbciApp
 start_states:
-- CollectHistoryRound
+- ModelStrategyRound
 states:
 - CollectHistoryRound
 - CollectLatestHistoryBatchRound
-- CycleResetRound
+- EmitRound
 - EstimateRound
 - FailedAPYRound
-- FreshModelResetRound
+- FinishedAPYEstimationRound
+- ModelStrategyRound
 - OptimizeRound
 - PrepareBatchRound
 - PreprocessRound
@@ -39,17 +42,18 @@ transition_func:
     (CollectLatestHistoryBatchRound, NETWORK_ERROR): FailedAPYRound
     (CollectLatestHistoryBatchRound, NO_MAJORITY): CollectLatestHistoryBatchRound
     (CollectLatestHistoryBatchRound, ROUND_TIMEOUT): CollectLatestHistoryBatchRound
-    (CycleResetRound, DONE): CollectLatestHistoryBatchRound
-    (CycleResetRound, NO_MAJORITY): CycleResetRound
-    (CycleResetRound, ROUND_TIMEOUT): CycleResetRound
-    (EstimateRound, DONE): FreshModelResetRound
-    (EstimateRound, ESTIMATION_CYCLE): CycleResetRound
+    (EmitRound, DONE): FinishedAPYEstimationRound
+    (EmitRound, NO_MAJORITY): EmitRound
+    (EmitRound, ROUND_TIMEOUT): EmitRound
+    (EstimateRound, DONE): EmitRound
     (EstimateRound, FILE_ERROR): FailedAPYRound
     (EstimateRound, NO_MAJORITY): EstimateRound
     (EstimateRound, ROUND_TIMEOUT): EstimateRound
-    (FreshModelResetRound, DONE): CollectHistoryRound
-    (FreshModelResetRound, NO_MAJORITY): FreshModelResetRound
-    (FreshModelResetRound, ROUND_TIMEOUT): FreshModelResetRound
+    (ModelStrategyRound, DONE): CollectHistoryRound
+    (ModelStrategyRound, NEGATIVE): CollectLatestHistoryBatchRound
+    (ModelStrategyRound, NONE): ModelStrategyRound
+    (ModelStrategyRound, NO_MAJORITY): ModelStrategyRound
+    (ModelStrategyRound, ROUND_TIMEOUT): ModelStrategyRound
     (OptimizeRound, DONE): TrainRound
     (OptimizeRound, FILE_ERROR): FailedAPYRound
     (OptimizeRound, NO_MAJORITY): OptimizeRound
