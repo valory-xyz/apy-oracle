@@ -32,7 +32,8 @@ class TransactionType(Enum):
     REGISTRATION = "registration"
     RANDOMNESS = "randomness"
     SELECT_KEEPER = "select_keeper"
-    RESET = "reset"
+    EMIT = "emit"
+    MODEL_STRATEGY = "model_strategy"
     FETCHING = "fetching"
     TRANSFORMATION = "transformation"
     BATCH_PREPARATION = "batch_preparation"
@@ -46,6 +47,32 @@ class TransactionType(Enum):
     def __str__(self) -> str:
         """Get the string value of the transaction type."""
         return self.value
+
+
+class ModelStrategyPayload(BaseAPYPayload):
+    """Represent a transaction payload of type 'validate'."""
+
+    transaction_type = TransactionType.MODEL_STRATEGY
+
+    def __init__(self, sender: str, vote: Optional[bool] = None, **kwargs: Any) -> None:
+        """Initialize an 'model_strategy' transaction payload.
+
+        :param sender: the sender (Ethereum) address
+        :param vote: the vote on whether we should start a fresh model or not
+        :param kwargs: the keyword arguments
+        """
+        super().__init__(sender, **kwargs)
+        self._vote = vote
+
+    @property
+    def vote(self) -> Optional[bool]:
+        """Get the vote."""
+        return self._vote
+
+    @property
+    def data(self) -> Dict:
+        """Get the data."""
+        return dict(vote=self.vote) if self.vote is not None else {}
 
 
 class RandomnessPayload(BaseAPYPayload):
@@ -377,13 +404,13 @@ class EstimatePayload(BaseAPYPayload):
         )
 
 
-class ResetPayload(BaseAPYPayload):
-    """Represent a transaction payload of type 'reset'."""
+class EmitPayload(BaseAPYPayload):
+    """Represent a transaction payload of type 'emit'."""
 
-    transaction_type = TransactionType.RESET
+    transaction_type = TransactionType.EMIT
 
     def __init__(self, sender: str, period_count: int, **kwargs: Any) -> None:
-        """Initialize an 'reset' transaction payload.
+        """Initialize an 'emit' transaction payload.
 
         :param sender: the sender (Ethereum) address
         :param period_count: the period count id
@@ -398,6 +425,6 @@ class ResetPayload(BaseAPYPayload):
         return self._period_count
 
     @property
-    def data(self) -> Dict:
+    def data(self) -> Dict[str, int]:
         """Get the data."""
         return dict(period_count=self.period_count)
