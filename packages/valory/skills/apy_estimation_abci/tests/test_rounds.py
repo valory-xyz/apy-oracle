@@ -19,18 +19,12 @@
 
 """Test the rounds of the skill."""
 
-# pylint: skip-file
 
 from typing import Dict, FrozenSet, Optional, Tuple
-from unittest import mock
 
 import pytest
 
-from packages.valory.skills.abstract_round_abci.base import (
-    AbciAppDB,
-    AbstractRound,
-    ConsensusParams,
-)
+from packages.valory.skills.abstract_round_abci.base import AbciAppDB
 from packages.valory.skills.abstract_round_abci.test_tools.rounds import (
     BaseCollectSameUntilThresholdRoundTest,
 )
@@ -40,7 +34,6 @@ from packages.valory.skills.apy_estimation_abci.payloads import (
     OptimizationPayload,
     PreprocessPayload,
     RandomnessPayload,
-    ResetPayload,
 )
 from packages.valory.skills.apy_estimation_abci.payloads import (
     TestingPayload as _TestingPayload,
@@ -51,10 +44,8 @@ from packages.valory.skills.apy_estimation_abci.payloads import (
 )
 from packages.valory.skills.apy_estimation_abci.rounds import (
     CollectHistoryRound,
-    CycleResetRound,
     EstimateRound,
     Event,
-    FreshModelResetRound,
     OptimizeRound,
     PreprocessRound,
     RandomnessRound,
@@ -179,49 +170,6 @@ def get_participant_to_estimate_payload(
         participant: EstimatePayload(participant, estimations_hash)
         for participant in participants
     }
-
-
-def get_participant_to_reset_payload(
-    participants: FrozenSet[str],
-) -> Dict[str, ResetPayload]:
-    """Get reset payload."""
-    return {
-        participant: ResetPayload(participant, period_count=1)
-        for participant in participants
-    }
-
-
-class BaseRoundTestClass:
-    """Base test class for Rounds."""
-
-    synchronized_data: SynchronizedData
-    consensus_params: ConsensusParams
-    participants: FrozenSet[str]
-
-    @classmethod
-    def setup(
-        cls,
-    ) -> None:
-        """Setup the test class."""
-
-        cls.participants = get_participants()
-        cls.synchronized_data = SynchronizedData(
-            db=AbciAppDB(
-                setup_data=dict(
-                    participants=[cls.participants], all_participants=[cls.participants]
-                ),
-            )
-        )
-        cls.consensus_params = ConsensusParams(max_participants=MAX_PARTICIPANTS)
-
-    @staticmethod
-    def _test_no_majority_event(round_obj: AbstractRound) -> None:
-        """Test the NO_MAJORITY event."""
-        with mock.patch.object(round_obj, "is_majority_possible", return_value=False):
-            result = round_obj.end_block()
-            assert result is not None
-            synchronized_data, event = result
-            assert event == Event.NO_MAJORITY
 
 
 class TestCollectHistoryRound(BaseCollectSameUntilThresholdRoundTest):
@@ -507,20 +455,19 @@ class TestEstimateRound(BaseCollectSameUntilThresholdRoundTest):
     _event_class = Event
 
     @pytest.mark.parametrize(
-        "n_estimations, most_voted_payload, expected_event",
+        "most_voted_payload, expected_event",
         (
-            (0, "test_hash", Event.ESTIMATION_CYCLE),
-            (59, "test_hash", Event.DONE),
-            (0, None, Event.FILE_ERROR),
+            ("test_hash", Event.DONE),
+            (None, Event.FILE_ERROR),
         ),
     )
     def test_estimation_cycle_run(
         self,
-        n_estimations: int,
         most_voted_payload: Optional[str],
         expected_event: Event,
     ) -> None:
         """Runs test."""
+        n_estimations = 0
 
         test_round = EstimateRound(
             self.synchronized_data.update(n_estimations=n_estimations),
@@ -544,97 +491,6 @@ class TestEstimateRound(BaseCollectSameUntilThresholdRoundTest):
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
         test_round = EstimateRound(self.synchronized_data, self.consensus_params)
-        self._test_no_majority_event(test_round)
-
-
-class TestCycleResetRound(BaseCollectSameUntilThresholdRoundTest):
-    """Test `CycleResetRound`."""
-
-    _synchronized_data_class = SynchronizedData
-    _event_class = Event
-
-    def test_run(
-        self,
-    ) -> None:
-        """Run tests"""
-
-        test_round = CycleResetRound(
-            self.synchronized_data.update(
-                latest_observation_hist_hash="x0",
-                most_voted_models="",
-                full_training=True,
-                most_voted_transform="x1",
-                latest_transformation_period=10,
-            ),
-            self.consensus_params,
-        )
-        self._complete_run(
-            self._test_round(
-                test_round=test_round,
-                round_payloads=get_participant_to_reset_payload(self.participants),
-                synchronized_data_update_fn=lambda _synchronized_data, _test_round: _synchronized_data.update(
-                    full_training=False,
-                ),
-                synchronized_data_attr_checks=[
-                    lambda _synchronized_data: _synchronized_data.latest_observation_hist_hash,
-                    lambda _synchronized_data: _synchronized_data.models_hash,
-                    lambda _synchronized_data: _synchronized_data.full_training,
-                    lambda _synchronized_data: _synchronized_data.transformed_history_hash,
-                    lambda _synchronized_data: _synchronized_data.latest_transformation_period,
-                    lambda _synchronized_data: _synchronized_data.n_estimations,
-                    lambda _synchronized_data: _synchronized_data.participants,
-                    lambda _synchronized_data: _synchronized_data.all_participants,
-                ],
-                most_voted_payload=1,
-                exit_event=Event.DONE,
-            )
-        )
-
-    def test_no_majority_event(self) -> None:
-        """Test the no-majority event."""
-        test_round = CycleResetRound(self.synchronized_data, self.consensus_params)
-        self._test_no_majority_event(test_round)
-
-
-class TestFreshModelResetRound(BaseCollectSameUntilThresholdRoundTest):
-    """Test `FreshModelResetRound`."""
-
-    _synchronized_data_class = SynchronizedData
-    _event_class = Event
-
-    def test_run(
-        self,
-    ) -> None:
-        """Run tests"""
-
-        test_round = FreshModelResetRound(
-            self.synchronized_data.update(
-                n_estimations=1,
-                full_training=True,
-                most_voted_models="",
-                latest_transformation_period=10,
-            ),
-            self.consensus_params,
-        )
-        self._complete_run(
-            self._test_round(
-                test_round=test_round,
-                round_payloads=get_participant_to_reset_payload(self.participants),
-                synchronized_data_update_fn=lambda _synchronized_data, _test_round: _synchronized_data.update(
-                    full_training=False,
-                ),
-                synchronized_data_attr_checks=[
-                    lambda _synchronized_data: _synchronized_data.full_training,
-                    lambda _synchronized_data: _synchronized_data.latest_transformation_period,
-                ],
-                most_voted_payload=1,
-                exit_event=Event.DONE,
-            )
-        )
-
-    def test_no_majority_event(self) -> None:
-        """Test the no-majority event."""
-        test_round = FreshModelResetRound(self.synchronized_data, self.consensus_params)
         self._test_no_majority_event(test_round)
 
 
