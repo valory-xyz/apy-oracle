@@ -34,6 +34,9 @@ from packages.valory.skills.registration_abci.behaviours import (
     AgentRegistrationRoundBehaviour,
     RegistrationStartupBehaviour,
 )
+from packages.valory.skills.reset_pause_abci.behaviours import (
+    ResetPauseABCIConsensusBehaviour,
+)
 
 
 class APYEstimationConsensusBehaviour(AbstractRoundBehaviour):
@@ -45,4 +48,5 @@ class APYEstimationConsensusBehaviour(AbstractRoundBehaviour):
     behaviours: Set[Type[BaseBehaviour]] = {
         *AgentRegistrationRoundBehaviour.behaviours,
         *EstimatorRoundBehaviour.behaviours,
+        *ResetPauseABCIConsensusBehaviour.behaviours,
     }
