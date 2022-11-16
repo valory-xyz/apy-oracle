@@ -24,7 +24,6 @@ from typing import Dict, Mapping, Optional, Set, Tuple, Type, cast
 
 from packages.valory.skills.abstract_round_abci.base import (
     AbciApp,
-    AbciAppDB,
     AbciAppTransitionFunction,
     AbstractRound,
     AppState,
@@ -32,15 +31,17 @@ from packages.valory.skills.abstract_round_abci.base import (
     CollectSameUntilThresholdRound,
     DegenerateRound,
     TransactionType,
+    VotingRound,
 )
 from packages.valory.skills.apy_estimation_abci.payloads import (
     BatchPreparationPayload,
+    EmitPayload,
     EstimatePayload,
     FetchingPayload,
+    ModelStrategyPayload,
     OptimizationPayload,
     PreprocessPayload,
     RandomnessPayload,
-    ResetPayload,
 )
 from packages.valory.skills.apy_estimation_abci.payloads import (
     TestingPayload as _TestingPayload,
@@ -57,6 +58,8 @@ class Event(Enum):
     """Event enumeration for the APY estimation demo."""
 
     DONE = "done"
+    NEGATIVE = "negative"
+    NONE = "none"
     ROUND_TIMEOUT = "round_timeout"
     NO_MAJORITY = "no_majority"
     RESET_TIMEOUT = "reset_timeout"
@@ -163,6 +166,19 @@ class APYEstimationAbstractRound(AbstractRound[Event, TransactionType], ABC):
         :return: a new synchronized data and a NO_MAJORITY event
         """
         return self.synchronized_data, Event.NO_MAJORITY
+
+
+class ModelStrategyRound(VotingRound, APYEstimationAbstractRound):
+    """A round that represents the model's strategy selection"""
+
+    round_id = "model_strategy"
+    allowed_tx_type = ModelStrategyPayload.transaction_type
+    done_event = Event.DONE
+    negative_event = Event.NEGATIVE
+    none_event = Event.NONE
+    no_majority_event = Event.NO_MAJORITY
+    collection_key = "participant_to_strategy_votes"
+    synchronized_data_class = SynchronizedData
 
 
 class CollectHistoryRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
@@ -429,54 +445,17 @@ class EstimateRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
         return None
 
 
-class BaseResetRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
-    """A round that represents the reset of a period"""
+class EmitRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
+    """A round that represents the emission of the estimates to the backend"""
 
-    allowed_tx_type = ResetPayload.transaction_type
+    round_id = "emit"
+    allowed_tx_type = EmitPayload.transaction_type
     payload_attribute = "period_count"
-
-    def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
-        """Process the end of the block."""
-        if self.threshold_reached:
-            kwargs = dict(
-                participants=self.synchronized_data.participants,
-                all_participants=self.synchronized_data.all_participants,
-                full_training=False,
-                n_estimations=self.synchronized_data.n_estimations,
-                most_voted_models=self.synchronized_data.models_hash,
-                latest_transformation_period=self.synchronized_data.latest_transformation_period,
-            )
-            if self.round_id == "cycle_reset":
-                cycle_reset_kwargs = dict(
-                    most_voted_transform=self.synchronized_data.transformed_history_hash,
-                    latest_observation_hist_hash=self.synchronized_data.latest_observation_hist_hash,
-                )
-                kwargs.update(cycle_reset_kwargs)
-
-            synchronized_data = self.synchronized_data.create(
-                synchronized_data_class=SynchronizedData,
-                **AbciAppDB.data_to_lists(kwargs),
-            )
-            return synchronized_data, Event.DONE
-
-        if not self.is_majority_possible(
-            self.collection, self.synchronized_data.nb_participants
-        ):
-            return self._return_no_majority_event()
-
-        return None
-
-
-class FreshModelResetRound(BaseResetRound):
-    """A round that represents that consensus is reached and `N_ESTIMATIONS_BEFORE_RETRAIN` has been reached."""
-
-    round_id = "fresh_model_reset"
-
-
-class CycleResetRound(BaseResetRound):
-    """A round that represents that consensus is reached and `N_ESTIMATIONS_BEFORE_RETRAIN` is not yet reached."""
-
-    round_id = "cycle_reset"
+    synchronized_data_class = SynchronizedData
+    done_event = Event.DONE
+    no_majority_event = Event.NO_MAJORITY
+    collection_key = "participant_to_emit"
+    selection_key = "most_voted_emission_period"
 
 
 class FinishedAPYEstimationRound(DegenerateRound, ABC):
@@ -575,8 +554,15 @@ class APYEstimationAbciApp(AbciApp[Event]):  # pylint: disable=too-few-public-me
         reset timeout: 30.0
     """
 
-    initial_round_cls: Type[AbstractRound] = CollectHistoryRound
+    initial_round_cls: Type[AbstractRound] = ModelStrategyRound
     transition_function: AbciAppTransitionFunction = {
+        ModelStrategyRound: {
+            Event.DONE: CollectHistoryRound,
+            Event.NEGATIVE: CollectLatestHistoryBatchRound,
+            Event.NONE: ModelStrategyRound,  # NOTE: unreachable
+            Event.ROUND_TIMEOUT: ModelStrategyRound,
+            Event.NO_MAJORITY: ModelStrategyRound,
+        },
         CollectHistoryRound: {
             Event.DONE: TransformRound,
             Event.NO_MAJORITY: CollectHistoryRound,
@@ -622,21 +608,15 @@ class APYEstimationAbciApp(AbciApp[Event]):  # pylint: disable=too-few-public-me
             Event.FILE_ERROR: FailedAPYRound,
         },
         EstimateRound: {
-            Event.DONE: FreshModelResetRound,
-            Event.ESTIMATION_CYCLE: CycleResetRound,
+            Event.DONE: EmitRound,
             Event.ROUND_TIMEOUT: EstimateRound,
             Event.NO_MAJORITY: EstimateRound,
             Event.FILE_ERROR: FailedAPYRound,
         },
-        FreshModelResetRound: {
-            Event.DONE: CollectHistoryRound,
-            Event.ROUND_TIMEOUT: FreshModelResetRound,
-            Event.NO_MAJORITY: FreshModelResetRound,
-        },
-        CycleResetRound: {
-            Event.DONE: CollectLatestHistoryBatchRound,
-            Event.ROUND_TIMEOUT: CycleResetRound,
-            Event.NO_MAJORITY: CycleResetRound,
+        EmitRound: {
+            Event.DONE: FinishedAPYEstimationRound,
+            Event.ROUND_TIMEOUT: EmitRound,
+            Event.NO_MAJORITY: EmitRound,
         },
         CollectLatestHistoryBatchRound: {
             Event.DONE: PrepareBatchRound,
@@ -657,9 +637,18 @@ class APYEstimationAbciApp(AbciApp[Event]):  # pylint: disable=too-few-public-me
             Event.NO_MAJORITY: UpdateForecasterRound,
             Event.FILE_ERROR: FailedAPYRound,
         },
+        FinishedAPYEstimationRound: {},
         FailedAPYRound: {},
     }
-    final_states: Set[AppState] = {FailedAPYRound}
+    cross_period_persisted_keys = [
+        "full_training",
+        "n_estimations",
+        "most_voted_models",
+        "latest_transformation_period",
+        "most_voted_transform",
+        "latest_observation_hist_hash",
+    ]
+    final_states: Set[AppState] = {FinishedAPYEstimationRound, FailedAPYRound}
     event_to_timeout: Dict[Event, float] = {
         Event.ROUND_TIMEOUT: 30.0,
         Event.RESET_TIMEOUT: 30.0,
