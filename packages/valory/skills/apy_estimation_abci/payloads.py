@@ -29,9 +29,7 @@ from packages.valory.skills.abstract_round_abci.base import (
 class TransactionType(Enum):
     """Enumeration of transaction types."""
 
-    REGISTRATION = "registration"
     RANDOMNESS = "randomness"
-    SELECT_KEEPER = "select_keeper"
     EMIT = "emit"
     MODEL_STRATEGY = "model_strategy"
     FETCHING = "fetching"
