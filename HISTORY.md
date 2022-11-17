@@ -1,6 +1,12 @@
 # Release History - `apy-oracle`
 
 
+## 0.3.5 (2022-11-17)
+
+- Introduces the reset and pause round to help keep the memory usage constant instead of growing unbounded #15
+- Bumps `open-autonomy` and `open-aea` #13
+
+
 ## 0.3.4 (2022-11-08)
 
 - Makes the APY calculation interval aware #11
