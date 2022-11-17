@@ -76,13 +76,12 @@ from packages.valory.skills.abstract_round_abci.test_tools.base import (
 from packages.valory.skills.apy_estimation_abci import tasks
 from packages.valory.skills.apy_estimation_abci.behaviours import (
     APYEstimationBaseBehaviour,
-    BaseResetBehaviour,
-    CycleResetBehaviour,
+    EmitEstimatesBehaviour,
     EstimateBehaviour,
     EstimatorRoundBehaviour,
     FetchBatchBehaviour,
     FetchBehaviour,
-    FreshModelResetBehaviour,
+    ModelStrategyBehaviour,
     OptimizeBehaviour,
     PrepareBatchBehaviour,
     PreprocessBehaviour,
@@ -132,7 +131,7 @@ from packages.valory.skills.apy_estimation_abci.tools.general import UNITS_TO_UN
 from packages.valory.skills.apy_estimation_abci.tools.queries import SAFE_BLOCK_TIME
 
 
-PACKAGE_DIR = Path(__file__).parent.parent
+PACKAGE_DIR = Path(__file__).parents[1]
 SLEEP_TIME_TWEAK = 0.01
 N_OBSERVATIONS = 10
 HISTORY_INTERVAL = 86400
@@ -226,6 +225,79 @@ class APYEstimationFSMBehaviourBaseCase(FSMBehaviourBaseCase):
     def end_round(self, done_event: Enum = Event.DONE) -> None:
         """Ends round early to cover `wait_for_end` generator."""
         super().end_round(done_event)
+
+
+class TestModelStrategyBehaviour(APYEstimationFSMBehaviourBaseCase):
+    """Test `ModelStrategyBehaviour`"""
+
+    behaviour_class = ModelStrategyBehaviour
+
+    fresh_msg = "Creating a fresh forecasting model."
+    cycle_msg = "Estimation will happen again using the same model, after updating it with the latest data."
+
+    @pytest.mark.parametrize(
+        "period_count, n_estimations_before_retrain, log_message, event, next_behaviour_id",
+        (
+            (
+                1,
+                1,
+                fresh_msg,
+                Event.DONE,
+                FetchBehaviour.behaviour_id,
+            ),
+            (
+                0,
+                2,
+                fresh_msg,
+                Event.DONE,
+                FetchBehaviour.behaviour_id,
+            ),
+            (
+                1,
+                2,
+                cycle_msg,
+                Event.NEGATIVE,
+                FetchBatchBehaviour.behaviour_id,
+            ),
+        ),
+    )
+    def test_strategy_behaviour(
+        self,
+        caplog: LogCaptureFixture,
+        period_count: int,
+        n_estimations_before_retrain: int,
+        log_message: str,
+        event: Event,
+        next_behaviour_id: str,
+    ) -> None:
+        """Test the behaviour."""
+        db = AbciAppDB({})
+
+        db._data = {period_count: {}}
+
+        self.fast_forward_to_behaviour(
+            behaviour=self.behaviour,
+            behaviour_id=self.behaviour_class.behaviour_id,
+            synchronized_data=SynchronizedData(db),
+        )
+        behaviour = cast(ModelStrategyBehaviour, self.behaviour.current_behaviour)
+        assert behaviour.behaviour_id == self.behaviour_class.behaviour_id
+
+        behaviour.params.n_estimations_before_retrain = n_estimations_before_retrain
+
+        with caplog.at_level(
+            logging.INFO,
+            logger="aea.test_agent_name.packages.valory.skills.apy_estimation_abci",
+        ):
+            behaviour.act_wrapper()
+        assert log_message in caplog.text
+
+        self.mock_a2a_transaction()
+        self._test_done_flag_set()
+        self.end_round(event)
+
+        behaviour = cast(BaseBehaviour, self.behaviour.current_behaviour)
+        assert behaviour.behaviour_id == next_behaviour_id
 
 
 class TestFetchProgress:
@@ -2715,7 +2787,7 @@ class TestEstimateBehaviour(APYEstimationFSMBehaviourBaseCase):
     """Test EstimateBehaviour."""
 
     behaviour_class = EstimateBehaviour
-    next_behaviour_class = FreshModelResetBehaviour
+    next_behaviour_class = EmitEstimatesBehaviour
 
     def _fast_forward(
         self,
@@ -2865,8 +2937,10 @@ class TestEstimateBehaviour(APYEstimationFSMBehaviourBaseCase):
         assert behaviour.behaviour_id == self.next_behaviour_class.behaviour_id
 
 
-class BaseResetBehaviourTests(APYEstimationFSMBehaviourBaseCase):
-    """Test `BaseResetBehaviour`."""
+class TestEmitEstimatesBehaviour(APYEstimationFSMBehaviourBaseCase):
+    """Test `EmitEstimatesBehaviour`."""
+
+    behaviour_class = EmitEstimatesBehaviour
 
     @pytest.mark.parametrize(
         "ipfs_succeed, log_level, log_message",
@@ -2913,7 +2987,7 @@ class BaseResetBehaviourTests(APYEstimationFSMBehaviourBaseCase):
                 AbciAppDB(setup_data=dict(most_voted_estimate=[hash_]))
             ),
         )
-        behaviour = cast(BaseResetBehaviour, self.behaviour.current_behaviour)
+        behaviour = cast(EmitEstimatesBehaviour, self.behaviour.current_behaviour)
         assert behaviour.behaviour_id == self.behaviour_class.behaviour_id
 
         with caplog.at_level(
@@ -2977,7 +3051,7 @@ class BaseResetBehaviourTests(APYEstimationFSMBehaviourBaseCase):
             synchronized_data=SynchronizedData(AbciAppDB(setup_data=dict())),
         )
 
-        behaviour = cast(BaseResetBehaviour, self.behaviour.current_behaviour)
+        behaviour = cast(EmitEstimatesBehaviour, self.behaviour.current_behaviour)
         assert behaviour.behaviour_id == self.behaviour_class.behaviour_id
         actual = behaviour._pack_for_server(**input_)
         assert actual == b"".join(expected)  # type: ignore
@@ -2993,7 +3067,7 @@ class BaseResetBehaviourTests(APYEstimationFSMBehaviourBaseCase):
             ),
         )
 
-        behaviour = cast(BaseResetBehaviour, self.behaviour.current_behaviour)
+        behaviour = cast(EmitEstimatesBehaviour, self.behaviour.current_behaviour)
         assert behaviour.behaviour_id == self.behaviour_class.behaviour_id
 
         expected = {"response": "test"}
@@ -3030,7 +3104,7 @@ class BaseResetBehaviourTests(APYEstimationFSMBehaviourBaseCase):
             (True, pd.DataFrame(), True, logging.ERROR, ""),
         ),
     )
-    def test_reset_behaviour(
+    def test_emit_behaviour(
         self,
         caplog: LogCaptureFixture,
         is_most_voted_estimate_set: bool,
@@ -3054,7 +3128,7 @@ class BaseResetBehaviourTests(APYEstimationFSMBehaviourBaseCase):
                 )
             ),
         )
-        behaviour = cast(BaseResetBehaviour, self.behaviour.current_behaviour)
+        behaviour = cast(EmitEstimatesBehaviour, self.behaviour.current_behaviour)
         assert behaviour.behaviour_id == self.behaviour_class.behaviour_id
 
         # we do this because of https://github.com/valory-xyz/open-autonomy/pull/646
@@ -3088,18 +3162,4 @@ class BaseResetBehaviourTests(APYEstimationFSMBehaviourBaseCase):
         self.end_round()
 
         behaviour = cast(BaseBehaviour, self.behaviour.current_behaviour)
-        assert behaviour.behaviour_id == self.next_behaviour_class.behaviour_id
-
-
-class TestFreshModelResetBehaviour(BaseResetBehaviourTests):
-    """Test FreshModelResetBehaviour."""
-
-    behaviour_class = FreshModelResetBehaviour
-    next_behaviour_class = FetchBehaviour
-
-
-class TestCycleResetBehaviour(BaseResetBehaviourTests):
-    """Test `CycleResetBehaviour`."""
-
-    behaviour_class = CycleResetBehaviour
-    next_behaviour_class = FetchBatchBehaviour
+        assert behaviour.behaviour_id == "degenerate_finished_apy_estimation"

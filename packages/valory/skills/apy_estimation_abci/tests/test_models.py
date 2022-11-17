@@ -34,6 +34,7 @@ from hypothesis import database, given, settings
 from packages.valory.skills.abstract_round_abci.models import ApiSpecs
 from packages.valory.skills.apy_estimation_abci.models import (
     APYParams,
+    DEFAULT_N_ESTIMATIONS_BEFORE_RETRAIN,
     SharedState,
     SpookySwapSubgraph,
     SubgraphsMixin,
@@ -165,6 +166,30 @@ class TestAPYParams:
 
         expected = n_observations * interval
         assert params.ts_length == expected
+
+    @staticmethod
+    @given(n_estimations=st.integers())
+    @settings(deadline=None, database=database.InMemoryExampleDatabase())
+    def test_n_estimations_before_retrain(n_estimations: int) -> None:
+        """Test `n_estimations_before_retrain` property."""
+        # TypedDict can’t be used for specifying the type of a **kwargs argument: https://peps.python.org/pep-0589/
+        kwargs: dict = deepcopy(APY_PARAMS_KWARGS)  # type: ignore
+
+        params = APYParams(*APY_PARAMS_ARGS, **kwargs)
+        assert (
+            params.n_estimations_before_retrain == DEFAULT_N_ESTIMATIONS_BEFORE_RETRAIN
+        )
+
+        if n_estimations < 1:
+            with pytest.raises(
+                ValueError,
+                match="The number of estimations to perform before training a fresh model again cannot be less than 1. "
+                f"`n_estimations_before_retrain={n_estimations}` was given.",
+            ):
+                params.n_estimations_before_retrain = n_estimations
+        else:
+            params.n_estimations_before_retrain = n_estimations
+            assert params.n_estimations_before_retrain == n_estimations
 
     @staticmethod
     @pytest.mark.parametrize("param_value", (None, "not_an_int", 0))

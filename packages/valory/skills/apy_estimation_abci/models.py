@@ -39,6 +39,7 @@ from packages.valory.skills.apy_estimation_abci.tools.general import UNITS_TO_UN
 # It is *not* acceptable to calculate the APY value if the diff between two timestamps is not in 24h +- tolerance
 APY_TOLERANCE = 0.5 * UNITS_TO_UNIX["hour"]
 DAY_IN_UNIX = UNITS_TO_UNIX["day"]
+DEFAULT_N_ESTIMATIONS_BEFORE_RETRAIN = 60
 
 
 Requests = BaseRequests
@@ -196,6 +197,9 @@ class APYParams(BaseParams):  # pylint: disable=too-many-instance-attributes
         ] = self._ensure("optimizer", kwargs)
         self.testing = self._ensure("testing", kwargs)
         self.estimation = self._ensure("estimation", kwargs)
+        self._n_estimations_before_retrain = kwargs.pop(
+            "n_estimations_before_retrain", DEFAULT_N_ESTIMATIONS_BEFORE_RETRAIN
+        )
         self.pair_ids: PairIdsType = self._ensure("pair_ids", kwargs)
         self.ipfs_domain_name = self._ensure("ipfs_domain_name", kwargs)
         self.is_broadcasting_to_server = kwargs.pop("broadcast_to_server", False)
@@ -215,6 +219,21 @@ class APYParams(BaseParams):  # pylint: disable=too-many-instance-attributes
     def ts_length(self) -> int:
         """The length of the timeseries in seconds."""
         return self.n_observations * self.interval
+
+    @property
+    def n_estimations_before_retrain(self) -> int:
+        """The number of estimations to perform before training a fresh model again."""
+        return self._n_estimations_before_retrain
+
+    @n_estimations_before_retrain.setter
+    def n_estimations_before_retrain(self, n_estimations: int) -> None:
+        """The number of estimations to perform before training a fresh model again."""
+        if n_estimations < 1:
+            raise ValueError(
+                "The number of estimations to perform before training a fresh model again cannot be less than 1. "
+                f"`n_estimations_before_retrain={n_estimations}` was given."
+            )
+        self._n_estimations_before_retrain = n_estimations
 
     def __validate_params(self) -> None:
         """Validate the given parameters."""

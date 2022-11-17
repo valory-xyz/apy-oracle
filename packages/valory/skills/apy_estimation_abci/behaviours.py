@@ -90,12 +90,13 @@ from packages.valory.skills.apy_estimation_abci.models import (
 )
 from packages.valory.skills.apy_estimation_abci.payloads import (
     BatchPreparationPayload,
+    EmitPayload,
     EstimatePayload,
     FetchingPayload,
+    ModelStrategyPayload,
     OptimizationPayload,
     PreprocessPayload,
     RandomnessPayload,
-    ResetPayload,
     TestingPayload,
     TrainingPayload,
     TransformationPayload,
@@ -105,9 +106,9 @@ from packages.valory.skills.apy_estimation_abci.rounds import (
     APYEstimationAbciApp,
     CollectHistoryRound,
     CollectLatestHistoryBatchRound,
-    CycleResetRound,
+    EmitRound,
     EstimateRound,
-    FreshModelResetRound,
+    ModelStrategyRound,
     OptimizeRound,
     PrepareBatchRound,
     PreprocessRound,
@@ -218,6 +219,38 @@ class APYEstimationBaseBehaviour(BaseBehaviour, ABC):
             ),
             custom_loader=load_hist,
         )
+
+
+class ModelStrategyBehaviour(APYEstimationBaseBehaviour):
+    """Behaviour that decides whether the model will be retrained or updated."""
+
+    behaviour_id = "model_strategy"
+    matching_round = ModelStrategyRound
+
+    @property
+    def start_fresh_model(self) -> bool:
+        """Whether the model should be trained from scratch or just be updated."""
+        return (
+            self.synchronized_data.period_count
+            % self.params.n_estimations_before_retrain
+            == 0
+        )
+
+    def async_act(self) -> Generator:
+        """Do the action."""
+        log_msg = (
+            "Creating a fresh forecasting model."
+            if self.start_fresh_model
+            else "Estimation will happen again using the same model, after updating it with the latest data."
+        )
+        self.context.logger.info(log_msg)
+
+        payload = ModelStrategyPayload(
+            self.context.agent_address, self.start_fresh_model
+        )
+        yield from self.send_a2a_transaction(payload)
+        yield from self.wait_until_round_end()
+        self.set_done()
 
 
 class FetchBehaviour(
@@ -1477,10 +1510,11 @@ class EstimateBehaviour(APYEstimationBaseBehaviour):
         self.set_done()
 
 
-class BaseResetBehaviour(APYEstimationBaseBehaviour):
-    """Reset behaviour."""
+class EmitEstimatesBehaviour(APYEstimationBaseBehaviour):
+    """Behaviour that loads the finalized estimates and emits them to the backend."""
 
-    start_fresh = False
+    behaviour_id = "emit"
+    matching_round = EmitRound
 
     def _get_finalized_estimates(self) -> Optional[pd.DataFrame]:
         """Fetch the finalized estimates from IPFS and log the result."""
@@ -1555,17 +1589,7 @@ class BaseResetBehaviour(APYEstimationBaseBehaviour):
         self.context.logger.info(f"Broadcast response: {response}")
 
     def async_act(self) -> Generator:
-        """
-        Do the action.
-
-        Steps:
-        - Trivially log the behaviour.
-        - Sleep for configured interval.
-        - Build a registration transaction.
-        - Send the transaction and wait for it to be mined.
-        - Wait until ABCI application transitions to the next round.
-        - Go to the next behaviour (set done event).
-        """
+        """Do the action."""
         estimations = None
         if self.synchronized_data.is_most_voted_estimate_set:
             estimations = self._get_finalized_estimates()
@@ -1575,40 +1599,14 @@ class BaseResetBehaviour(APYEstimationBaseBehaviour):
         if self.params.is_broadcasting_to_server and estimations is not None:
             yield from self._send_to_server(estimations)
 
-        log_msg = (
-            "Resetting to create a fresh forecasting model"
-            if self.start_fresh
-            else "Estimation will happen again"
-        )
-        log_msg += f" in {self.params.observation_interval} seconds."
-        self.context.logger.info(log_msg)
-
-        yield from self.sleep(self.params.observation_interval)
         self.context.benchmark_tool.save()
 
-        payload = ResetPayload(
+        payload = EmitPayload(
             self.context.agent_address, self.synchronized_data.period_count
         )
         yield from self.send_a2a_transaction(payload)
         yield from self.wait_until_round_end()
         self.set_done()
-
-
-class FreshModelResetBehaviour(  # pylint: disable=too-many-ancestors
-    BaseResetBehaviour
-):
-    """Reset behaviour to start with a fresh model."""
-
-    matching_round = FreshModelResetRound
-    behaviour_id = "fresh_model_reset"
-    start_fresh = True
-
-
-class CycleResetBehaviour(BaseResetBehaviour):  # pylint: disable=too-many-ancestors
-    """Cycle reset behaviour."""
-
-    matching_round = CycleResetRound
-    behaviour_id = "cycle_reset"
 
 
 class EstimatorRoundBehaviour(AbstractRoundBehaviour):
@@ -1617,6 +1615,7 @@ class EstimatorRoundBehaviour(AbstractRoundBehaviour):
     initial_behaviour_cls = FetchBehaviour
     abci_app_cls = APYEstimationAbciApp
     behaviours: Set[Type[BaseBehaviour]] = {
+        ModelStrategyBehaviour,  # type: ignore
         FetchBehaviour,
         FetchBatchBehaviour,
         TransformBehaviour,
@@ -1627,7 +1626,6 @@ class EstimatorRoundBehaviour(AbstractRoundBehaviour):
         TrainBehaviour,
         TestBehaviour,
         UpdateForecasterBehaviour,
-        EstimateBehaviour,  # type: ignore
-        FreshModelResetBehaviour,  # type: ignore
-        CycleResetBehaviour,  # type: ignore
+        EstimateBehaviour,
+        EmitEstimatesBehaviour,  # type: ignore
     }
