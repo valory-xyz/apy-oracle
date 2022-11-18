@@ -502,7 +502,7 @@ class FetchBehaviour(
             self._progress.call_failed = True
             subgraph.increment_retries()
             if sleep_on_fail:
-                yield from self.sleep(self.params.sleep_time)
+                yield from self.sleep(subgraph.retries_info.suggested_sleep_time)
             return None
 
         value = res[keys[0]]
@@ -1048,7 +1048,9 @@ class RandomnessBehaviour(APYEstimationBaseBehaviour):
             self.context.logger.error(
                 f"Could not get randomness from {self.context.randomness_api.api_id}"
             )
-            yield from self.sleep(self.params.sleep_time)
+            yield from self.sleep(
+                self.context.randomness_api.retries_info.suggested_sleep_time
+            )
             self.context.randomness_api.increment_retries()
             return
 

@@ -216,6 +216,16 @@ class APYEstimationFSMBehaviourBaseCase(FSMBehaviourBaseCase):
         self.behaviour.current_behaviour.params.interval = HISTORY_INTERVAL
         self.behaviour.current_behaviour.params.end = HISTORY_END
         self.behaviour.current_behaviour.params.interval_not_acceptable = False
+
+        for api in (
+            "randomness_api",
+            "ethereum_subgraph",
+            "spooky_subgraph",
+            "uniswap_subgraph",
+        ):
+            api_instance = getattr(self.behaviour.current_behaviour.context, api)
+            api_instance.retries_info.backoff_factor = SLEEP_TIME_TWEAK
+
         self.synchronized_data = SynchronizedData(
             AbciAppDB(
                 setup_data={"full_training": [False]},
@@ -779,9 +789,6 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             self.behaviour_class.behaviour_id,
             self.synchronized_data,
         )
-        cast(
-            FetchBehaviour, self.behaviour.current_behaviour
-        ).params.sleep_time = SLEEP_TIME_TWEAK
 
         # test with empty response.
         specs = ApiSpecs(
@@ -790,6 +797,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             method="GET",
             name="test",
             skill_context=self.behaviour.context,
+            backoff_factor=SLEEP_TIME_TWEAK,
         )
 
         with caplog.at_level(
@@ -800,7 +808,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
                 FetchBehaviour, self.behaviour.current_behaviour
             )._handle_response(None, "test_context", ("", 0), specs)
             next(handling_generator)
-            time.sleep(SLEEP_TIME_TWEAK + 0.01)
+            time.sleep(specs.retries_info.suggested_sleep_time + 0.01)
 
             try:
                 next(handling_generator)
@@ -1119,7 +1127,6 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
         behaviour.params.pair_ids = pairs_ids
-        behaviour.params.sleep_time = SLEEP_TIME_TWEAK
         # make sure that the first generated timestamp (`behaviour.params.start` property)
         # will be the `timestamp_gte` which is used in `block_from_timestamp_q`
         behaviour.params.end = (
@@ -1188,7 +1195,10 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         self.mock_http_request(request_kwargs, response_kwargs)
 
         if none_at_step == 0:
-            time.sleep(SLEEP_TIME_TWEAK + 0.01)
+            time.sleep(
+                behaviour.context.ethereum_subgraph.retries_info.suggested_sleep_time
+                + 0.01
+            )
             behaviour.act_wrapper()
             return
 
@@ -1207,7 +1217,10 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         self.mock_http_request(request_kwargs, response_kwargs)
 
         if none_at_step == 1:
-            time.sleep(SLEEP_TIME_TWEAK + 0.01)
+            time.sleep(
+                behaviour.context.ethereum_subgraph.retries_info.suggested_sleep_time
+                + 0.01
+            )
             behaviour.act_wrapper()
             return
 
@@ -1220,7 +1233,9 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         response_kwargs["body"] = json.dumps(res).encode("utf-8")
         behaviour.act_wrapper()
         self.mock_http_request(request_kwargs, response_kwargs)
-        time.sleep(SLEEP_TIME_TWEAK + 0.01)
+        time.sleep(
+            behaviour.context.ethereum_subgraph.retries_info.suggested_sleep_time + 0.01
+        )
         behaviour.act_wrapper()
         self.end_round()
 
@@ -1310,7 +1325,6 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
         behaviour.params.pair_ids = pairs_ids
-        behaviour.params.sleep_time = SLEEP_TIME_TWEAK
         # make sure that the first generated timestamp (`behaviour.params.start` property)
         # will be the `timestamp_gte` which is used in `block_from_timestamp_q`
         behaviour.params.end = (
@@ -1360,7 +1374,9 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         assert "[test_agent_name] Could not get block from eth" in caplog.text
 
         caplog.clear()
-        time.sleep(SLEEP_TIME_TWEAK + 0.01)
+        time.sleep(
+            behaviour.context.ethereum_subgraph.retries_info.suggested_sleep_time + 0.01
+        )
         behaviour.act_wrapper()
 
         # block request.
@@ -1393,7 +1409,9 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         )
 
         caplog.clear()
-        time.sleep(SLEEP_TIME_TWEAK + 0.01)
+        time.sleep(
+            behaviour.context.uniswap_subgraph.retries_info.suggested_sleep_time + 0.01
+        )
         behaviour.act_wrapper()
 
         # block request.
@@ -1430,7 +1448,9 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         )
 
         caplog.clear()
-        time.sleep(SLEEP_TIME_TWEAK + 0.01)
+        time.sleep(
+            behaviour.context.ethereum_subgraph.retries_info.suggested_sleep_time + 0.01
+        )
         behaviour.act_wrapper()
         self.end_round()
 
@@ -2056,9 +2076,6 @@ class TestRandomnessBehaviour(APYEstimationFSMBehaviourBaseCase):
             ).behaviour_id
             == self.randomness_behaviour_class.behaviour_id
         )
-        cast(
-            RandomnessBehaviour, self.behaviour.current_behaviour
-        ).params.sleep_time = SLEEP_TIME_TWEAK
 
         self.behaviour.act_wrapper()
 
@@ -2075,7 +2092,12 @@ class TestRandomnessBehaviour(APYEstimationFSMBehaviourBaseCase):
             ),
         )
         self.behaviour.act_wrapper()
-        time.sleep(SLEEP_TIME_TWEAK + 0.01)
+        time.sleep(
+            cast(
+                BaseBehaviour, self.behaviour.current_behaviour
+            ).context.randomness_api.retries_info.suggested_sleep_time
+            + 0.01
+        )
         self.behaviour.act_wrapper()
         self.end_round()
 
