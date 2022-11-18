@@ -113,6 +113,9 @@ def _common_specs() -> SpecsType:
         "skill_context": SkillContext(),
         "response_key": "data",
         "response_type": "list",
+        "error_key": "errors",
+        "error_index": 0,
+        "error_type": "dict",
         "retries": 5,
     }
 

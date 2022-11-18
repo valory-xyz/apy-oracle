@@ -220,11 +220,12 @@ models:
       api_id: spookyswap
       bundle_id: 1
       chain_subgraph: fantom_subgraph
+      error_index: 0
+      error_key: errors
+      error_type: dict
       headers:
       - Content-Type: application/json
       method: POST
-      non_indexed_error_key: errors
-      non_indexed_error_type: list
       parameters: null
       response_key: data
       response_type: dict
@@ -239,11 +240,12 @@ models:
       api_id: uniswap
       bundle_id: 1
       chain_subgraph: ethereum_subgraph
+      error_index: 0
+      error_key: errors
+      error_type: dict
       headers:
       - Content-Type: application/json
       method: POST
-      non_indexed_error_key: errors
-      non_indexed_error_type: list
       parameters: null
       response_key: data
       response_type: dict

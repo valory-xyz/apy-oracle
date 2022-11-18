@@ -43,7 +43,6 @@ from typing import (
 import numpy as np
 import pandas as pd
 
-from packages.valory.protocols.http import HttpMessage
 from packages.valory.skills.abstract_round_abci.behaviours import (
     AbstractRoundBehaviour,
     BaseBehaviour,
@@ -546,7 +545,7 @@ class FetchBehaviour(
 
     def _fetch_eth_price(
         self, block: Dict[str, int]
-    ) -> Generator[None, None, Tuple[HttpMessage, Optional[float]]]:
+    ) -> Generator[None, None, Optional[float]]:
         """Fetch ETH price for block."""
         res_raw = yield from self.get_http_response(
             content=eth_price_usd_q(
@@ -565,17 +564,16 @@ class FetchBehaviour(
             sleep_on_fail=False,
         )
 
-        return res_raw, eth_price
+        return eth_price
 
     def _check_non_indexed_block(
-        self, res_raw: HttpMessage
+        self,
     ) -> Generator[None, None, Optional[Tuple[Dict[str, int], float]]]:
         """Check if we received a non-indexed block error and try to get the ETH price for the latest indexed block."""
-        res = self.current_dex.process_non_indexed_error(res_raw)
         latest_indexed_block_error = yield from self._handle_response(
-            res,
+            self.current_dex.response_info.error_data,
             res_context="indexing error that will be attempted to be handled",
-            keys=(0, "message"),
+            keys=("message",),
             subgraph=self.current_dex,
         )
         if latest_indexed_block_error is None:
@@ -599,7 +597,7 @@ class FetchBehaviour(
             return None
 
         # Fetch ETH price for latest indexed block.
-        _, eth_price = yield from self._fetch_eth_price(latest_indexed_block)
+        eth_price = yield from self._fetch_eth_price(latest_indexed_block)
         if eth_price is None:
             return None
 
@@ -617,10 +615,10 @@ class FetchBehaviour(
         :return: the same block or the latest indexed and the corresponding ETH price.
         :yield: None
         """
-        res_raw, eth_price = yield from self._fetch_eth_price(block)
+        eth_price = yield from self._fetch_eth_price(block)
 
         if eth_price is None:
-            check_result = yield from self._check_non_indexed_block(res_raw)
+            check_result = yield from self._check_non_indexed_block()
             if check_result is None:
                 return None
             block, eth_price = check_result
