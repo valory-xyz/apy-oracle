@@ -733,7 +733,9 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
 
         if retries_exceeded:
             # exceed the retries before calling the method
-            for _ in range(behaviour._utilized_subgraphs["test"]._retries + 1):
+            for _ in range(
+                behaviour._utilized_subgraphs["test"].retries_info.retries + 1
+            ):
                 behaviour._utilized_subgraphs["test"].increment_retries()
             # call the tested method
             behaviour._set_current_progress()
@@ -808,7 +810,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             assert (
                 "[test_agent_name] Could not get test_context from test" in caplog.text
             )
-            assert specs._retries_attempted == 1
+            assert specs.retries_info.retries_attempted == 1
 
         caplog.clear()
         with caplog.at_level(
@@ -823,7 +825,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             except StopIteration as res:
                 assert res.value == 4
             assert "[test_agent_name] Retrieved test: 4." in caplog.text
-            assert specs._retries_attempted == 0
+            assert specs.retries_info.retries_attempted == 0
 
         self.end_round()
 
@@ -941,8 +943,8 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         behaviour._check_given_pairs = mock.MagicMock()  # type: ignore
         behaviour._progress.call_failed = True
         # set the retries to the max allowed for any subgraph (chose SpookySwap randomly)
-        behaviour.context.spooky_subgraph._retries_attempted = (
-            behaviour.context.spooky_subgraph._retries
+        behaviour.context.spooky_subgraph.retries_info.retries_attempted = (
+            behaviour.context.spooky_subgraph.retries_info.retries
         )
 
         behaviour.act_wrapper()
@@ -963,7 +965,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         self._test_done_flag_set()
 
         behaviour._progress.call_failed = False
-        behaviour.context.spooky_subgraph._retries_attempted = 0
+        behaviour.context.spooky_subgraph.retries_info.retries_attempted = 0
 
         self.end_round()
         behaviour = cast(BaseBehaviour, self.behaviour.current_behaviour)
@@ -1246,7 +1248,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             "ethereum_subgraph",
         ):
             subgraph = getattr(behaviour.context, subgraph_name)
-            subgraph_retries = subgraph._retries
+            subgraph_retries = subgraph.retries_info.retries
 
             if retries is None:
                 retries = subgraph_retries
@@ -1510,7 +1512,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             "ethereum_subgraph",
         ):
             subgraph = getattr(behaviour.context, subgraph_name)
-            subgraph._retries_attempted = 1
+            subgraph.retries_info.retries_attempted = 1
 
         for subgraph_name in (
             "spooky_subgraph",
@@ -1520,7 +1522,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         ):
             subgraph = getattr(behaviour.context, subgraph_name)
             self.behaviour.current_behaviour.clean_up()
-            assert subgraph._retries_attempted == 0
+            assert subgraph.retries_info.retries_attempted == 0
 
         self.end_round()
 
@@ -2123,10 +2125,10 @@ class TestRandomnessBehaviour(APYEstimationFSMBehaviourBaseCase):
             ).behaviour_id
             == self.randomness_behaviour_class.behaviour_id
         )
-        self.behaviour.context.randomness_api._retries_attempted = 1
+        self.behaviour.context.randomness_api.retries_info.retries_attempted = 1
         assert self.behaviour.current_behaviour is not None
         self.behaviour.current_behaviour.clean_up()
-        assert self.behaviour.context.randomness_api._retries_attempted == 0
+        assert self.behaviour.context.randomness_api.retries_info.retries_attempted == 0
         self.end_round()
 
 

@@ -26,6 +26,7 @@ import logging  # noqa: F401
 import re
 import time
 from typing import Dict, List, Tuple, Type, cast
+from unittest.mock import MagicMock
 
 import pytest
 import requests
@@ -33,7 +34,6 @@ from _pytest.fixtures import FixtureRequest
 
 from packages.valory.protocols.http import HttpMessage
 from packages.valory.skills.abstract_round_abci.models import ApiSpecs
-from packages.valory.skills.abstract_round_abci.test_tools.apis import DummyMessage
 from packages.valory.skills.apy_estimation_abci.behaviours import NON_INDEXED_BLOCK_RE
 from packages.valory.skills.apy_estimation_abci.models import (
     DEXSubgraph,
@@ -152,7 +152,7 @@ class TestSubgraphs:
         api = dex_subgraph(**specs)
 
         res = make_request(api.get_spec(), eth_price_usd_q)
-        eth_price = ast.literal_eval(api.process_response(DummyMessage(res.content))[0]["ethPrice"])  # type: ignore
+        eth_price = ast.literal_eval(api.process_response(MagicMock(body=res.content))[0]["ethPrice"])  # type: ignore
 
         assert eth_price == expected_res
 
@@ -186,7 +186,7 @@ class TestSubgraphs:
             api.get_spec(), eth_price_usd_raising_q, raise_on_error=False
         )
         non_indexed_error = api.process_non_indexed_error(
-            cast(HttpMessage, DummyMessage(res.content))
+            cast(HttpMessage, MagicMock(body=res.content))
         )[0]["message"]
         match = re.match(NON_INDEXED_BLOCK_RE, non_indexed_error)
         assert match is not None
@@ -241,7 +241,7 @@ class TestSubgraphs:
 
         api = block_subgraph(**specs)
         res = make_request(api.get_spec(), query)
-        block = api.process_response(DummyMessage(res.content))[0]  # type: ignore
+        block = api.process_response(MagicMock(body=res.content))[0]  # type: ignore
 
         assert isinstance(block, dict)
         assert all((key in block for key in expected_block_q_res_keys))
@@ -276,7 +276,7 @@ class TestSubgraphs:
         api = dex_subgraph(**specs)
 
         res = make_request(specs, top_n_pairs_q)
-        pair_ids = [pair["id"] for pair in api.process_response(DummyMessage(res.content))]  # type: ignore
+        pair_ids = [pair["id"] for pair in api.process_response(MagicMock(body=res.content))]  # type: ignore
 
         assert is_list_of_strings(pair_ids)
 
@@ -320,7 +320,7 @@ class TestSubgraphs:
         api = dex_subgraph(**specs)
 
         res = make_request(api.get_spec(), query)
-        pairs = api.process_response(DummyMessage(res.content))  # type: ignore
+        pairs = api.process_response(MagicMock(body=res.content))  # type: ignore
 
         assert isinstance(pairs, list)
         assert len(pairs) > 0
