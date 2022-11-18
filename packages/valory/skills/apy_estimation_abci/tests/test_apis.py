@@ -184,9 +184,7 @@ class TestSubgraphs:
         res = make_request(
             api.get_spec(), eth_price_usd_raising_q, raise_on_error=False
         )
-        processed = api.process_response(
-            cast(HttpMessage, MagicMock(body=res.content))
-        )
+        processed = api.process_response(cast(HttpMessage, MagicMock(body=res.content)))
         assert processed is None
         non_indexed_error = api.response_info.error_data["message"]
         match = re.match(NON_INDEXED_BLOCK_RE, non_indexed_error)
