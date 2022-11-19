@@ -21,12 +21,10 @@
 """Custom objects for the APY estimation ABCI application."""
 
 
-import json
 from typing import Any, Dict, List, Optional, Set, Union, ValuesView, cast
 
 from aea.skills.base import SkillContext
 
-from packages.valory.protocols.http import HttpMessage
 from packages.valory.skills.abstract_round_abci.models import ApiSpecs, BaseParams
 from packages.valory.skills.abstract_round_abci.models import (
     BenchmarkTool as BaseBenchmarkTool,
@@ -81,33 +79,7 @@ class DEXSubgraph(ApiSpecs):
         """Initialize DEX Subgraph."""
         self.bundle_id: int = self.ensure("bundle_id", kwargs)
         self.chain_subgraph_name = self.ensure("chain_subgraph", kwargs)
-        self.non_indexed_error_key = kwargs.pop("non_indexed_error_key", "errors")
-        self.non_indexed_error_type = kwargs.pop("non_indexed_error_type", "list")
         super().__init__(*args, **kwargs)
-
-    def process_non_indexed_error(self, response: HttpMessage) -> Any:
-        """Process a non-indexed block error response from the subgraph."""
-        decoded_response = response.body.decode()
-
-        try:
-            response_data = json.loads(decoded_response)
-        except json.JSONDecodeError:
-            self.context.logger.error("Could not parse the response body!")
-            self._log_response(decoded_response)
-            return None
-
-        try:
-            return self._parse_response(
-                response_data,
-                response_keys=self.non_indexed_error_key,
-                response_index=None,
-                response_type=self.non_indexed_error_type,
-            )
-        except (KeyError, IndexError, TypeError):
-            self.context.logger.error(
-                f"Could not parse error using the given key(s) ({self.non_indexed_error_key})."
-            )
-            return None
 
 
 class UniswapSubgraph(DEXSubgraph):

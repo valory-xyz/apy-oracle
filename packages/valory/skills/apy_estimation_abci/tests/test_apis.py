@@ -179,15 +179,14 @@ class TestSubgraphs:
     ) -> None:
         """Test SpookySwap's eth price request from subgraph, when the requesting block has not been indexed yet."""
         specs: SpecsType = request.getfixturevalue(specs_fixture)
-        specs["response_key"] = "errors"
         api = dex_subgraph(**specs)
 
         res = make_request(
             api.get_spec(), eth_price_usd_raising_q, raise_on_error=False
         )
-        non_indexed_error = api.process_non_indexed_error(
-            cast(HttpMessage, MagicMock(body=res.content))
-        )[0]["message"]
+        processed = api.process_response(cast(HttpMessage, MagicMock(body=res.content)))
+        assert processed is None
+        non_indexed_error = api.response_info.error_data["message"]
         match = re.match(NON_INDEXED_BLOCK_RE, non_indexed_error)
         assert match is not None
         latest_indexed_block = match.group(1)
