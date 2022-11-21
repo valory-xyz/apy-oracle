@@ -39,7 +39,7 @@ from packages.valory.skills.reset_pause_abci.rounds import (
     FinishedResetAndPauseErrorRound,
     FinishedResetAndPauseRound,
     ResetAndPauseRound,
-    ResetPauseABCIApp,
+    ResetPauseAbciApp,
 )
 
 
@@ -56,7 +56,7 @@ APYEstimationAbciAppChained = chain(
     (
         AgentRegistrationAbciApp,
         APYEstimationAbciApp,
-        ResetPauseABCIApp,
+        ResetPauseAbciApp,
     ),
     abci_app_transition_mapping,
 )

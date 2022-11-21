@@ -130,5 +130,5 @@ release-image:
 	# because the command pulls the agent from the registry.
 	# Please make sure to run this command only from a release branch.
 	autonomy push-all
-	autonomy build-image ${APY_ORACLE_AGENT_PUBLIC_ID}
+	autonomy build-image ${APY_ORACLE_AGENT_PUBLIC_ID} --pull
 	docker push ${APY_ORACLE_IMAGE_NAME}:${APY_ORACLE_AGENT_HASH}

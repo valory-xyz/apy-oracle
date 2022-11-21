@@ -12,7 +12,7 @@ default_start_state: ModelStrategyRound
 final_states:
 - FailedAPYRound
 - FinishedAPYEstimationRound
-label: packages.valory.skills.apy_estimation_abci.rounds.APYEstimationAbciApp
+label: APYEstimationAbciApp
 start_states:
 - ModelStrategyRound
 states:

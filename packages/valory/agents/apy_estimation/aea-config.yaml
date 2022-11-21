@@ -11,12 +11,12 @@ fingerprint:
   tests/test_apy_estimation.py: bafybeidbf3ena6fr6abniuh5ixpibyizqbt55ywrzydn6j2dsbp6vamct4
 fingerprint_ignore_patterns: []
 connections:
-- valory/abci:0.1.0:bafybeiap2iqpexya667merizj6h75267zurbbxhzcijrxu6hdt2wmkrhai
+- valory/abci:0.1.0:bafybeics24v7csn2xwyrkdgthrzdbuqutssx3mn572z2tavyr33banqz6u
 - valory/http_client:0.23.0:bafybeihz3tubwado7j3wlivndzzuj3c6fdsp4ra5r3nqixn3ufawzo3wii
 - valory/ledger:0.19.0:bafybeiadc25se7dgnn4mufztwpzdono4xsfs45qknzdqyi3gckn6ccuv44
 - valory/p2p_libp2p_client:0.1.0:bafybeidkk33xbga54szmitk6uwsi3ef56hbbdbuasltqtiyki34hgfpnxa
 contracts:
-- valory/service_registry:0.1.0:bafybeieqj5dvwttrxigie6kffbhysfjimapbp7zhsgojyukxsjns2dtkny
+- valory/service_registry:0.1.0:bafybeihs42gbxnncxyh5wygbfgz3ulkjzojse4wznylzczt5neksba7tfq
 protocols:
 - open_aea/signing:1.0.0:bafybeiambqptflge33eemdhis2whik67hjplfnqwieoa6wblzlaf7vuo44
 - valory/abci:0.1.0:bafybeiaw3tzlg3rkvnn5fcufblktmfwngmxugn4yo7pyjp76zz6aqtqcay
@@ -26,12 +26,12 @@ protocols:
 - valory/ledger_api:1.0.0:bafybeih7rhi5zvfvwakx5ifgxsz2cfipeecsh7bm3gnudjxtvhrygpcftq
 - valory/tendermint:0.1.0:bafybeihcnjhovvyyfbkuw5sjyfx2lfd4soeocfqzxz54g67333m6nk5gxq
 skills:
-- valory/abstract_abci:0.1.0:bafybeidpixylwoisuciygaqnerwfk4wnbropwc2ghvtlmqusqxe6pyz5iu
-- valory/abstract_round_abci:0.1.0:bafybeigqcsyldiu4arougcfaz4kgqa37ko4gzkrrup22hwz344nuv3qx5q
-- valory/apy_estimation_abci:0.1.0:bafybeifpqmzmbgt4xlzostanidh2uznv7ov6k6ytiwtaxmrl2lvuzdl6h4
-- valory/apy_estimation_chained_abci:0.1.0:bafybeibddcxama55mr7koambciqjiezdyr6exwe7gcz2ebykoojikrcz7a
-- valory/registration_abci:0.1.0:bafybeibbyutireqtu2nlhsafexqu5dqepwrzhwmr6yjgrdneed7nntypba
-- valory/reset_pause_abci:0.1.0:bafybeihu52fdmjslyvf6tpwa7sic4usde5uu5jtscpyjgqwaji53httw3q
+- valory/abstract_abci:0.1.0:bafybeicog4eierjad4f542ubhe3ez7sxgrsna7t2e5pci2hncpq5vckw4e
+- valory/abstract_round_abci:0.1.0:bafybeid3sx66tzs6mmwu52tlaqdycfszzpetgybzu34gagfocg5bmivh7e
+- valory/apy_estimation_abci:0.1.0:bafybeibfxudy72eygc2fipyitmrxhhqul5r2pq2g4koexyg65jkvbnq6ha
+- valory/apy_estimation_chained_abci:0.1.0:bafybeiei5xbosn4teqk5mr6o4jv2yiwna6gj46kaufoyzxpoag26op5bgu
+- valory/registration_abci:0.1.0:bafybeifxquhkccygjawoqyj26b3k6rxizaa7geoef7oyet2baojjk4gy2q
+- valory/reset_pause_abci:0.1.0:bafybeibnziujsv7toespbguradspw52rfrhhgdojcbznckqia2jwm2jvwm
 default_ledger: ethereum
 required_ledgers:
 - ethereum
@@ -65,7 +65,7 @@ dependencies:
   open-aea-ledger-cosmos: {}
   open-aea-ledger-ethereum: {}
   open-aea-test-autonomy:
-    version: ==0.3.5
+    version: ==0.4.0
 skill_exception_policy: just_log
 connection_exception_policy: just_log
 default_connection: null

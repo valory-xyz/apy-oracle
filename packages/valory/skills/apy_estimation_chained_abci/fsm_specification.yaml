@@ -12,7 +12,7 @@ alphabet_in:
 - ROUND_TIMEOUT
 default_start_state: RegistrationStartupRound
 final_states: []
-label: packages.valory.skills.apy_estimation_chained_abci.composition.APYEstimationAbciAppChained
+label: APYEstimationAbciAppChained
 start_states:
 - RegistrationStartupRound
 states:
