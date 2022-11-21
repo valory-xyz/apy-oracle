@@ -53,6 +53,7 @@ from packages.valory.skills.apy_estimation_abci.rounds import Event
 from packages.valory.skills.apy_estimation_chained_abci.composition import (
     APYEstimationAbciAppChained,
 )
+from packages.valory.skills.reset_pause_abci.rounds import Event as ResetPauseEvent
 
 
 Requests = BaseRequests
@@ -81,7 +82,8 @@ class SharedState(BaseSharedState):
 
         event_to_timeout_overrides = {
             Event.ROUND_TIMEOUT: self.context.params.round_timeout_seconds,
-            Event.RESET_TIMEOUT: self.context.params.observation_interval + MARGIN,
+            ResetPauseEvent.RESET_AND_PAUSE_TIMEOUT: self.context.params.observation_interval
+            + MARGIN,
         }
 
         for event, override in event_to_timeout_overrides.items():

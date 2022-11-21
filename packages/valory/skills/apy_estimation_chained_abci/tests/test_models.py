@@ -34,6 +34,7 @@ from packages.valory.skills.apy_estimation_chained_abci.models import (
     MARGIN,
     SharedState,
 )
+from packages.valory.skills.reset_pause_abci.rounds import Event as ResetPauseEvent
 
 
 @pytest.fixture
@@ -58,6 +59,8 @@ class TestSharedState:
             == shared_state.context.params.round_timeout_seconds
         )
         assert (
-            APYEstimationAbciAppChained.event_to_timeout[Event.RESET_TIMEOUT]
+            APYEstimationAbciAppChained.event_to_timeout[
+                ResetPauseEvent.RESET_AND_PAUSE_TIMEOUT
+            ]
             == shared_state.context.params.observation_interval + MARGIN
         )
