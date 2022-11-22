@@ -1,6 +1,13 @@
 # Release History - `apy-oracle`
 
 
+## 0.4.0 (2022-11-22)
+
+- Fixes reset and pause timeout for the chained FSM #20
+- Utilizes the updated `ApiSpecs` #19
+- Bumps `open-autonomy` and `open-aea` and addresses breaking changes #18
+
+
 ## 0.3.5 (2022-11-17)
 
 - Introduces the reset and pause round to help keep the memory usage constant instead of growing unbounded #15
