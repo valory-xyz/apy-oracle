@@ -24,7 +24,7 @@ models:
         - '0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c'
       n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
       history_end: null
-      ipfs_domain_name: /dns/registry.autonolas.tech/tcp/443/https
+      ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
   server_api:
     args:
       url: ${SERVICE_APY_DEPOSIT_ENDPOINT:str:http://172.17.0.2:9999/apy/deposit}
