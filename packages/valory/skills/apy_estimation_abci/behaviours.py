@@ -223,7 +223,6 @@ class APYEstimationBaseBehaviour(BaseBehaviour, ABC):
 class ModelStrategyBehaviour(APYEstimationBaseBehaviour):
     """Behaviour that decides whether the model will be retrained or updated."""
 
-    behaviour_id = "model_strategy"
     matching_round = ModelStrategyRound
 
     @property
@@ -257,7 +256,6 @@ class FetchBehaviour(
 ):  # pylint: disable=too-many-ancestors
     """Observe historical data."""
 
-    behaviour_id = "fetch"
     matching_round = CollectHistoryRound
     batch = False
 
@@ -763,7 +761,6 @@ class FetchBehaviour(
 class FetchBatchBehaviour(FetchBehaviour):  # pylint: disable=too-many-ancestors
     """Observe the latest batch of historical data."""
 
-    behaviour_id = "fetch_batch"
     matching_round = CollectLatestHistoryBatchRound
     batch = True
 
@@ -773,7 +770,6 @@ class TransformBehaviour(
 ):  # pylint: disable=too-many-ancestors
     """Transform historical data, i.e., convert them to a dataframe and calculate useful metrics, such as the APY."""
 
-    behaviour_id = "transform"
     matching_round = TransformRound
 
     def __init__(self, **kwargs: Any) -> None:
@@ -864,7 +860,6 @@ class TransformBehaviour(
 class PreprocessBehaviour(APYEstimationBaseBehaviour):
     """Preprocess historical data (train-test split)."""
 
-    behaviour_id = "preprocess"
     matching_round = PreprocessRound
 
     def __init__(self, **kwargs: Any) -> None:
@@ -934,7 +929,6 @@ class PreprocessBehaviour(APYEstimationBaseBehaviour):
 class PrepareBatchBehaviour(APYEstimationBaseBehaviour):
     """Transform and preprocess batch data."""
 
-    behaviour_id = "prepare_batch"
     matching_round = PrepareBatchRound
 
     def __init__(self, **kwargs: Any) -> None:
@@ -1024,7 +1018,6 @@ class PrepareBatchBehaviour(APYEstimationBaseBehaviour):
 class RandomnessBehaviour(APYEstimationBaseBehaviour):
     """Get randomness value from `drnand`."""
 
-    behaviour_id = "randomness"
     matching_round = RandomnessRound
 
     def async_act(self) -> Generator:
@@ -1089,7 +1082,6 @@ class RandomnessBehaviour(APYEstimationBaseBehaviour):
 class OptimizeBehaviour(APYEstimationBaseBehaviour):
     """Run an optimization study based on the training data."""
 
-    behaviour_id = "optimize"
     matching_round = OptimizeRound
 
     def __init__(self, **kwargs: Any) -> None:
@@ -1181,7 +1173,6 @@ class OptimizeBehaviour(APYEstimationBaseBehaviour):
 class TrainBehaviour(APYEstimationBaseBehaviour):
     """Train an estimator."""
 
-    behaviour_id = "train"
     matching_round = TrainRound
 
     def __init__(self, **kwargs: Any) -> None:
@@ -1274,7 +1265,6 @@ class TrainBehaviour(APYEstimationBaseBehaviour):
 class TestBehaviour(APYEstimationBaseBehaviour):
     """Test an estimator."""
 
-    behaviour_id = "test"
     matching_round = TestRound
 
     def __init__(self, **kwargs: Any) -> None:
@@ -1365,7 +1355,6 @@ class TestBehaviour(APYEstimationBaseBehaviour):
 class UpdateForecasterBehaviour(APYEstimationBaseBehaviour):
     """Update an estimator."""
 
-    behaviour_id = "update"
     matching_round = UpdateForecasterRound
 
     def __init__(self, **kwargs: Any) -> None:
@@ -1439,7 +1428,6 @@ class UpdateForecasterBehaviour(APYEstimationBaseBehaviour):
 class EstimateBehaviour(APYEstimationBaseBehaviour):
     """Estimate APY."""
 
-    behaviour_id = "estimate"
     matching_round = EstimateRound
 
     def __init__(self, **kwargs: Any) -> None:
@@ -1513,7 +1501,6 @@ class EstimateBehaviour(APYEstimationBaseBehaviour):
 class EmitEstimatesBehaviour(APYEstimationBaseBehaviour):
     """Behaviour that loads the finalized estimates and emits them to the backend."""
 
-    behaviour_id = "emit"
     matching_round = EmitRound
 
     def _get_finalized_estimates(self) -> Optional[pd.DataFrame]:
