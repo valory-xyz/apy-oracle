@@ -1004,7 +1004,7 @@ class PrepareBatchBehaviour(APYEstimationBaseBehaviour):
         # Pass the hash as a Payload.
         payload = BatchPreparationPayload(
             self.context.agent_address,
-            self._prepared_batches_hash,
+            prepared_batch=self._prepared_batches_hash,
         )
 
         # Finish behaviour.
