@@ -258,7 +258,7 @@ dependencies:
   numpy:
     version: ==1.21.6
   open-aea-test-autonomy:
-    version: ==0.4.0
+    version: ==0.6.0
   optuna:
     version: ==2.10.1
   pandas:
