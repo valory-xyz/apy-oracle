@@ -116,7 +116,7 @@ new_env: clean
 
 .PHONY: fix-abci-app-specs
 fix-abci-app-specs:
-	autonomy analyse abci generate-app-specs packages.valory.skills.apy_estimation_abci.rounds.APYEstimationAbciApp packages/valory/skills/apy_estimation_abci/fsm_specification.yaml || (echo "Failed to check apy_estimation_abci consistency" && exit 1)
+	autonomy analyse fsm-specs --update --app-class APYEstimationAbciApp --package packages/valory/skills/apy_estimation_abci || (echo "Failed to check apy_estimation_abci consistency" && exit 1)
 	echo "Successfully validated abcis!"
 
 PACKAGES_PATH := packages/packages.json
