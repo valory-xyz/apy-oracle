@@ -282,6 +282,7 @@ class CollectHistoryRound(CollectSameUntilThresholdRound, APYEstimationAbstractR
     payload_attribute = get_name(FetchingPayload.history)
     collection_key = get_name(SynchronizedData.participant_to_history)
     selection_key = get_name(SynchronizedData.history_hash)
+    synchronized_data_class = SynchronizedData
 
     def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
         """Process the end of the block."""
@@ -293,7 +294,7 @@ class CollectHistoryRound(CollectSameUntilThresholdRound, APYEstimationAbstractR
                 return self.synchronized_data, Event.NETWORK_ERROR
 
             update_kwargs = {
-                "synchronized_data_class": SynchronizedData,
+                "synchronized_data_class": self.synchronized_data_class,
                 self.collection_key: self.collection,
                 self.selection_key: self.most_voted_payload,
             }
@@ -314,6 +315,7 @@ class CollectLatestHistoryBatchRound(CollectHistoryRound):
 
     collection_key = get_name(SynchronizedData.participant_to_batch)
     selection_key = get_name(SynchronizedData.batch_hash)
+    synchronized_data_class = SynchronizedData
 
 
 class TransformRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
@@ -321,6 +323,7 @@ class TransformRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound)
 
     allowed_tx_type = TransformationPayload.transaction_type
     payload_attribute = get_name(TransformationPayload.transformed_history_hash)
+    synchronized_data_class = SynchronizedData
 
     def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
         """Process the end of the block."""
@@ -329,7 +332,7 @@ class TransformRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound)
 
         if self.threshold_reached:
             synchronized_data = self.synchronized_data.update(
-                synchronized_data_class=SynchronizedData,
+                synchronized_data_class=self.synchronized_data_class,
                 **{
                     get_name(
                         SynchronizedData.participant_to_transform
@@ -360,6 +363,7 @@ class PreprocessRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound
 
     allowed_tx_type = PreprocessPayload.transaction_type
     payload_attribute = get_name(PreprocessPayload.train_test_hash)
+    synchronized_data_class = SynchronizedData
 
     def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
         """Process the end of the block."""
@@ -368,7 +372,7 @@ class PreprocessRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound
                 return self.synchronized_data, Event.FILE_ERROR
 
             synchronized_data = self.synchronized_data.update(
-                synchronized_data_class=SynchronizedData,
+                synchronized_data_class=self.synchronized_data_class,
                 **{
                     get_name(
                         SynchronizedData.participant_to_preprocessing
@@ -411,6 +415,7 @@ class RandomnessRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound
 
     allowed_tx_type = RandomnessPayload.transaction_type
     payload_attribute = get_name(RandomnessPayload.randomness)
+    synchronized_data_class = SynchronizedData
 
     def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
         """Process the end of the block."""
@@ -421,7 +426,7 @@ class RandomnessRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound
                 return self.synchronized_data, Event.RANDOMNESS_INVALID
 
             synchronized_data = self.synchronized_data.update(
-                synchronized_data_class=SynchronizedData,
+                synchronized_data_class=self.synchronized_data_class,
                 **{
                     get_name(
                         SynchronizedData.participant_to_randomness
@@ -459,6 +464,7 @@ class TrainRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
 
     allowed_tx_type = TrainingPayload.transaction_type
     payload_attribute = get_name(TrainingPayload.models_hash)
+    synchronized_data_class = SynchronizedData
 
     def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
         """Process the end of the block."""
@@ -467,7 +473,7 @@ class TrainRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
                 return self.synchronized_data, Event.FILE_ERROR
 
             update_params = dict(
-                synchronized_data_class=SynchronizedData,
+                synchronized_data_class=self.synchronized_data_class,
                 **{
                     get_name(SynchronizedData.participant_to_training): self.collection,
                     get_name(SynchronizedData.models_hash): self.most_voted_payload,
@@ -527,6 +533,7 @@ class EstimateRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
 
     allowed_tx_type = EstimatePayload.transaction_type
     payload_attribute = get_name(EstimatePayload.estimations_hash)
+    synchronized_data_class = SynchronizedData
 
     def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
         """Process the end of the block."""
@@ -535,7 +542,7 @@ class EstimateRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
                 return self.synchronized_data, Event.FILE_ERROR
 
             synchronized_data = self.synchronized_data.update(
-                synchronized_data_class=SynchronizedData,
+                synchronized_data_class=self.synchronized_data_class,
                 **{
                     get_name(SynchronizedData.participant_to_estimate): self.collection,
                     get_name(SynchronizedData.n_estimations): cast(
