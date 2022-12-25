@@ -44,25 +44,42 @@ from aea_test_autonomy.fixture_helpers import (  # noqa: F401
 from packages.valory.skills.abstract_round_abci.tests.test_io.test_ipfs import (  # noqa: F401
     ipfs_daemon,
 )
+from packages.valory.skills.apy_estimation_abci.rounds import (
+    CollectHistoryRound,
+    CollectLatestHistoryBatchRound,
+    EmitRound,
+    EstimateRound,
+    ModelStrategyRound,
+    OptimizeRound,
+    PrepareBatchRound,
+    PreprocessRound,
+    RandomnessRound,
+    TestRound,
+    TrainRound,
+    TransformRound,
+    UpdateForecasterRound,
+)
 
 
 HAPPY_PATH = (
-    RoundChecks("model_strategy"),
-    RoundChecks("collect_history"),
-    RoundChecks("transform"),
-    RoundChecks("preprocess"),
-    RoundChecks("randomness"),
-    RoundChecks("optimize"),
-    RoundChecks("train"),
-    RoundChecks("train", success_event="FULLY_TRAINED"),
-    RoundChecks("test"),
-    RoundChecks("estimate", n_periods=2),
-    RoundChecks("emit", n_periods=2),
-    RoundChecks("reset_and_pause", n_periods=2),
-    RoundChecks("model_strategy", n_periods=2, success_event="NEGATIVE"),
-    RoundChecks("collect_batch", n_periods=2),
-    RoundChecks("prepare_batch", n_periods=2),
-    RoundChecks("update_forecaster", n_periods=2),
+    RoundChecks(ModelStrategyRound.auto_round_id()),
+    RoundChecks(CollectHistoryRound.auto_round_id()),
+    RoundChecks(TransformRound.auto_round_id()),
+    RoundChecks(PreprocessRound.auto_round_id()),
+    RoundChecks(RandomnessRound.auto_round_id()),
+    RoundChecks(OptimizeRound.auto_round_id()),
+    RoundChecks(TrainRound.auto_round_id()),
+    RoundChecks(TrainRound.auto_round_id(), success_event="FULLY_TRAINED"),
+    RoundChecks(TestRound.auto_round_id()),
+    RoundChecks(EstimateRound.auto_round_id(), n_periods=2),
+    RoundChecks(EmitRound.auto_round_id(), n_periods=2),
+    RoundChecks(ModelStrategyRound.auto_round_id(), n_periods=2),
+    RoundChecks(
+        ModelStrategyRound.auto_round_id(), n_periods=2, success_event="NEGATIVE"
+    ),
+    RoundChecks(CollectLatestHistoryBatchRound.auto_round_id(), n_periods=2),
+    RoundChecks(PrepareBatchRound.auto_round_id(), n_periods=2),
+    RoundChecks(UpdateForecasterRound.auto_round_id(), n_periods=2),
 )
 
 
