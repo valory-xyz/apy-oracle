@@ -1,7 +1,7 @@
-site_name: ML APY Prediction Oracle Documentation
-site_url: https://www.autonolas.network/
+site_name: product/ml-apy-prediction-oracle #Required format to work with monorepo including a specific route in the address.
+site_url: https://docs.autonolas.network/product/ml-apy-prediction-oracle/
 site_description: Developer documentation of Autonolas ML APY Prediction Oracle.
-repo_url: https://github.com/valory-xyz/docs
+repo_url: hhttps://github.com/valory-xyz/apy-oracle
 site_author: developer@valory.xyz
 edit_uri: ""
 copyright:  Copyright &copy; 2021 - 2023 Valory AG 
@@ -30,11 +30,8 @@ extra_css:
 
 nav:
   - ML APY Prediction Oracle: 'index.md' 
-  - Run the code: 'run_the_code.md'
-  - Build your own: 'build_your_own.md'
   
 plugins:
-  - monorepo
   - macros
   - search  
 
@@ -51,8 +48,8 @@ markdown_extensions:
   - pymdownx.arithmatex
   - def_list  
   - md_in_html
-  - markdown_include.include:
-      base_path: ./colearn/docs  
+  - toc:
+      title: On this page
 
 
 extra:
