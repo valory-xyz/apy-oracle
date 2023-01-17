@@ -22,7 +22,7 @@ fingerprint:
   ml/preprocessing.py: bafybeieha65b5cslcyyjobjupebyqovod7aigohdidcawz5b6tlxqxpruq
   models.py: bafybeifa3xmpsbgo6zgsxi56aweaivdsrv6mso3uwquqibptg5qknqbwsy
   payloads.py: bafybeibk4lkx5gjqyxlnwex62u7n2ctgknommriazfd54u2t7qxkakjq2a
-  rounds.py: bafybeife5j7mmmvvtqywcycbc54lw3kqumbaclyz6s3kkgfe3smc5jfwwu
+  rounds.py: bafybeidxhxqfeaeezz7hmaeyqgmotue3tlu4tcjdgngpvg4szv6463jfce
   tasks.py: bafybeihudp5vyhelqnl5eqakjpvuekaoamtbrghss4k2yysvkczspjbbia
   tests/__init__.py: bafybeiapnbylokinzkfybybxsuoz5sdwmfw7rzctbqhvnt2ydvvy5twhaa
   tests/conftest.py: bafybeicnzvrkostvp4spyknmls3m4yxbmyypy4ilcbec36bdcelg2mu5ky
@@ -52,10 +52,10 @@ fingerprint_ignore_patterns: []
 connections: []
 contracts: []
 protocols:
-- valory/abci:0.1.0:bafybeiaw3tzlg3rkvnn5fcufblktmfwngmxugn4yo7pyjp76zz6aqtqcay
-- valory/http:1.0.0:bafybeigzqo2zaakcjtzzsm6dh4x73v72xg6ctk6muyp5uq5ueb7y34fbxy
+- valory/abci:0.1.0:bafybeihkgako44fzgurcv4hgbems4ptdtosae4lopnnr75eczb6kx3x2lm
+- valory/http:1.0.0:bafybeifru3qs6udfzprax7jxktbsuzn7immfvi3scgfspifq3zdxwkgvnm
 skills:
-- valory/abstract_round_abci:0.1.0:bafybeifd53qh42pvsmk6ifwgsssvl663sa2omtatpwsmnbnowqfsxalpsm
+- valory/abstract_round_abci:0.1.0:bafybeibfemo6nqd5itfd2damllya56qi4jrtythwcsb7wyt55qtxtsuu3u
 behaviours:
   main:
     args: {}
@@ -178,9 +178,9 @@ models:
       service_registry_address: null
       setup:
         all_participants:
-          - - '0x0000000000000000000000000000000000000000'
+        - - '0x0000000000000000000000000000000000000000'
         safe_contract_address:
-          - - '0x0000000000000000000000000000000000000000'
+        - - '0x0000000000000000000000000000000000000000'
       share_tm_config_on_startup: false
       sleep_time: 5
       tendermint_check_sleep_delay: 3
