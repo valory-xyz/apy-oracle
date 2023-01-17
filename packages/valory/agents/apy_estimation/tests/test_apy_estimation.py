@@ -28,6 +28,7 @@ from aea_test_autonomy.base_test_classes.agents import (
     BaseTestEnd2EndExecution,
     RoundChecks,
 )
+from aea_test_autonomy.configurations import KEY_PAIRS
 from aea_test_autonomy.fixture_helpers import (  # noqa: F401
     UseGnosisSafeHardHatNet,
     abci_host,
@@ -37,7 +38,6 @@ from aea_test_autonomy.fixture_helpers import (  # noqa: F401
     hardhat_addr,
     hardhat_port,
     key_pairs,
-    nb_nodes,
     tendermint_port,
 )
 
@@ -105,6 +105,12 @@ class BaseTestABCIAPYEstimationSkillNormalExecution(BaseTestEnd2EndExecution):
         },
     ]
     package_registry_src_rel = Path(__file__).parents[4]
+    key_pairs_override = KEY_PAIRS[:4]
+
+    def prepare_and_launch(self, nb_nodes: int) -> None:
+        """Prepare and launch the agents."""
+        self.key_pairs = self.key_pairs_override
+        super().prepare_and_launch(nb_nodes)
 
 
 @pytest.mark.parametrize("nb_nodes", (1,))
@@ -114,6 +120,8 @@ class TestABCIAPYEstimationSingleAgent(
 ):
     """Test the ABCI apy_estimation_abci skill with only one agent."""
 
+    key_pairs_override = [KEY_PAIRS[4]]
+
 
 @pytest.mark.parametrize("nb_nodes", (2,))
 class TestABCIAPYEstimationTwoAgents(
@@ -121,6 +129,8 @@ class TestABCIAPYEstimationTwoAgents(
     UseGnosisSafeHardHatNet,
 ):
     """Test the ABCI apy_estimation_abci skill with two agents."""
+
+    key_pairs_override = KEY_PAIRS[5:7]
 
 
 @pytest.mark.parametrize("nb_nodes", (4,))

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021-2022 Valory AG
+#   Copyright 2021-2023 Valory AG
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -267,6 +267,8 @@ class ModelStrategyRound(VotingRound, APYEstimationAbstractRound):
     """A round that represents the model's strategy selection"""
 
     allowed_tx_type = ModelStrategyPayload.transaction_type
+    # the `payload_attribute` is not used in `VotingRound`, but is necessary because of the `_MetaAbstractRound` checks
+    payload_attribute = get_name(ModelStrategyPayload.vote)
     done_event = Event.DONE
     negative_event = Event.NEGATIVE
     none_event = Event.NONE

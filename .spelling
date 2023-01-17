@@ -242,7 +242,6 @@ PriceAggregation
 TransactionSubmission
 OracleAbciApp
 RegistrationRound
-FinishedRegistrationFFWRound
 RegistrationStartupRound
 FinishedRegistrationRound
 FAST_FORWARD
