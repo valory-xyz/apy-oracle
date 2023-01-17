@@ -125,16 +125,18 @@ class TestSubgraphs:
 
     @staticmethod
     @pytest.mark.parametrize(
-        "dex_subgraph, specs_fixture, expected_res_fixture",
+        "dex_subgraph, specs_fixture, query, expected_res_fixture",
         (
             (
                 SpookySwapSubgraph,
                 "spooky_specs_price_extended",
+                "spooky_eth_price_usd_q",
                 "spooky_expected_eth_price_usd",
             ),
             (
                 UniswapSubgraph,
                 "uni_specs_price_extended",
+                "uni_eth_price_usd_q",
                 "uni_expected_eth_price_usd",
             ),
         ),
@@ -142,16 +144,17 @@ class TestSubgraphs:
     def test_eth_price(
         dex_subgraph: Type[ApiSpecs],
         specs_fixture: str,
+        query: str,
         expected_res_fixture: str,
-        eth_price_usd_q: str,
         request: FixtureRequest,
     ) -> None:
         """Test SpookySwap's eth price request from subgraph."""
         specs: SpecsType = request.getfixturevalue(specs_fixture)
+        price_query: str = request.getfixturevalue(query)
         expected_res: float = request.getfixturevalue(expected_res_fixture)
         api = dex_subgraph(**specs)
 
-        res = make_request(api.get_spec(), eth_price_usd_q)
+        res = make_request(api.get_spec(), price_query)
         eth_price = ast.literal_eval(api.process_response(MagicMock(body=res.content))[0]["ethPrice"])  # type: ignore
 
         assert eth_price == expected_res

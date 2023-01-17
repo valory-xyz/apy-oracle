@@ -845,7 +845,8 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         block_from_timestamp_q: str,
         timestamp_gte: str,
         timestamp_lte: str,
-        eth_price_usd_q: str,
+        uni_eth_price_usd_q: str,
+        spooky_eth_price_usd_q: str,
         spooky_pairs_q: str,
         uni_pairs_q: str,
         pairs_ids: Dict[str, List[str]],
@@ -868,7 +869,10 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         n_iterations *= 2 if interval_not_acceptable else 1
 
         # for every subgraph and every iteration that will be performed, we test fetching a single batch
-        for subgraph_name in ("uniswap_subgraph", "spooky_subgraph"):
+        for subgraph_name, block_number, query in (
+            ("uniswap_subgraph", "15178691", uni_eth_price_usd_q),
+            ("spooky_subgraph", "52230630", spooky_eth_price_usd_q),
+        ):
             for _ in range(n_iterations):
                 behaviour.act_wrapper()
                 subgraph = getattr(behaviour.context, subgraph_name)
@@ -901,15 +905,13 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
                 request_kwargs["body"] = json.dumps({"query": block_query}).encode(
                     "utf-8"
                 )
-                res = {"data": {"blocks": [{"timestamp": "1", "number": "15178691"}]}}
+                res = {"data": {"blocks": [{"timestamp": "1", "number": block_number}]}}
                 response_kwargs["body"] = json.dumps(res).encode("utf-8")
                 self.mock_http_request(request_kwargs, response_kwargs)
 
                 # ETH price request.
                 request_kwargs["url"] = subgraph.url
-                request_kwargs["body"] = json.dumps({"query": eth_price_usd_q}).encode(
-                    "utf-8"
-                )
+                request_kwargs["body"] = json.dumps({"query": query}).encode("utf-8")
                 res = {"data": {"bundles": [{"ethPrice": "0.8973548"}]}}
                 response_kwargs["body"] = json.dumps(res).encode("utf-8")
                 behaviour.act_wrapper()
@@ -986,7 +988,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         block_from_timestamp_q: str,
         timestamp_gte: str,
         block_from_number_q: str,
-        eth_price_usd_q: str,
+        uni_eth_price_usd_q: str,
         uni_pairs_q: str,
         pairs_ids: Dict[str, List[str]],
         pool_fields: Tuple[str, ...],
@@ -1041,7 +1043,9 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
 
         # ETH price request for non-indexed block.
         request_kwargs["url"] = behaviour.context.uniswap_subgraph.url
-        request_kwargs["body"] = json.dumps({"query": eth_price_usd_q}).encode("utf-8")
+        request_kwargs["body"] = json.dumps({"query": uni_eth_price_usd_q}).encode(
+            "utf-8"
+        )
 
         if is_non_indexed_res:
             res = {
@@ -1084,7 +1088,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         # ETH price request for indexed block.
         request_kwargs["url"] = behaviour.context.uniswap_subgraph.url
         request_kwargs["body"] = json.dumps(
-            {"query": eth_price_usd_q.replace("15178691", "3730360")}
+            {"query": uni_eth_price_usd_q.replace("15178691", "3730360")}
         ).encode("utf-8")
         res = {"data": {"bundles": [{"ethPrice": "0.8973548"}]}}
         response_kwargs["body"] = json.dumps(res).encode("utf-8")
@@ -1118,7 +1122,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         block_from_timestamp_q: str,
         timestamp_gte: str,
         block_from_number_q: str,
-        eth_price_usd_q: str,
+        uni_eth_price_usd_q: str,
         pairs_ids: Dict[str, List[str]],
     ) -> None:
         """Test `async_act` when we receive `None` responses in `_check_non_indexed_block`."""
@@ -1174,7 +1178,9 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
 
         # ETH price request for non-indexed block.
         request_kwargs["url"] = behaviour.context.uniswap_subgraph.url
-        request_kwargs["body"] = json.dumps({"query": eth_price_usd_q}).encode("utf-8")
+        request_kwargs["body"] = json.dumps({"query": uni_eth_price_usd_q}).encode(
+            "utf-8"
+        )
 
         res = (
             {
@@ -1227,7 +1233,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         # ETH price request for indexed block.
         request_kwargs["url"] = behaviour.context.uniswap_subgraph.url
         request_kwargs["body"] = json.dumps(
-            {"query": eth_price_usd_q.replace("15178691", "3730360")}
+            {"query": uni_eth_price_usd_q.replace("15178691", "3730360")}
         ).encode("utf-8")
         res = {}
         response_kwargs["body"] = json.dumps(res).encode("utf-8")
@@ -1314,7 +1320,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         caplog: LogCaptureFixture,
         block_from_timestamp_q: str,
         timestamp_gte: str,
-        eth_price_usd_q: str,
+        uni_eth_price_usd_q: str,
         uni_pairs_q: str,
         pairs_ids: Dict[str, List[str]],
         pool_fields: Tuple[str, ...],
@@ -1394,7 +1400,9 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
 
         # ETH price request with None response.
         request_kwargs["url"] = behaviour.context.uniswap_subgraph.url
-        request_kwargs["body"] = json.dumps({"query": eth_price_usd_q}).encode("utf-8")
+        request_kwargs["body"] = json.dumps({"query": uni_eth_price_usd_q}).encode(
+            "utf-8"
+        )
         response_kwargs["body"] = b""
 
         with caplog.at_level(
@@ -1426,7 +1434,9 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
 
         # ETH price request.
         request_kwargs["url"] = behaviour.context.uniswap_subgraph.url
-        request_kwargs["body"] = json.dumps({"query": eth_price_usd_q}).encode("utf-8")
+        request_kwargs["body"] = json.dumps({"query": uni_eth_price_usd_q}).encode(
+            "utf-8"
+        )
         res = {"data": {"bundles": [{"ethPrice": "0.8973548"}]}}
         response_kwargs["body"] = json.dumps(res).encode("utf-8")
         behaviour.act_wrapper()
