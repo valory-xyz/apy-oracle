@@ -232,7 +232,7 @@ dependencies:
   numpy:
     version: ==1.21.6
   open-aea-cli-ipfs:
-    version: ==1.26.0
+    version: ==1.27.0.post4
   optuna:
     version: ==2.10.1
   pandas:
