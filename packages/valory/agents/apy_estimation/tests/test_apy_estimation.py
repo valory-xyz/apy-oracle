@@ -59,6 +59,7 @@ from packages.valory.skills.apy_estimation_abci.rounds import (
     TransformRound,
     UpdateForecasterRound,
 )
+from packages.valory.skills.reset_pause_abci.rounds import ResetAndPauseRound
 
 
 HAPPY_PATH = (
@@ -73,7 +74,7 @@ HAPPY_PATH = (
     RoundChecks(TestRound.auto_round_id()),
     RoundChecks(EstimateRound.auto_round_id(), n_periods=2),
     RoundChecks(EmitRound.auto_round_id(), n_periods=2),
-    RoundChecks(ModelStrategyRound.auto_round_id(), n_periods=2),
+    RoundChecks(ResetAndPauseRound.auto_round_id(), n_periods=2),
     RoundChecks(
         ModelStrategyRound.auto_round_id(), n_periods=2, success_event="NEGATIVE"
     ),
