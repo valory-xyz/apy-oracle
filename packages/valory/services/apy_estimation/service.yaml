@@ -7,24 +7,95 @@ license: Apache-2.0
 fingerprint:
   README.md: bafybeibhbkelnxxvsln677imq65vgbglmlhyxtax4iqtzempjiwcoef3gq
 fingerprint_ignore_patterns: []
-agent: valory/apy_estimation:0.1.0:bafybeifidmexa2v7rwk4eyxhhqjwoml67jmdwfisdtiblxtsd6spj5mrhe
+agent: valory/apy_estimation:0.1.0:bafybeid76qsj35hl4ovjahjzzhaswuq2hcgkkrxet23mfeqcveyz2nk65q
 number_of_agents: 4
 ---
+extra:
+  setup_params:
+    args:
+      setup: &id001
+        all_participants:
+        - - '0x0000000000000000000000000000000000000000'
+        safe_contract_address:
+        - '0x0000000000000000000000000000000000000000'
+  deposit_endpoint:
+    args: &id002
+      url: ${SERVICE_APY_DEPOSIT_ENDPOINT:str:http://172.17.0.2:9999/apy/deposit}
 public_id: valory/apy_estimation_abci:0.1.0
 type: skill
-models:
-  params:
-    args:
-      broadcast_to_server: true
-      pair_ids:
-        uniswap_subgraph:
-        - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
-        spooky_subgraph:
-        - '0x2a651563c9d3af67ae0388a5c8f89b867038089e'
-        - '0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c'
-      n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
-      history_end: null
-      ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
-  server_api:
-    args:
-      url: ${SERVICE_APY_DEPOSIT_ENDPOINT:str:http://172.17.0.2:9999/apy/deposit}
+0:
+  models:
+    params:
+      args:
+        setup: *id001
+        broadcast_to_server: true
+        pair_ids:
+          uniswap_subgraph:
+          - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
+          spooky_subgraph:
+          - '0x2a651563c9d3af67ae0388a5c8f89b867038089e'
+          - '0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c'
+        n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
+        history_end: null
+        ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
+        share_tm_config_on_startup: ${USE_ACN:bool:false}
+        tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node0:26656}
+    server_api:
+      args: *id002
+1:
+  models:
+    params:
+      args:
+        setup: *id001
+        broadcast_to_server: true
+        pair_ids:
+          uniswap_subgraph:
+          - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
+          spooky_subgraph:
+          - '0x2a651563c9d3af67ae0388a5c8f89b867038089e'
+          - '0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c'
+        n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
+        history_end: null
+        ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
+        share_tm_config_on_startup: ${USE_ACN:bool:false}
+        tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node1:26666}
+    server_api:
+      args: *id002
+2:
+  models:
+    params:
+      args:
+        setup: *id001
+        broadcast_to_server: true
+        pair_ids:
+          uniswap_subgraph:
+          - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
+          spooky_subgraph:
+          - '0x2a651563c9d3af67ae0388a5c8f89b867038089e'
+          - '0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c'
+        n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
+        history_end: null
+        ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
+        share_tm_config_on_startup: ${USE_ACN:bool:false}
+        tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node2:26676}
+    server_api:
+      args: *id002
+3:
+  models:
+    params:
+      args:
+        setup: *id001
+        broadcast_to_server: true
+        pair_ids:
+          uniswap_subgraph:
+          - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
+          spooky_subgraph:
+          - '0x2a651563c9d3af67ae0388a5c8f89b867038089e'
+          - '0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c'
+        n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
+        history_end: null
+        ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
+        share_tm_config_on_startup: ${USE_ACN:bool:false}
+        tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node3:26686}
+    server_api:
+      args: *id002
