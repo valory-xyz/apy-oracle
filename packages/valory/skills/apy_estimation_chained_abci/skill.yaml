@@ -9,9 +9,9 @@ fingerprint:
   README.md: bafybeic3ztoxxldipv6v6h6ovpmto6ifhqi2mdkl5hhaaeymbwrw7wf7km
   __init__.py: bafybeidae7gbyipqow44nxwnrvd5jyllepqbfq6xwako2o4bv2mjiwwo4u
   behaviours.py: bafybeiefkxsdgpmhkuzkijz53sxgnyijp74putt5aly25x5ys75ain22la
-  composition.py: bafybeic4db2cz7wpfmgvpgdz22ysjxx7ze5ssns3nxyydivirjva5lqywu
+  composition.py: bafybeihm6gggjokqxlgdlcqoirljahjqtpog3okhc5m3lofhcl5rjucfkm
   dialogues.py: bafybeielsp4eu7gr7lelednobuq32bav5kp7so4geut7j2rg7bkn2wuzee
-  fsm_specification.yaml: bafybeigi4vl67llybvcnr7h4lqjashuk6v34rmp3n67cgirvbfdc6au6ky
+  fsm_specification.yaml: bafybeigwhi5nlgkeufnunw54rkpu34w74hrn3r3oozdw5ttwni6nilc7aq
   handlers.py: bafybeibmzghvqekt7iymu6s6yn5tk7lpdmejba4n7dpsz2do3cgfqz7b2a
   models.py: bafybeifwgzudlyjmsewcwcv2ihtvg2jjrc2xtgzb6bz3lxo6cwcfhpgr4y
   tests/__init__.py: bafybeiapnbylokinzkfybybxsuoz5sdwmfw7rzctbqhvnt2ydvvy5twhaa
@@ -24,10 +24,10 @@ connections: []
 contracts: []
 protocols: []
 skills:
-- valory/abstract_round_abci:0.1.0:bafybeid3sx66tzs6mmwu52tlaqdycfszzpetgybzu34gagfocg5bmivh7e
-- valory/apy_estimation_abci:0.1.0:bafybeibfxudy72eygc2fipyitmrxhhqul5r2pq2g4koexyg65jkvbnq6ha
-- valory/registration_abci:0.1.0:bafybeifxquhkccygjawoqyj26b3k6rxizaa7geoef7oyet2baojjk4gy2q
-- valory/reset_pause_abci:0.1.0:bafybeibnziujsv7toespbguradspw52rfrhhgdojcbznckqia2jwm2jvwm
+- valory/abstract_round_abci:0.1.0:bafybeibfemo6nqd5itfd2damllya56qi4jrtythwcsb7wyt55qtxtsuu3u
+- valory/apy_estimation_abci:0.1.0:bafybeidvbzoc37vvgqgw4bxgxwe3ymb75eho2ylytrt3siz5xbtw56rlue
+- valory/registration_abci:0.1.0:bafybeih6tbs4mt6x7g642kwhthxxs3qxpzsh4cy7uavrk4att3mqul6hhu
+- valory/reset_pause_abci:0.1.0:bafybeihjsv2mkwrf55wtmawn7kjylm75thg7jjp7y4bfnezrkr3hu7jytu
 behaviours:
   main:
     args: {}
@@ -147,12 +147,17 @@ models:
       round_timeout_seconds: 120.0
       service_id: apy_estimation
       service_registry_address: null
-      setup: {}
+      setup:
+        all_participants:
+        - - '0x0000000000000000000000000000000000000000'
+        safe_contract_address:
+        - - '0x0000000000000000000000000000000000000000'
       share_tm_config_on_startup: false
       sleep_time: 5
       tendermint_check_sleep_delay: 3
       tendermint_com_url: http://localhost:8080
       tendermint_max_retries: 5
+      tendermint_p2p_url: localhost:26656
       tendermint_url: http://localhost:26657
       testing:
         steps_forward: 1
@@ -232,7 +237,7 @@ dependencies:
   numpy:
     version: ==1.21.6
   open-aea-cli-ipfs:
-    version: <2.0.0,>=1.24.0
+    version: ==1.27.0.post4
   optuna:
     version: ==2.10.1
   pandas:

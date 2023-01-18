@@ -514,7 +514,7 @@ def test_period() -> None:
                     participants=participants,
                     setup_params=setup_params,
                     most_voted_randomness=most_voted_randomness,
-                    most_voted_estimate=estimates_hash,
+                    estimates_hash=estimates_hash,
                     full_training=full_training,
                     n_estimations=n_estimations,
                     participant_to_estimate=participant_to_estimate,

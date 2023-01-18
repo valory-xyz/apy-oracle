@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021-2022 Valory AG
+#   Copyright 2021-2023 Valory AG
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -65,11 +65,18 @@ SpecsType = Dict[str, Union[str, int, HeaderType, SkillContext]]
 HistoricalDataType = Dict[str, List[Union[None, Dict[str, str], int, str, float]]]
 
 
-_ETH_PRICE_USD_Q_PARAMS: Dict[str, Union[int, float]] = {
+BUNDLE_ID = 1
+
+
+_SPOOKY_ETH_PRICE_USD_Q_PARAMS: Dict[str, Union[int, float]] = {
+    "block": 52230630,
+    "expected_result": 0.23121918849459733,
+}
+
+
+_UNI_ETH_PRICE_USD_Q_PARAMS: Dict[str, Union[int, float]] = {
     "block": 15178691,
-    "id": 1,
-    "spooky_expected_result": 0.5723397498919842,
-    "uni_expected_result": 1547.0711519143858,
+    "expected_result": 1547.0711519143858,
 }
 
 
@@ -214,19 +221,19 @@ def uni_specs_pairs_extended(uni_specs: SpecsType) -> SpecsType:
 
 
 @pytest.fixture(scope="session")
-def eth_price_usd_q() -> str:
-    """Query string for fetching ethereum price in USD."""
+def uni_eth_price_usd_q() -> str:
+    """Query string for fetching ethereum price in USD for Uniswap blocks."""
     return (
         """
         {
             bundles(
                 first: 1,
                 block: {number: """
-        + str(_ETH_PRICE_USD_Q_PARAMS["block"])
+        + str(_UNI_ETH_PRICE_USD_Q_PARAMS["block"])
         + """},
                 where: {
                     id: """
-        + str(_ETH_PRICE_USD_Q_PARAMS["id"])
+        + str(BUNDLE_ID)
         + """
                 }
             )
@@ -236,16 +243,25 @@ def eth_price_usd_q() -> str:
     )
 
 
+@pytest.fixture(scope="session")
+def spooky_eth_price_usd_q(uni_eth_price_usd_q: str) -> str:
+    """Query string for fetching ethereum price in USD for SpookySwap blocks."""
+    return uni_eth_price_usd_q.replace(
+        str(_UNI_ETH_PRICE_USD_Q_PARAMS["block"]),
+        str(_SPOOKY_ETH_PRICE_USD_Q_PARAMS["block"]),
+    )
+
+
 @pytest.fixture
 def spooky_expected_eth_price_usd() -> float:
     """The expected result of the `eth_price_usd_q` query on SpookySwap."""
-    return _ETH_PRICE_USD_Q_PARAMS["spooky_expected_result"]
+    return _SPOOKY_ETH_PRICE_USD_Q_PARAMS["expected_result"]
 
 
 @pytest.fixture
 def uni_expected_eth_price_usd() -> float:
     """The expected result of the `eth_price_usd_q` query on Uniswap."""
-    return _ETH_PRICE_USD_Q_PARAMS["uni_expected_result"]
+    return _UNI_ETH_PRICE_USD_Q_PARAMS["expected_result"]
 
 
 @pytest.fixture
@@ -256,12 +272,12 @@ def largest_acceptable_block_number() -> int:
 
 @pytest.fixture
 def eth_price_usd_raising_q(
-    eth_price_usd_q: str, largest_acceptable_block_number: int
+    uni_eth_price_usd_q: str, largest_acceptable_block_number: int
 ) -> str:
     """Query string for fetching ethereum price in USD, which raises a non-indexed error."""
     # replace the block number with a huge one, so that we get a not indexed error
-    return eth_price_usd_q.replace(
-        str(_ETH_PRICE_USD_Q_PARAMS["block"]), str(largest_acceptable_block_number)
+    return uni_eth_price_usd_q.replace(
+        str(_UNI_ETH_PRICE_USD_Q_PARAMS["block"]), str(largest_acceptable_block_number)
     )
 
 
@@ -384,7 +400,9 @@ def top_n_pairs_q() -> str:
     """
 
 
-def _pairs_q(dex_id_name: str) -> str:
+def _pairs_q(
+    dex_id_name: str, block: Union[int, str] = _PAIRS_Q_PARAMS["block"]
+) -> str:
     """Query to get data for the pool corresponding to the `dex_id_name` at a specific block."""
 
     return (
@@ -396,7 +414,7 @@ def _pairs_q(dex_id_name: str) -> str:
         + '","'.join([str(_PAIRS_Q_PARAMS[dex_id_name])])
         + """"]},
             block: {number: """
-        + str(_PAIRS_Q_PARAMS["block"])
+        + str(block)
         + """}
         ) {
             id
@@ -435,7 +453,7 @@ def _pairs_q(dex_id_name: str) -> str:
 @pytest.fixture(scope="session")
 def spooky_pairs_q() -> str:
     """Query to get data for a SpookySwap pool at a specific block."""
-    return _pairs_q("spooky_id")
+    return _pairs_q("spooky_id", str(_SPOOKY_ETH_PRICE_USD_Q_PARAMS["block"]))
 
 
 @pytest.fixture(scope="session")

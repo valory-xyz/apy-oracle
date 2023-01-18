@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021-2022 Valory AG
+#   Copyright 2021-2023 Valory AG
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -28,46 +28,69 @@ from aea_test_autonomy.base_test_classes.agents import (
     BaseTestEnd2EndExecution,
     RoundChecks,
 )
+from aea_test_autonomy.configurations import KEY_PAIRS
 from aea_test_autonomy.fixture_helpers import (  # noqa: F401
+    UseACNNode,
     UseGnosisSafeHardHatNet,
     abci_host,
     abci_port,
+    acn_config,
+    acn_node,
     flask_tendermint,
     gnosis_safe_hardhat_scope_function,
     hardhat_addr,
     hardhat_port,
     key_pairs,
-    nb_nodes,
     tendermint_port,
 )
 
 from packages.valory.skills.abstract_round_abci.tests.test_io.test_ipfs import (  # noqa: F401
     ipfs_daemon,
 )
+from packages.valory.skills.apy_estimation_abci.rounds import (
+    CollectHistoryRound,
+    CollectLatestHistoryBatchRound,
+    EmitRound,
+    EstimateRound,
+    ModelStrategyRound,
+    OptimizeRound,
+    PrepareBatchRound,
+    PreprocessRound,
+    RandomnessRound,
+    TestRound,
+    TrainRound,
+    TransformRound,
+    UpdateForecasterRound,
+)
+from packages.valory.skills.reset_pause_abci.rounds import ResetAndPauseRound
 
 
 HAPPY_PATH = (
-    RoundChecks("model_strategy"),
-    RoundChecks("collect_history"),
-    RoundChecks("transform"),
-    RoundChecks("preprocess"),
-    RoundChecks("randomness"),
-    RoundChecks("optimize"),
-    RoundChecks("train"),
-    RoundChecks("train", success_event="FULLY_TRAINED"),
-    RoundChecks("test"),
-    RoundChecks("estimate", n_periods=2),
-    RoundChecks("emit", n_periods=2),
-    RoundChecks("reset_and_pause", n_periods=2),
-    RoundChecks("model_strategy", n_periods=2, success_event="NEGATIVE"),
-    RoundChecks("collect_batch", n_periods=2),
-    RoundChecks("prepare_batch", n_periods=2),
-    RoundChecks("update_forecaster", n_periods=2),
+    RoundChecks(ModelStrategyRound.auto_round_id()),
+    RoundChecks(CollectHistoryRound.auto_round_id()),
+    RoundChecks(TransformRound.auto_round_id()),
+    RoundChecks(PreprocessRound.auto_round_id()),
+    RoundChecks(RandomnessRound.auto_round_id()),
+    RoundChecks(OptimizeRound.auto_round_id()),
+    RoundChecks(TrainRound.auto_round_id()),
+    RoundChecks(TrainRound.auto_round_id(), success_event="FULLY_TRAINED"),
+    RoundChecks(TestRound.auto_round_id()),
+    RoundChecks(EstimateRound.auto_round_id(), n_periods=2),
+    RoundChecks(EmitRound.auto_round_id(), n_periods=2),
+    RoundChecks(ResetAndPauseRound.auto_round_id(), n_periods=2),
+    RoundChecks(
+        ModelStrategyRound.auto_round_id(), n_periods=2, success_event="NEGATIVE"
+    ),
+    RoundChecks(CollectLatestHistoryBatchRound.auto_round_id(), n_periods=2),
+    RoundChecks(PrepareBatchRound.auto_round_id(), n_periods=2),
+    RoundChecks(UpdateForecasterRound.auto_round_id(), n_periods=2),
 )
 
 
 @pytest.mark.usefixtures("ipfs_daemon")
-class BaseTestABCIAPYEstimationSkillNormalExecution(BaseTestEnd2EndExecution):
+class BaseTestABCIAPYEstimationSkillNormalExecution(
+    BaseTestEnd2EndExecution, UseACNNode, UseGnosisSafeHardHatNet
+):
     """Base class for the APY estimation e2e tests."""
 
     agent_package = "valory/apy_estimation:0.1.0"
@@ -87,27 +110,28 @@ class BaseTestABCIAPYEstimationSkillNormalExecution(BaseTestEnd2EndExecution):
         },
     ]
     package_registry_src_rel = Path(__file__).parents[4]
+    key_pairs_override = KEY_PAIRS[:4]
+
+    def prepare_and_launch(self, nb_nodes: int) -> None:
+        """Prepare and launch the agents."""
+        self.key_pairs = self.key_pairs_override
+        super().prepare_and_launch(nb_nodes)
 
 
 @pytest.mark.parametrize("nb_nodes", (1,))
-class TestABCIAPYEstimationSingleAgent(
-    BaseTestABCIAPYEstimationSkillNormalExecution,
-    UseGnosisSafeHardHatNet,
-):
+class TestABCIAPYEstimationSingleAgent(BaseTestABCIAPYEstimationSkillNormalExecution):
     """Test the ABCI apy_estimation_abci skill with only one agent."""
+
+    key_pairs_override = [KEY_PAIRS[4]]
 
 
 @pytest.mark.parametrize("nb_nodes", (2,))
-class TestABCIAPYEstimationTwoAgents(
-    BaseTestABCIAPYEstimationSkillNormalExecution,
-    UseGnosisSafeHardHatNet,
-):
+class TestABCIAPYEstimationTwoAgents(BaseTestABCIAPYEstimationSkillNormalExecution):
     """Test the ABCI apy_estimation_abci skill with two agents."""
+
+    key_pairs_override = KEY_PAIRS[5:7]
 
 
 @pytest.mark.parametrize("nb_nodes", (4,))
-class TestABCIAPYEstimationFourAgents(
-    BaseTestABCIAPYEstimationSkillNormalExecution,
-    UseGnosisSafeHardHatNet,
-):
+class TestABCIAPYEstimationFourAgents(BaseTestABCIAPYEstimationSkillNormalExecution):
     """Test the ABCI apy_estimation_abci skill with four agents."""

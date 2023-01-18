@@ -8,7 +8,7 @@ aea_version: '>=1.0.0, <2.0.0'
 fingerprint:
   README.md: bafybeicam57nm46ptlgr3gbg4hzmcid5qozna6ydvunz2or6j43hcahlma
   __init__.py: bafybeif4et2adwa4mtx4clsfcpqk77w23kdq5642vulkddnrsxms6ngbma
-  behaviours.py: bafybeihsuthjfolvnd67ljwrrk43fnyau655jzqvefo5wopcke523ew6we
+  behaviours.py: bafybeihasscs5fvbyjldysgvtzm7yj466vcyanrbx7ns3dmuemtodohfda
   constants.py: bafybeibx3m2zjvyq5gdqjhjqnqtenmub47mvtokrfzscrc5loqoy2f5pii
   dialogues.py: bafybeig4tc4thbpsixmbn35kj7jim2gzd7cvxxu4u3xoeyxqzpumuhrdzm
   fsm_specification.yaml: bafybeiajwz3kezsxlfwocqvydy77lxhffhvwqsp2wba332pxi37dengixm
@@ -22,12 +22,12 @@ fingerprint:
   ml/preprocessing.py: bafybeieha65b5cslcyyjobjupebyqovod7aigohdidcawz5b6tlxqxpruq
   models.py: bafybeifa3xmpsbgo6zgsxi56aweaivdsrv6mso3uwquqibptg5qknqbwsy
   payloads.py: bafybeibk4lkx5gjqyxlnwex62u7n2ctgknommriazfd54u2t7qxkakjq2a
-  rounds.py: bafybeiat72plnttguynjlqz67iubtyu3a4w3te5prbt5aybbdu4mafwv5y
+  rounds.py: bafybeidxhxqfeaeezz7hmaeyqgmotue3tlu4tcjdgngpvg4szv6463jfce
   tasks.py: bafybeihudp5vyhelqnl5eqakjpvuekaoamtbrghss4k2yysvkczspjbbia
   tests/__init__.py: bafybeiapnbylokinzkfybybxsuoz5sdwmfw7rzctbqhvnt2ydvvy5twhaa
-  tests/conftest.py: bafybeifkfqdhg7w3emwgch7cteekomluldopdhdfztoaidrp7kmahnycq4
-  tests/test_apis.py: bafybeigsguyga7njhyzlri5kudz3ipaghuo4bzweadxt7vxmeh6r5wbh6e
-  tests/test_behaviours.py: bafybeifmguwxic7dnmmu3lmxac6dhbpkl7wxdurvfq6p7gb7ac4qk7wojq
+  tests/conftest.py: bafybeicnzvrkostvp4spyknmls3m4yxbmyypy4ilcbec36bdcelg2mu5ky
+  tests/test_apis.py: bafybeibxet5zqo2vp336z7chznf4mwty7dgpgbspew3hjrt6qzasukhmne
+  tests/test_behaviours.py: bafybeiaircp3uxwtsh6f6suy3hpwwhxxufllgpdtcbhcksespmo5oqn6aa
   tests/test_dialogues.py: bafybeiab5la63tomj6272c727vo6fq2ltdatbbs4nglwj4te3ghdyli7sa
   tests/test_handlers.py: bafybeigcoykpzwmbh5hbwub3bx4lr4fwutstqmbjahqpwx3zwu5ing75de
   tests/test_ml/__init__.py: bafybeigluuyaz73cej42yohuvoxnrx65hqsqoqmpzgof4b7co246s3jxjy
@@ -36,7 +36,7 @@ fingerprint:
   tests/test_ml/test_preprocessing.py: bafybeicqer5b6fhzoimtrk4mwmh62km6olwljmhxvi6p7zdm6o4jbycfji
   tests/test_models.py: bafybeigrgegxxxemdmfml3rr75nk3iw6unehkzaofnuiunnmibutgs33w4
   tests/test_payloads.py: bafybeig7jwpqn33dvvfldf4tomgjtesl5zf7iwayvcvasopxekftwbe4ke
-  tests/test_rounds.py: bafybeifao5odwy65xgrd4xzq7curd5lqwa42vun4z74hqwavob5bvxj7oi
+  tests/test_rounds.py: bafybeiaxf2nlkwyojkuvocl5l3qhfoksl2urkhzejro57ngw656uqpadea
   tests/test_tasks.py: bafybeifumykfnu4ymcgbpimgmg5ipmfhwgdjggfblyejc3m4eceij554je
   tests/test_tools/__init__.py: bafybeidxxdakfp7rkavdx24vv3bwp6siep7plys7nfrnlwh2opmwbflj2q
   tests/test_tools/conftest.py: bafybeifagmpxjwj5aas2mhuk46k6hocyklmrvwut7h5pxsxuqx6vyyveyu
@@ -52,10 +52,10 @@ fingerprint_ignore_patterns: []
 connections: []
 contracts: []
 protocols:
-- valory/abci:0.1.0:bafybeiaw3tzlg3rkvnn5fcufblktmfwngmxugn4yo7pyjp76zz6aqtqcay
-- valory/http:1.0.0:bafybeigzqo2zaakcjtzzsm6dh4x73v72xg6ctk6muyp5uq5ueb7y34fbxy
+- valory/abci:0.1.0:bafybeihkgako44fzgurcv4hgbems4ptdtosae4lopnnr75eczb6kx3x2lm
+- valory/http:1.0.0:bafybeifru3qs6udfzprax7jxktbsuzn7immfvi3scgfspifq3zdxwkgvnm
 skills:
-- valory/abstract_round_abci:0.1.0:bafybeid3sx66tzs6mmwu52tlaqdycfszzpetgybzu34gagfocg5bmivh7e
+- valory/abstract_round_abci:0.1.0:bafybeibfemo6nqd5itfd2damllya56qi4jrtythwcsb7wyt55qtxtsuu3u
 behaviours:
   main:
     args: {}
@@ -176,12 +176,17 @@ models:
       round_timeout_seconds: 120.0
       service_id: apy_estimation
       service_registry_address: null
-      setup: {}
+      setup:
+        all_participants:
+        - - '0x0000000000000000000000000000000000000000'
+        safe_contract_address:
+        - - '0x0000000000000000000000000000000000000000'
       share_tm_config_on_startup: false
       sleep_time: 5
       tendermint_check_sleep_delay: 3
       tendermint_com_url: http://localhost:8080
       tendermint_max_retries: 5
+      tendermint_p2p_url: localhost:26656
       tendermint_url: http://localhost:26657
       testing:
         steps_forward: 1
@@ -258,7 +263,7 @@ dependencies:
   numpy:
     version: ==1.21.6
   open-aea-test-autonomy:
-    version: ==0.4.0
+    version: ==0.7.0
   optuna:
     version: ==2.10.1
   pandas:
