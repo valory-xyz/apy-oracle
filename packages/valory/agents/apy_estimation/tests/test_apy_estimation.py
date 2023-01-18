@@ -30,9 +30,12 @@ from aea_test_autonomy.base_test_classes.agents import (
 )
 from aea_test_autonomy.configurations import KEY_PAIRS
 from aea_test_autonomy.fixture_helpers import (  # noqa: F401
+    UseACNNode,
     UseGnosisSafeHardHatNet,
     abci_host,
     abci_port,
+    acn_config,
+    acn_node,
     flask_tendermint,
     gnosis_safe_hardhat_scope_function,
     hardhat_addr,
@@ -85,7 +88,9 @@ HAPPY_PATH = (
 
 
 @pytest.mark.usefixtures("ipfs_daemon")
-class BaseTestABCIAPYEstimationSkillNormalExecution(BaseTestEnd2EndExecution):
+class BaseTestABCIAPYEstimationSkillNormalExecution(
+    BaseTestEnd2EndExecution, UseACNNode, UseGnosisSafeHardHatNet
+):
     """Base class for the APY estimation e2e tests."""
 
     agent_package = "valory/apy_estimation:0.1.0"
@@ -114,28 +119,19 @@ class BaseTestABCIAPYEstimationSkillNormalExecution(BaseTestEnd2EndExecution):
 
 
 @pytest.mark.parametrize("nb_nodes", (1,))
-class TestABCIAPYEstimationSingleAgent(
-    BaseTestABCIAPYEstimationSkillNormalExecution,
-    UseGnosisSafeHardHatNet,
-):
+class TestABCIAPYEstimationSingleAgent(BaseTestABCIAPYEstimationSkillNormalExecution):
     """Test the ABCI apy_estimation_abci skill with only one agent."""
 
     key_pairs_override = [KEY_PAIRS[4]]
 
 
 @pytest.mark.parametrize("nb_nodes", (2,))
-class TestABCIAPYEstimationTwoAgents(
-    BaseTestABCIAPYEstimationSkillNormalExecution,
-    UseGnosisSafeHardHatNet,
-):
+class TestABCIAPYEstimationTwoAgents(BaseTestABCIAPYEstimationSkillNormalExecution):
     """Test the ABCI apy_estimation_abci skill with two agents."""
 
     key_pairs_override = KEY_PAIRS[5:7]
 
 
 @pytest.mark.parametrize("nb_nodes", (4,))
-class TestABCIAPYEstimationFourAgents(
-    BaseTestABCIAPYEstimationSkillNormalExecution,
-    UseGnosisSafeHardHatNet,
-):
+class TestABCIAPYEstimationFourAgents(BaseTestABCIAPYEstimationSkillNormalExecution):
     """Test the ABCI apy_estimation_abci skill with four agents."""
