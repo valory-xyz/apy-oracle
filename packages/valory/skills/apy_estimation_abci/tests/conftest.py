@@ -264,20 +264,35 @@ def uni_expected_eth_price_usd() -> float:
     return _UNI_ETH_PRICE_USD_Q_PARAMS["expected_result"]
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def largest_acceptable_block_number() -> int:
     """The largest acceptable block number."""
     return 2147483647
 
 
-@pytest.fixture
-def eth_price_usd_raising_q(
+@pytest.fixture(scope="session")
+def past_block_number() -> int:
+    """The largest acceptable block number."""
+    return 1
+
+
+@pytest.fixture(scope="session")
+def raising_future_block_q(
     uni_eth_price_usd_q: str, largest_acceptable_block_number: int
 ) -> str:
     """Query string for fetching ethereum price in USD, which raises a non-indexed error."""
     # replace the block number with a huge one, so that we get a not indexed error
     return uni_eth_price_usd_q.replace(
         str(_UNI_ETH_PRICE_USD_Q_PARAMS["block"]), str(largest_acceptable_block_number)
+    )
+
+
+@pytest.fixture(scope="session")
+def raising_previous_block_q(uni_eth_price_usd_q: str, past_block_number: int) -> str:
+    """Query string for fetching ethereum price in USD, which raises a data not available error."""
+    # replace the block number with one in the past which is not available, so that we get a data not available error
+    return uni_eth_price_usd_q.replace(
+        str(_UNI_ETH_PRICE_USD_Q_PARAMS["block"]), str(past_block_number)
     )
 
 
