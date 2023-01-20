@@ -1,6 +1,14 @@
 # Release History - `apy-oracle`
 
 
+## 0.7.0 (2023-01-20)
+
+- Integrates ACN #27
+- Bumps `open-autonomy` and `open-aea` and addresses breaking changes #23 && #26
+- Adds docs #24 && #25
+- Routes IPFS traffic to dedicated cluster #22
+
+
 ## 0.4.0 (2022-11-22)
 
 - Fixes reset and pause timeout for the chained FSM #20
