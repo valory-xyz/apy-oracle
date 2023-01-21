@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021-2022 Valory AG
+#   Copyright 2021-2023 Valory AG
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -145,9 +145,15 @@ from packages.valory.skills.apy_estimation_abci.tools.queries import (
 )
 
 
-NON_INDEXED_BLOCK_RE = (
-    r"Failed to decode `block.number` value: `subgraph \w{46} has only "
-    r"indexed up to block number (\d+) and data for block number \d+ is therefore not yet available`"
+NON_INDEXED_BLOCK_RES = (
+    (
+        r"Failed to decode `block.number` value: `subgraph \w{46} has only "
+        r"indexed up to block number (\d+) and data for block number \d+ is therefore not yet available`"
+    ),
+    (
+        r"Failed to decode `block.number` value: `subgraph \w{46} only has data starting at block number (\d+) "
+        r"and data for block number \d+ is therefore not available`"
+    ),
 )
 
 
@@ -577,7 +583,12 @@ class FetchBehaviour(
         if latest_indexed_block_error is None:
             return None
 
-        match = re.match(NON_INDEXED_BLOCK_RE, latest_indexed_block_error)
+        match = None
+        for pattern in NON_INDEXED_BLOCK_RES:
+            match = re.match(pattern, latest_indexed_block_error)
+            if match is not None:
+                break
+
         if match is None:
             self.context.logger.warning(
                 "Attempted to handle an indexing error, but could not extract the latest indexed block!"

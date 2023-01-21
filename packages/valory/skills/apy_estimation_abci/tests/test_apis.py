@@ -34,7 +34,7 @@ from _pytest.fixtures import FixtureRequest
 
 from packages.valory.protocols.http import HttpMessage
 from packages.valory.skills.abstract_round_abci.models import ApiSpecs
-from packages.valory.skills.apy_estimation_abci.behaviours import NON_INDEXED_BLOCK_RE
+from packages.valory.skills.apy_estimation_abci.behaviours import NON_INDEXED_BLOCK_RES
 from packages.valory.skills.apy_estimation_abci.models import (
     DEXSubgraph,
     ETHSubgraph,
@@ -161,6 +161,13 @@ class TestSubgraphs:
 
     @staticmethod
     @pytest.mark.parametrize(
+        "raising_q_fixture, pattern",
+        (
+            ("raising_future_block_q", NON_INDEXED_BLOCK_RES[0]),
+            ("raising_previous_block_q", NON_INDEXED_BLOCK_RES[1]),
+        ),
+    )
+    @pytest.mark.parametrize(
         "dex_subgraph, specs_fixture",
         (
             (
@@ -174,9 +181,10 @@ class TestSubgraphs:
         ),
     )
     def test_eth_price_non_indexed_block(
+        raising_q_fixture: str,
+        pattern: str,
         dex_subgraph: Type[DEXSubgraph],
         specs_fixture: str,
-        eth_price_usd_raising_q: str,
         largest_acceptable_block_number: int,
         request: FixtureRequest,
     ) -> None:
@@ -184,30 +192,42 @@ class TestSubgraphs:
         specs: SpecsType = request.getfixturevalue(specs_fixture)
         api = dex_subgraph(**specs)
 
-        res = make_request(
-            api.get_spec(), eth_price_usd_raising_q, raise_on_error=False
-        )
+        query: str = request.getfixturevalue(raising_q_fixture)
+        res = make_request(api.get_spec(), query, raise_on_error=False)
         processed = api.process_response(cast(HttpMessage, MagicMock(body=res.content)))
         assert processed is None
         non_indexed_error = api.response_info.error_data["message"]
-        match = re.match(NON_INDEXED_BLOCK_RE, non_indexed_error)
+        match = re.match(pattern, non_indexed_error)
         assert match is not None
         latest_indexed_block = match.group(1)
         assert int(latest_indexed_block) < largest_acceptable_block_number
 
     @staticmethod
-    def test_regex_for_indexed_block_capture() -> None:
+    @pytest.mark.parametrize(
+        "error_message, pattern",
+        (
+            (
+                "Failed to decode `block.number` value: `subgraph QmPJbGjktGa7c4UYWXvDRajPxpuJBSZxeQK5siNT3VpthP has "
+                "only indexed up to block number 3730367 and data for block number 3830367 is therefore not yet "
+                "available`",
+                NON_INDEXED_BLOCK_RES[0],
+            ),
+            (
+                "Failed to decode `block.number` value: `subgraph QmPJbGjktGa7c4UYWXvDRajPxpuJBSZxeQK5siNT3VpthP only "
+                "has data starting at block number 3730367 and data for block number 3830367 is therefore not "
+                "available`",
+                NON_INDEXED_BLOCK_RES[1],
+            ),
+        ),
+    )
+    def test_regex_for_indexed_block_capture(error_message: str, pattern: str) -> None:
         """Test the regex for capturing the indexed block."""
-        error_message = (
-            "Failed to decode `block.number` value: `subgraph QmPJbGjktGa7c4UYWXvDRajPxpuJBSZxeQK5siNT3VpthP has only "
-            "indexed up to block number 3730367 and data for block number 3830367 is therefore not yet available`"
-        )
-        match = re.match(NON_INDEXED_BLOCK_RE, error_message)
+        match = re.match(pattern, error_message)
         assert match is not None
         assert match.groups() == ("3730367",)
 
         error_message = "new message 3730367"
-        assert re.match(NON_INDEXED_BLOCK_RE, error_message) is None
+        assert re.match(pattern, error_message) is None
 
     @staticmethod
     @pytest.mark.parametrize("from_", ("timestamp", "number"))
