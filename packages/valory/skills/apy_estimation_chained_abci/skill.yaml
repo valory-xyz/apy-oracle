@@ -71,7 +71,7 @@ models:
       headers:
       - Content-Type: application/json
       method: POST
-      parameters: null
+      parameters: []
       response_key: data
       response_type: dict
       retries: 5
@@ -83,7 +83,7 @@ models:
       headers:
       - Content-Type: application/json
       method: POST
-      parameters: null
+      parameters: []
       response_key: data
       response_type: dict
       retries: 5
@@ -193,7 +193,7 @@ models:
       headers:
       - Content-Type: application/json
       method: POST
-      parameters: null
+      parameters: []
       response_key: null
       response_type: dict
       retries: 5
@@ -213,7 +213,7 @@ models:
       headers:
       - Content-Type: application/json
       method: POST
-      parameters: null
+      parameters: []
       response_key: data
       response_type: dict
       retries: 5
@@ -236,7 +236,7 @@ models:
       headers:
       - Content-Type: application/json
       method: POST
-      parameters: null
+      parameters: []
       response_key: data
       response_type: dict
       retries: 5
