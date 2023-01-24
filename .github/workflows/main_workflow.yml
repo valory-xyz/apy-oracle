@@ -61,6 +61,8 @@ jobs:
       run: tox -e check-copyright
     - name: Check pipfiles
       run: tox -e check-pipfiles
+    - name: Check doc links and IPFS hashes
+      run: tox -e check-doc-links-hashes      
 
   linter_checks:
     continue-on-error: False
