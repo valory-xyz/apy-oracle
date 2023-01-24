@@ -40,13 +40,12 @@ from aea_test_autonomy.fixture_helpers import (  # noqa: F401
     gnosis_safe_hardhat_scope_function,
     hardhat_addr,
     hardhat_port,
+    ipfs_daemon,
+    ipfs_domain,
     key_pairs,
     tendermint_port,
 )
 
-from packages.valory.skills.abstract_round_abci.tests.test_io.test_ipfs import (  # noqa: F401
-    ipfs_daemon,
-)
 from packages.valory.skills.apy_estimation_abci.rounds import (
     CollectHistoryRound,
     CollectLatestHistoryBatchRound,

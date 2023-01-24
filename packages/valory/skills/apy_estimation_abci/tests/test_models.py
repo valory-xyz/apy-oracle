@@ -34,7 +34,6 @@ from hypothesis import database, given, settings
 from packages.valory.skills.abstract_round_abci.models import ApiSpecs
 from packages.valory.skills.apy_estimation_abci.models import (
     APYParams,
-    DEFAULT_N_ESTIMATIONS_BEFORE_RETRAIN,
     SharedState,
     SpookySwapSubgraph,
     SubgraphsMixin,
@@ -176,9 +175,6 @@ class TestAPYParams:
         kwargs: dict = deepcopy(APY_PARAMS_KWARGS)  # type: ignore
 
         params = APYParams(*APY_PARAMS_ARGS, **kwargs)
-        assert (
-            params.n_estimations_before_retrain == DEFAULT_N_ESTIMATIONS_BEFORE_RETRAIN
-        )
 
         if n_estimations < 1:
             with pytest.raises(

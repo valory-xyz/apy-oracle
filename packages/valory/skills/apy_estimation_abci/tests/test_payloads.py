@@ -36,19 +36,9 @@ from packages.valory.skills.apy_estimation_abci.payloads import (
 )
 from packages.valory.skills.apy_estimation_abci.payloads import (
     TrainingPayload,
-    TransactionType,
     TransformationPayload,
     UpdatePayload,
 )
-
-
-class TestTransactionType:
-    """Test for `TransactionType`."""
-
-    def test__str__(self) -> None:
-        """Test `__str__`."""
-        for transaction_type in TransactionType:
-            assert transaction_type.value == str(transaction_type)
 
 
 class TestPayloads:
@@ -57,11 +47,9 @@ class TestPayloads:
     @staticmethod
     def test_model_strategy_payload() -> None:
         """Test `ModelStrategyPayload`"""
-        payload = ModelStrategyPayload(sender="sender", vote=True, id_="id")
+        payload = ModelStrategyPayload(sender="sender", vote=True)
 
-        assert payload.transaction_type == TransactionType.MODEL_STRATEGY
         assert payload.vote is True
-        assert payload.id_ == "id"
         assert payload.data == {"vote": True}
 
     @staticmethod
@@ -70,12 +58,9 @@ class TestPayloads:
         payload = FetchingPayload(
             sender="sender",
             history="x0",
-            id_="id",
         )
 
-        assert payload.transaction_type == TransactionType.FETCHING
         assert payload.history == "x0"
-        assert payload.id_ == "id"
         assert payload.data == {"history": "x0"}
 
     @staticmethod
@@ -85,13 +70,10 @@ class TestPayloads:
             sender="sender",
             transformed_history_hash="x0",
             latest_observation_hist_hash="x1",
-            id_="id",
         )
 
-        assert payload.transaction_type == TransactionType.TRANSFORMATION
         assert payload.transformed_history_hash == "x0"
         assert payload.latest_observation_hist_hash == "x1"
-        assert payload.id_ == "id"
         assert payload.data == {
             "transformed_history_hash": "x0",
             "latest_observation_hist_hash": "x1",
@@ -100,34 +82,23 @@ class TestPayloads:
     @staticmethod
     def test_preprocess_payload() -> None:
         """Test `PreprocessPayload`"""
-        payload = PreprocessPayload(sender="sender", train_test="x0", id_="id")
-        assert payload.transaction_type == TransactionType.PREPROCESS
-        assert payload.train_test_hash == "x0"
-        assert payload.id_ == "id"
-        assert payload.data == {"train_test": "x0"}
-
         payload = PreprocessPayload(
-            sender="sender", train_hash="x0", test_hash="x1", id_="id"
+            sender="sender", train_test_hash="x0"
         )
-        assert payload.transaction_type == TransactionType.PREPROCESS
-        assert payload.train_test_hash == "x0x1"
-        assert payload.id_ == "id"
-        assert payload.data == {"train_test": "x0x1"}
+        assert payload.train_test_hash == "x0"
+        assert payload.data == {
+            "train_test_hash": "x0",
+        }
 
     @staticmethod
     def test_randomness_payload() -> None:
         """Test `RandomnessPayload`"""
 
-        payload = RandomnessPayload(
-            sender="sender", round_id=1, randomness="1", id_="id"
-        )
+        payload = RandomnessPayload(sender="sender", round_id=1, randomness="1")
 
         assert payload.round_id == 1
         assert payload.randomness == "1"
-        assert payload.id_ == "id"
         assert payload.data == {"round_id": 1, "randomness": "1"}
-
-        assert payload.transaction_type == TransactionType.RANDOMNESS
 
     @staticmethod
     def test_batch_preparation_payload() -> None:
@@ -135,12 +106,9 @@ class TestPayloads:
         payload = BatchPreparationPayload(
             sender="sender",
             prepared_batch="x0",
-            id_="id",
         )
 
-        assert payload.transaction_type == TransactionType.BATCH_PREPARATION
         assert payload.prepared_batch == "x0"
-        assert payload.id_ == "id"
         assert payload.data == {"prepared_batch": "x0"}
 
     @staticmethod
@@ -149,62 +117,47 @@ class TestPayloads:
         payload = OptimizationPayload(
             sender="sender",
             best_params="x0",
-            id_="id",
         )
 
-        assert payload.transaction_type == TransactionType.OPTIMIZATION
         assert payload.best_params == "x0"
-        assert payload.id_ == "id"
         assert payload.data == {"best_params": "x0"}
 
     @staticmethod
     def test_training_payload() -> None:
         """Test `TrainingPayload`"""
-        payload = TrainingPayload(sender="sender", models_hash="x0", id_="id")
+        payload = TrainingPayload(sender="sender", models_hash="x0")
 
-        assert payload.transaction_type == TransactionType.TRAINING
         assert payload.models_hash == "x0"
-        assert payload.id_ == "id"
         assert payload.data == {"models_hash": "x0"}
 
     @staticmethod
     def test_testing_payload() -> None:
         """Test `TestingPayload`"""
-        payload = _TestingPayload(sender="sender", report_hash="x0", id_="id")
+        payload = _TestingPayload(sender="sender", report_hash="x0")
 
-        assert payload.transaction_type == TransactionType.TESTING
         assert payload.report_hash == "x0"
-        assert payload.id_ == "id"
         assert payload.data == {"report_hash": "x0"}
 
     @staticmethod
     def test_update_payload() -> None:
         """Test `UpdatePayload`"""
-        payload = UpdatePayload(sender="sender", updated_models_hash="x0", id_="id")
+        payload = UpdatePayload(sender="sender", updated_models_hash="x0")
 
-        assert payload.transaction_type == TransactionType.UPDATE
         assert payload.updated_models_hash == "x0"
-        assert payload.id_ == "id"
         assert payload.data == {"updated_models_hash": "x0"}
 
     @staticmethod
     def test_estimate_payload() -> None:
         """Test `EstimatePayload`"""
-        payload = EstimatePayload(
-            sender="sender", estimations_hash="test_hash", id_="id"
-        )
+        payload = EstimatePayload(sender="sender", estimations_hash="test_hash")
 
-        assert payload.transaction_type == TransactionType.ESTIMATION
         assert payload.estimations_hash == "test_hash"
-        assert payload.id_ == "id"
         assert payload.data == {"estimations_hash": "test_hash"}
 
     @staticmethod
     def test_emit_payload() -> None:
         """Test `EmitPayload`"""
-        payload = EmitPayload(sender="sender", period_count=0, id_="id")
+        payload = EmitPayload(sender="sender", period_count=0)
 
-        assert payload.transaction_type == TransactionType.EMIT
         assert payload.period_count == 0
-        assert payload.id_ == "id"
         assert payload.data == {"period_count": 0}

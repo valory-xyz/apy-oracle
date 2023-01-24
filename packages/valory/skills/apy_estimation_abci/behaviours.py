@@ -924,9 +924,15 @@ class PreprocessBehaviour(APYEstimationBaseBehaviour):
                 )
                 self._preprocessed_pairs_hashes[f"{split_name}_hash"] = split_hash
 
+        train_test_hash = (
+            None
+            if any(hash_ is None for hash_ in self._preprocessed_pairs_hashes.values())
+            else "".join(self._preprocessed_pairs_hashes)
+        )
+
         # Pass the hashes as a Payload.
         payload = PreprocessPayload(
-            self.context.agent_address, **self._preprocessed_pairs_hashes
+            self.context.agent_address, train_test_hash
         )
 
         # Finish behaviour.

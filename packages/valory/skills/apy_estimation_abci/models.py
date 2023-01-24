@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021-2022 Valory AG
+#   Copyright 2021-2023 Valory AG
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ from packages.valory.skills.apy_estimation_abci.tools.general import UNITS_TO_UN
 # It is *not* acceptable to calculate the APY value if the diff between two timestamps is not in 24h +- tolerance
 APY_TOLERANCE = 0.5 * UNITS_TO_UNIX["hour"]
 DAY_IN_UNIX = UNITS_TO_UNIX["day"]
-DEFAULT_N_ESTIMATIONS_BEFORE_RETRAIN = 60
 
 
 Requests = BaseRequests
@@ -51,9 +50,7 @@ BenchmarkTool = BaseBenchmarkTool
 class SharedState(BaseSharedState):
     """Keep the current shared state of the skill."""
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Initialize the state."""
-        super().__init__(*args, abci_app_cls=APYEstimationAbciApp, **kwargs)
+    abci_app_cls = APYEstimationAbciApp
 
 
 class RandomnessApi(ApiSpecs):
@@ -77,8 +74,8 @@ class DEXSubgraph(ApiSpecs):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize DEX Subgraph."""
-        self.bundle_id: int = self.ensure("bundle_id", kwargs)
-        self.chain_subgraph_name = self.ensure("chain_subgraph", kwargs)
+        self.bundle_id: int = self._ensure("bundle_id", kwargs, int)
+        self.chain_subgraph_name: str = self._ensure("chain_subgraph", kwargs, str)
         super().__init__(*args, **kwargs)
 
 
@@ -181,23 +178,29 @@ class APYParams(BaseParams):  # pylint: disable=too-many-instance-attributes
         # end can be `None`; this means that the current time will be used
         # It is set in the behaviour using the last synced timestamp among the agents
         self.end: Optional[int] = kwargs.pop("history_end", None)
-        self.interval: int = self._ensure("history_interval_in_unix", kwargs)
+        self.interval: int = self._ensure("history_interval_in_unix", kwargs, int)
         self.interval_not_acceptable = not (
             DAY_IN_UNIX - APY_TOLERANCE <= self.interval <= DAY_IN_UNIX + APY_TOLERANCE
         )
-        self.n_observations: int = self._ensure("n_observations", kwargs)
+        self.n_observations: int = self._ensure("n_observations", kwargs, int)
         self.optimizer_params: Dict[
             str, Union[None, bool, int, float, str]
-        ] = self._ensure("optimizer", kwargs)
-        self.testing = self._ensure("testing", kwargs)
-        self.estimation = self._ensure("estimation", kwargs)
-        self._n_estimations_before_retrain = kwargs.pop(
-            "n_estimations_before_retrain", DEFAULT_N_ESTIMATIONS_BEFORE_RETRAIN
+        ] = self._ensure(
+            "optimizer", kwargs, Dict[str, Union[None, bool, int, float, str]]
         )
-        self.pair_ids: PairIdsType = self._ensure("pair_ids", kwargs)
-        self.ipfs_domain_name = self._ensure("ipfs_domain_name", kwargs)
-        self.is_broadcasting_to_server = kwargs.pop("broadcast_to_server", False)
-        self.decimals = self._ensure("decimals", kwargs)
+        self.testing: Dict[str, int] = self._ensure("testing", kwargs, Dict[str, int])
+        self.estimation: Dict[str, int] = self._ensure(
+            "estimation", kwargs, Dict[str, int]
+        )
+        self._n_estimations_before_retrain: int = self._ensure(
+            "n_estimations_before_retrain", kwargs, int
+        )
+        self.pair_ids: PairIdsType = self._ensure("pair_ids", kwargs, PairIdsType)
+        self.ipfs_domain_name: str = self._ensure("ipfs_domain_name", kwargs, str)
+        self.is_broadcasting_to_server: bool = self._ensure(
+            "broadcast_to_server", kwargs, bool
+        )
+        self.decimals: int = self._ensure("decimals", kwargs, int)
         super().__init__(*args, **kwargs)
 
         self.__validate_params()

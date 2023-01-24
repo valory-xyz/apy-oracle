@@ -212,10 +212,10 @@ class APYEstimationFSMBehaviourBaseCase(FSMBehaviourBaseCase):
         super().setup()
         assert self.behaviour.current_behaviour is not None
         self.behaviour.current_behaviour.batch = False
-        self.behaviour.current_behaviour.params.n_observations = N_OBSERVATIONS
-        self.behaviour.current_behaviour.params.interval = HISTORY_INTERVAL
-        self.behaviour.current_behaviour.params.end = HISTORY_END
-        self.behaviour.current_behaviour.params.interval_not_acceptable = False
+        self.behaviour.current_behaviour.params.__dict__["n_observations"] = N_OBSERVATIONS
+        self.behaviour.current_behaviour.params.__dict__["interval"] = HISTORY_INTERVAL
+        self.behaviour.current_behaviour.params.__dict__["end"] = HISTORY_END
+        self.behaviour.current_behaviour.params.__dict__["interval_not_acceptable"] = False
 
         for api in (
             "randomness_api",

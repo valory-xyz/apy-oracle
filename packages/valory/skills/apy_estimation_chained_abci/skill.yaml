@@ -42,6 +42,9 @@ handlers:
   http:
     args: {}
     class_name: HttpHandler
+  ipfs:
+    args: {}
+    class_name: IpfsHandler
   ledger_api:
     args: {}
     class_name: LedgerApiHandler
@@ -89,14 +92,19 @@ models:
   http_dialogues:
     args: {}
     class_name: HttpDialogues
+  ipfs_dialogues:
+    args: {}
+    class_name: IpfsDialogues
   ledger_api_dialogues:
     args: {}
     class_name: LedgerApiDialogues
   params:
     args:
+      n_estimations_before_retrain: 60
       broadcast_to_server: true
       cleanup_history_depth: 1
       cleanup_history_depth_current: null
+      max_attempts: 10
       consensus:
         max_participants: 1
       decimals: 5
@@ -141,6 +149,8 @@ models:
         - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
         spooky_subgraph:
         - '0x2a651563c9d3af67ae0388a5c8f89b867038089e'
+      request_retry_delay: 1.0
+      request_timeout: 10.0
       reset_tendermint_after: 10
       retry_attempts: 400
       retry_timeout: 3
@@ -159,6 +169,7 @@ models:
       tendermint_max_retries: 5
       tendermint_p2p_url: localhost:26656
       tendermint_url: http://localhost:26657
+      tx_timeout: 10.0
       testing:
         steps_forward: 1
     class_name: APYParams
