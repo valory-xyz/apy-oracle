@@ -19,6 +19,7 @@
 
 """This module contains all the loading operations of the APY behaviour."""
 
+from io import BytesIO, StringIO
 from typing import Callable, Dict, Optional
 
 import joblib
@@ -41,16 +42,18 @@ SupportedLoaderType = Callable[[str], SupportedSingleObjectType]
 class CSVLoader(AbstractLoader):
     """A csv files Loader."""
 
-    def load_single_file(self, path: str) -> NativelySupportedSingleObjectType:
-        """Read a pandas dataframe from a csv file.
+    def load_single_object(
+        self, serialized_object: str
+    ) -> NativelySupportedSingleObjectType:
+        """Read a pandas dataframe from a csv object.
 
-        :param path: the path of the csv.
+        :param serialized_object: the object serialized into a CSV string.
         :return: the pandas dataframe.
         """
+        buffer = StringIO(serialized_object)
+
         try:
-            return pd.read_csv(path)
-        except FileNotFoundError as e:  # pragma: no cover
-            raise IOError(f"File {path} was not found!") from e
+            return pd.read_csv(buffer)
         except pd.errors.EmptyDataError as e:  # pragma: no cover
             raise IOError("The provided csv was empty!") from e
 
@@ -58,16 +61,23 @@ class CSVLoader(AbstractLoader):
 class ForecasterLoader(AbstractLoader):
     """A `pmdarima` forecaster loader."""
 
-    def load_single_file(self, path: str) -> NativelySupportedSingleObjectType:
+    def load_single_object(
+        self, serialized_object: str
+    ) -> NativelySupportedSingleObjectType:
         """Load a `pmdarima` forecaster.
 
-        :param path: path to store the forecaster.
+        :param serialized_object: the object serialized into a hex string of a `joblib`'s bytes dump.
         :return: a `pmdarima.pipeline.Pipeline`.
         """
+        bytes_content = bytes.fromhex(serialized_object)
+        bytes_container = BytesIO(bytes_content)
+
         try:
-            return joblib.load(path)
-        except (NotADirectoryError, FileNotFoundError) as e:  # pragma: no cover
-            raise IOError(f"Could not detect {path}!") from e
+            return joblib.load(bytes_container)
+        except (ValueError, UnicodeDecodeError) as e:  # pragma: no cover
+            raise IOError(
+                f"The serialized object {serialized_object} cannot be loaded: {e}!"
+            ) from e
 
 
 class Loader(BaseLoader):
@@ -84,7 +94,7 @@ class Loader(BaseLoader):
         self.__filetype_to_loader: Dict[ExtendedSupportedFiletype, SupportedLoaderType]
         self.__filetype_to_loader[
             ExtendedSupportedFiletype.PM_PIPELINE
-        ] = ForecasterLoader().load_single_file
+        ] = ForecasterLoader().load_single_object
         self.__filetype_to_loader[
             ExtendedSupportedFiletype.CSV
-        ] = CSVLoader().load_single_file
+        ] = CSVLoader().load_single_object

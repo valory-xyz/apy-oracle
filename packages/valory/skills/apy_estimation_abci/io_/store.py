@@ -21,6 +21,7 @@
 
 
 from enum import Enum, auto
+from io import BytesIO
 from typing import Any, Callable, Dict, Optional, TypeVar, Union, cast
 
 import joblib
@@ -67,9 +68,9 @@ class ExtendedSupportedFiletype(Enum):
 class CSVStorer(AbstractStorer):
     """A CSV file storer."""
 
-    def store_single_file(
+    def serialize_object(
         self, filename: str, obj: NativelySupportedSingleObjectType, **kwargs: Any
-    ) -> None:
+    ) -> Dict[str, str]:
         """Store a pandas dataframe."""
         if not isinstance(obj, pd.DataFrame):
             raise ValueError(  # pragma: no cover
@@ -79,7 +80,7 @@ class CSVStorer(AbstractStorer):
         index = kwargs.get("index", False)
 
         try:
-            obj.to_csv(filename, index=index)
+            return {filename: obj.to_csv(index=index)}
         except (TypeError, OSError) as e:  # pragma: no cover
             raise IOError(str(e)) from e
 
@@ -87,17 +88,23 @@ class CSVStorer(AbstractStorer):
 class ForecasterStorer(AbstractStorer):
     """A pmdarima Pipeline storer."""
 
-    def store_single_file(
+    def serialize_object(
         self, filename: str, obj: NativelySupportedSingleObjectType, **kwargs: Any
-    ) -> None:
+    ) -> Dict[str, str]:
         """Store a pmdarima Pipeline."""
         if not isinstance(obj, Pipeline):
             raise ValueError(  # pragma: no cover
                 f"`JSONStorer` cannot be used with a {type(obj)}! Only with a {Pipeline}"
             )
 
+        bytes_container = BytesIO()
         try:
-            joblib.dump(obj, filename)
+            joblib.dump(obj, bytes_container)
+            # set the reference point at the beginning of the container
+            bytes_container.seek(0)
+            bytes_content = bytes_container.read()
+            serialized = bytes_content.hex()
+            return {filename: serialized}
         except (ValueError, OSError) as e:  # pragma: no cover
             raise IOError(str(e)) from e
 
@@ -116,8 +123,8 @@ class Storer(BaseStorer):
         self._filetype_to_storer: Dict[Enum, SupportedStorerType]
         self._filetype_to_storer[ExtendedSupportedFiletype.PM_PIPELINE] = cast(
             NativelySupportedPipelineStorerType,
-            ForecasterStorer(path).store_single_file,
+            ForecasterStorer(path).serialize_object,
         )
         self._filetype_to_storer[ExtendedSupportedFiletype.CSV] = cast(
-            NativelySupportedDfStorerType, CSVStorer(path).store_single_file
+            NativelySupportedDfStorerType, CSVStorer(path).serialize_object
         )
