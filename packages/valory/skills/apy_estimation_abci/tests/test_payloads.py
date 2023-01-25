@@ -82,9 +82,7 @@ class TestPayloads:
     @staticmethod
     def test_preprocess_payload() -> None:
         """Test `PreprocessPayload`"""
-        payload = PreprocessPayload(
-            sender="sender", train_test_hash="x0"
-        )
+        payload = PreprocessPayload(sender="sender", train_test_hash="x0")
         assert payload.train_test_hash == "x0"
         assert payload.data == {
             "train_test_hash": "x0",

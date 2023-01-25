@@ -23,6 +23,7 @@
 # pylint: skip-file
 
 import warnings
+from collections import OrderedDict
 from typing import Any, Callable, Dict, List, Tuple, Union
 from unittest import mock
 from unittest.mock import MagicMock, PropertyMock
@@ -114,10 +115,11 @@ _BLOCK_Q_PARAMS: _BlockQParamsType = {
 @pytest.fixture
 def _common_specs() -> SpecsType:
     return {
-        "headers": {"Content-Type": "application/json"},
+        "headers": [OrderedDict([("Content-Type", "application/json")])],
+        "parameters": [],
         "method": "POST",
         "name": "api",
-        "skill_context": SkillContext(),
+        "skill_context": MagicMock(),
         "response_key": "data",
         "response_type": "list",
         "error_key": "errors",

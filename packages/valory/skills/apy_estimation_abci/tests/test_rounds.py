@@ -123,7 +123,7 @@ def get_participant_to_preprocess_payload(
     if any(hash_ is None for hash_ in (train_hash, test_hash)):
         train_test_hash = None
     else:
-        train_test_hash = train_hash + test_hash
+        train_test_hash = str(train_hash) + str(test_hash)
     return {
         participant: PreprocessPayload(participant, train_test_hash)
         for participant in participants

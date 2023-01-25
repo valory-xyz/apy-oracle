@@ -37,6 +37,7 @@ from typing import (
     Tuple,
     Type,
     Union,
+    ValuesView,
     cast,
 )
 
@@ -261,7 +262,7 @@ class ModelStrategyBehaviour(APYEstimationBaseBehaviour):
 
 class FetchBehaviour(
     APYEstimationBaseBehaviour, SubgraphsMixin
-):  # pylint: disable=too-many-ancestors
+):  # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Observe historical data."""
 
     matching_round = CollectHistoryRound
@@ -305,6 +306,7 @@ class FetchBehaviour(
         self._target_per_pool = 0
         self._target = 0
         self._pairs_exist = False
+        self._end_timestamp = self.params.end or -1
 
     @property
     def current_pair_ids(self) -> List[str]:
@@ -359,11 +361,11 @@ class FetchBehaviour(
 
     def setup(self) -> None:
         """Set the behaviour up."""
-        if self.params.end is None or self.batch:
+        if self._end_timestamp == -1 or self.batch:
             last_timestamp = cast(
                 SharedState, self.context.state
             ).round_sequence.abci_app.last_timestamp
-            self.params.end = int(calendar.timegm(last_timestamp.timetuple()))
+            self._end_timestamp = int(calendar.timegm(last_timestamp.timetuple()))
 
         self._unit = sec_to_unit(self.params.interval)
         self._target_per_pool = int(
@@ -376,7 +378,7 @@ class FetchBehaviour(
 
         filename = (
             HISTORICAL_DATA_BATCH_PATH_TEMPLATE.substitute(
-                batch_number=self.params.end,
+                batch_number=self._end_timestamp,
                 period_count=self.synchronized_data.period_count,
             )
             if self.batch
@@ -423,8 +425,8 @@ class FetchBehaviour(
     def _reset_timestamps_iterator(self) -> None:
         """Reset the timestamps iterator."""
         # `start` and `end` are set in the `setup` method and therefore cannot be `None` at this point
-        start = cast(int, self.params.start)
-        end = cast(int, self.params.end)
+        start = self._end_timestamp - self.params.ts_length
+        end = cast(int, self._end_timestamp)
 
         if self.batch:
             # the value for this interval does not matter as long as it is valid
@@ -934,10 +936,11 @@ class PreprocessBehaviour(APYEstimationBaseBehaviour):
                 )
                 self._preprocessed_pairs_hashes[f"{split_name}_hash"] = split_hash
 
+        hashes = self._preprocessed_pairs_hashes.values()
         train_test_hash = (
             None
-            if any(hash_ is None for hash_ in self._preprocessed_pairs_hashes.values())
-            else "".join(self._preprocessed_pairs_hashes)
+            if any(hash_ is None for hash_ in hashes)
+            else "".join(cast(ValuesView[str], hashes))
         )
 
         # Pass the hashes as a Payload.

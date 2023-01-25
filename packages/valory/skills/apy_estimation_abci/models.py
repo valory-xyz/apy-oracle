@@ -21,15 +21,16 @@
 """Custom objects for the APY estimation ABCI application."""
 
 
-from typing import Any, Dict, List, Optional, Set, Union, ValuesView, cast, OrderedDict
+from typing import Any, Dict, List, Optional, OrderedDict, Set, Union, ValuesView, cast
 
-from aea.skills.base import SkillContext, Model
+from aea.skills.base import Model, SkillContext
 
-from packages.valory.skills.abstract_round_abci.models import ApiSpecs, BaseParams, ResponseInfo, RetriesInfo
+from packages.valory.skills.abstract_round_abci.models import ApiSpecs, BaseParams
 from packages.valory.skills.abstract_round_abci.models import (
     BenchmarkTool as BaseBenchmarkTool,
 )
 from packages.valory.skills.abstract_round_abci.models import Requests as BaseRequests
+from packages.valory.skills.abstract_round_abci.models import ResponseInfo, RetriesInfo
 from packages.valory.skills.abstract_round_abci.models import (
     SharedState as BaseSharedState,
 )
@@ -116,6 +117,7 @@ class SubgraphsMixin:
     """A mixin to handle the subgraphs' information."""
 
     _necessary_attributes = {"context.params.pair_ids"}
+    _utilized_subgraphs: UnvalidatedSubgraphsMappingType
     context: SkillContext
 
     def __init__(self) -> None:
@@ -129,7 +131,7 @@ class SubgraphsMixin:
             if dex is not None
         }
         utilized_block_subgraphs = self._get_subgraphs_mapping(utilized_block_names)
-        self._utilized_subgraphs = {
+        self.__dict__["_utilized_subgraphs"] = {
             **utilized_dex_subgraphs,
             **utilized_block_subgraphs,
         }
@@ -194,7 +196,7 @@ class APYParams(BaseParams):  # pylint: disable=too-many-instance-attributes
         """Initialize the parameters object."""
         # end can be `None`; this means that the current time will be used
         # It is set in the behaviour using the last synced timestamp among the agents
-        self.end: Optional[int] = kwargs.pop("history_end", None)
+        self.end: Optional[int] = self._ensure("history_end", kwargs, Optional[int])
         self.interval: int = self._ensure("history_interval_in_unix", kwargs, int)
         self.interval_not_acceptable = not (
             DAY_IN_UNIX - APY_TOLERANCE <= self.interval <= DAY_IN_UNIX + APY_TOLERANCE
@@ -209,7 +211,7 @@ class APYParams(BaseParams):  # pylint: disable=too-many-instance-attributes
         self.estimation: Dict[str, int] = self._ensure(
             "estimation", kwargs, Dict[str, int]
         )
-        self._n_estimations_before_retrain: int = self._ensure(
+        self.n_estimations_before_retrain: int = self._ensure(
             "n_estimations_before_retrain", kwargs, int
         )
         self.pair_ids: PairIdsType = self._ensure("pair_ids", kwargs, PairIdsType)
@@ -223,31 +225,9 @@ class APYParams(BaseParams):  # pylint: disable=too-many-instance-attributes
         self.__validate_params()
 
     @property
-    def start(self) -> Optional[int]:
-        """The start timestamp of the timeseries."""
-        if self.end is None:
-            return None
-        return self.end - self.ts_length
-
-    @property
     def ts_length(self) -> int:
         """The length of the timeseries in seconds."""
         return self.n_observations * self.interval
-
-    @property
-    def n_estimations_before_retrain(self) -> int:
-        """The number of estimations to perform before training a fresh model again."""
-        return self._n_estimations_before_retrain
-
-    @n_estimations_before_retrain.setter
-    def n_estimations_before_retrain(self, n_estimations: int) -> None:
-        """The number of estimations to perform before training a fresh model again."""
-        if n_estimations < 1:
-            raise ValueError(
-                "The number of estimations to perform before training a fresh model again cannot be less than 1. "
-                f"`n_estimations_before_retrain={n_estimations}` was given."
-            )
-        self._n_estimations_before_retrain = n_estimations
 
     def __validate_params(self) -> None:
         """Validate the given parameters."""
