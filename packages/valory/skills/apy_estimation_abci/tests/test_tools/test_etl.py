@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021-2022 Valory AG
+#   Copyright 2021-2023 Valory AG
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -133,10 +133,11 @@ class TestProcessing:
         monkeypatch: MonkeyPatch, transformed_history: pd.DataFrame
     ) -> None:
         """Test `load_hist`."""
-        monkeypatch.setattr(pd, "read_csv", lambda _: transformed_history)
-        actual = load_hist("")
+        df = pd.DataFrame(transformed_history)
+        serialized = df.to_csv(index=False)
+        actual = load_hist(serialized)
 
-        actual_timestamp = actual.loc[1, "blockTimestamp"]
+        actual_timestamp = actual.loc[0, "blockTimestamp"]
         expected_timestamp = pd.Timestamp(
             transformed_history.loc[1, "blockTimestamp"], unit="s"
         )
@@ -145,15 +146,18 @@ class TestProcessing:
         transformed_history = transformed_history.astype(TRANSFORMED_HIST_DTYPES)
         for df in (actual, transformed_history):
             df.drop(columns="blockTimestamp", inplace=True)
-        pd.testing.assert_frame_equal(actual, transformed_history)
+        pd.testing.assert_frame_equal(
+            *(frame.reset_index(drop=True) for frame in (actual, transformed_history))
+        )
 
     @staticmethod
+    @pytest.mark.parametrize("serialized", ("", "invalid"))
     def test_load_hist_file_not_found(
-        monkeypatch: MonkeyPatch, transformed_history: pd.DataFrame
+        serialized: str, monkeypatch: MonkeyPatch, transformed_history: pd.DataFrame
     ) -> None:
         """Test `load_hist` when file is not found."""
         with pytest.raises(IOError):
-            load_hist("non_existing")
+            load_hist(serialized)
 
     @staticmethod
     @pytest.mark.parametrize("invalid", (True, False))

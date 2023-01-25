@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021-2022 Valory AG
+#   Copyright 2021-2023 Valory AG
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@
 import re
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
-from unittest import mock
 from unittest.mock import MagicMock
 
 import hypothesis.strategies as st
@@ -34,7 +33,6 @@ from hypothesis import database, given, settings
 from packages.valory.skills.abstract_round_abci.models import ApiSpecs
 from packages.valory.skills.apy_estimation_abci.models import (
     APYParams,
-    DEFAULT_N_ESTIMATIONS_BEFORE_RETRAIN,
     SharedState,
     SpookySwapSubgraph,
     SubgraphsMixin,
@@ -47,31 +45,35 @@ try:
 except ImportError:
     from mypy_extensions import TypedDict  # <=3.7
 
-APYParamsArgsType = Tuple[str, MagicMock]
+APYParamsArgsType = Tuple[str]
 
 
 class APYParamsKwargsType(TypedDict):
     """Typed dict for the APY kwargs."""
 
+    skill_context: MagicMock
     tendermint_url: str
     tendermint_com_url: str
-    tendermint_check_sleep_delay: str
-    tendermint_max_retries: str
-    reset_tendermint_after: str
+    tendermint_check_sleep_delay: int
+    tendermint_max_retries: int
+    reset_tendermint_after: int
     ipfs_domain_name: str
     consensus: Dict[str, int]
-    max_healthcheck: str
-    round_timeout_seconds: str
-    sleep_time: str
-    retry_attempts: str
-    retry_timeout: str
-    observation_interval: str
+    max_healthcheck: int
+    round_timeout_seconds: float
+    sleep_time: int
+    retry_attempts: int
+    retry_timeout: int
+    request_timeout: float
+    request_retry_delay: float
+    observation_interval: int
     drand_public_key: str
     history_interval_in_unix: int
     n_observations: int
     optimizer: Dict[str, Union[None, str, int]]
-    testing: str
-    estimation: str
+    testing: Dict[str, int]
+    estimation: Dict[str, int]
+    n_estimations_before_retrain: int
     pair_ids: Dict[str, List[str]]
     service_id: str
     service_registry_address: str
@@ -80,29 +82,42 @@ class APYParamsKwargsType(TypedDict):
     backwards_compatible: bool
     decimals: int
     genesis_config: dict
+    broadcast_to_server: bool
+    cleanup_history_depth_current: Optional[int]
+    tx_timeout: float
+    max_attempts: int
+    on_chain_service_id: int
+    share_tm_config_on_startup: bool
+    tendermint_p2p_url: str
+    setup: Dict[str, Any]
+    history_end: Optional[int]
 
 
-APY_PARAMS_ARGS: APYParamsArgsType = ("test", MagicMock())
+APY_PARAMS_ARGS = ("test",)
 APY_PARAMS_KWARGS = APYParamsKwargsType(
+    skill_context=MagicMock(skill_id="test"),
     tendermint_url="test",
     tendermint_com_url="test",
-    tendermint_check_sleep_delay="test",
-    tendermint_max_retries="test",
-    reset_tendermint_after="test",
+    tendermint_check_sleep_delay=0,
+    tendermint_max_retries=0,
+    reset_tendermint_after=0,
     ipfs_domain_name="test",
     consensus={"max_participants": 0},
-    max_healthcheck="test",
-    round_timeout_seconds="test",
-    sleep_time="test",
-    retry_attempts="test",
-    retry_timeout="test",
-    observation_interval="test",
+    max_healthcheck=0,
+    round_timeout_seconds=0.1,
+    sleep_time=0,
+    retry_attempts=0,
+    retry_timeout=0,
+    request_timeout=0.1,
+    request_retry_delay=0.1,
+    observation_interval=0,
     drand_public_key="test",
     history_interval_in_unix=86400,
     n_observations=10,
     optimizer={"timeout": 0, "window_size": 0},
-    testing="test",
-    estimation="test",
+    testing={"test": 0},
+    estimation={"test": 0},
+    n_estimations_before_retrain=1,
     pair_ids={"test": ["not_supported"], "spooky_subgraph": ["supported"]},
     service_id="apy_estimation",
     service_registry_address="0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0",
@@ -110,7 +125,30 @@ APY_PARAMS_KWARGS = APYParamsKwargsType(
     cleanup_history_depth=0,
     backwards_compatible=False,
     decimals=5,
-    genesis_config={"voting_power": "0"},
+    genesis_config={
+        "genesis_time": "0",
+        "chain_id": "chain",
+        "consensus_params": {
+            "block": {"max_bytes": "0", "max_gas": "0", "time_iota_ms": "0"},
+            "evidence": {
+                "max_age_num_blocks": "0",
+                "max_age_duration": "0",
+                "max_bytes": "0",
+            },
+            "validator": {"pub_key_types": ["test"]},
+            "version": {},
+        },
+        "voting_power": "0",
+    },
+    broadcast_to_server=False,
+    cleanup_history_depth_current=None,
+    tx_timeout=0.1,
+    max_attempts=0,
+    on_chain_service_id=0,
+    share_tm_config_on_startup=False,
+    tendermint_p2p_url="test",
+    setup={"test": [0]},
+    history_end=0,
 )
 
 
@@ -132,27 +170,6 @@ class TestAPYParams:
     """Test `APYParams`"""
 
     @staticmethod
-    @given(end=st.one_of(st.none(), st.integers()), ts_length=st.integers())
-    @settings(deadline=None, database=database.InMemoryExampleDatabase())
-    def test_start(end: Optional[int], ts_length: int) -> None:
-        """Test `start` property."""
-        args = APY_PARAMS_ARGS
-        # TypedDict can’t be used for specifying the type of a **kwargs argument: https://peps.python.org/pep-0589/
-        kwargs: dict = deepcopy(APY_PARAMS_KWARGS)  # type: ignore
-        kwargs["history_end"] = end
-        params = APYParams(*args, **kwargs)
-
-        expected = None if end is None else end - ts_length
-
-        with mock.patch.object(
-            APYParams,
-            "ts_length",
-            new_callable=mock.PropertyMock,
-            return_value=ts_length,
-        ):
-            assert params.start == expected
-
-    @staticmethod
     @given(n_observations=st.integers(), interval=st.integers())
     @settings(deadline=None, database=database.InMemoryExampleDatabase())
     def test_ts_length(n_observations: int, interval: int) -> None:
@@ -166,30 +183,6 @@ class TestAPYParams:
 
         expected = n_observations * interval
         assert params.ts_length == expected
-
-    @staticmethod
-    @given(n_estimations=st.integers())
-    @settings(deadline=None, database=database.InMemoryExampleDatabase())
-    def test_n_estimations_before_retrain(n_estimations: int) -> None:
-        """Test `n_estimations_before_retrain` property."""
-        # TypedDict can’t be used for specifying the type of a **kwargs argument: https://peps.python.org/pep-0589/
-        kwargs: dict = deepcopy(APY_PARAMS_KWARGS)  # type: ignore
-
-        params = APYParams(*APY_PARAMS_ARGS, **kwargs)
-        assert (
-            params.n_estimations_before_retrain == DEFAULT_N_ESTIMATIONS_BEFORE_RETRAIN
-        )
-
-        if n_estimations < 1:
-            with pytest.raises(
-                ValueError,
-                match="The number of estimations to perform before training a fresh model again cannot be less than 1. "
-                f"`n_estimations_before_retrain={n_estimations}` was given.",
-            ):
-                params.n_estimations_before_retrain = n_estimations
-        else:
-            params.n_estimations_before_retrain = n_estimations
-            assert params.n_estimations_before_retrain == n_estimations
 
     @staticmethod
     @pytest.mark.parametrize("param_value", (None, "not_an_int", 0))
@@ -228,13 +221,16 @@ class TestSubgraphsMixin:
         def __init__(self, *args: Any, **kwargs: Any) -> None:
             """Initialize `APYEstimationBaseBehaviour`."""
             super().__init__(*args, **kwargs)
-            subgraph_args = ["spooky_name", MagicMock()]
+            subgraph_args = ["spooky_name"]
             subgraph_kwargs = {
+                "skill_context": MagicMock(),
                 "url": "url",
                 "api_id": "spooky_api_id",
                 "method": "method",
                 "bundle_id": 0,
                 "chain_subgraph": "chain_subgraph",
+                "headers": [],
+                "parameters": [],
             }
             self.context.test = None
             self.context.spooky_subgraph = SpookySwapSubgraph(

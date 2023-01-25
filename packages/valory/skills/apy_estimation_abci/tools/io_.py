@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021-2022 Valory AG
+#   Copyright 2021-2023 Valory AG
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@
 
 """IO operations for the APY skill."""
 
+from io import StringIO
+
 import pandas as pd
 from pandas._libs.tslibs.np_datetime import (  # type: ignore # pylint: disable=E0611
     OutOfBoundsDatetime,
@@ -27,20 +29,23 @@ from pandas._libs.tslibs.np_datetime import (  # type: ignore # pylint: disable=
 from packages.valory.skills.apy_estimation_abci.tools.etl import TRANSFORMED_HIST_DTYPES
 
 
-def load_hist(path: str) -> pd.DataFrame:
+def load_hist(serialized_hist: str) -> pd.DataFrame:
     """Load the already fetched and transformed historical data.
 
-    :param path: the path to the historical data.
+    :param serialized_hist: the historical data, serialized to a csv string.
     :return: a dataframe with the historical data.
     """
     try:
-        pairs_hist = pd.read_csv(path).astype(TRANSFORMED_HIST_DTYPES)
+        buffer = StringIO(serialized_hist)
+        pairs_hist = pd.read_csv(buffer).astype(TRANSFORMED_HIST_DTYPES)
 
         # Convert the `blockTimestamp` to a pandas datetime.
         pairs_hist["blockTimestamp"] = pd.to_datetime(
             pairs_hist["blockTimestamp"], unit="s"
         )
-    except (FileNotFoundError, OutOfBoundsDatetime) as e:
-        raise IOError(str(e)) from e
+    except (OutOfBoundsDatetime, KeyError) as e:
+        raise IOError("The provided csv is not well formatted!") from e
+    except pd.errors.EmptyDataError as e:
+        raise IOError("The provided csv was empty!") from e
 
     return pairs_hist

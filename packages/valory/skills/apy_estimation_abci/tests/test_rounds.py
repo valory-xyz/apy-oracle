@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021-2022 Valory AG
+#   Copyright 2021-2023 Valory AG
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -120,12 +120,12 @@ def get_participant_to_preprocess_payload(
     test_hash: Optional[str],
 ) -> Dict[str, PreprocessPayload]:
     """Get preprocess payload."""
+    if any(hash_ is None for hash_ in (train_hash, test_hash)):
+        train_test_hash = None
+    else:
+        train_test_hash = str(train_hash) + str(test_hash)
     return {
-        participant: PreprocessPayload(
-            participant,
-            train_hash,
-            test_hash,
-        )
+        participant: PreprocessPayload(participant, train_test_hash)
         for participant in participants
     }
 

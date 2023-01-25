@@ -30,7 +30,6 @@ from packages.valory.skills.abstract_round_abci.base import (
     BaseSynchronizedData,
     CollectSameUntilThresholdRound,
     DegenerateRound,
-    TransactionType,
     VotingRound,
     get_name,
 )
@@ -106,13 +105,11 @@ class SynchronizedData(BaseSynchronizedData):
         """Get the most voted split."""
         return cast(str, self.db.get_strict("most_voted_split"))
 
-    # TODO: remove - not used?
     @property
     def train_hash(self) -> str:
         """Get the most voted train hash."""
         return self.most_voted_split[0 : int(len(self.most_voted_split) / 2)]
 
-    # TODO: remove - not used?
     @property
     def test_hash(self) -> str:
         """Get the most voted test hash."""
@@ -246,7 +243,7 @@ class SynchronizedData(BaseSynchronizedData):
         return cast(int, self.db.get_strict("most_voted_emission_period"))
 
 
-class APYEstimationAbstractRound(AbstractRound[Event, TransactionType], ABC):
+class APYEstimationAbstractRound(AbstractRound[Event], ABC):
     """Abstract round for the APY estimation skill."""
 
     @property
@@ -266,9 +263,9 @@ class APYEstimationAbstractRound(AbstractRound[Event, TransactionType], ABC):
 class ModelStrategyRound(VotingRound, APYEstimationAbstractRound):
     """A round that represents the model's strategy selection"""
 
-    allowed_tx_type = ModelStrategyPayload.transaction_type
+    payload_class = ModelStrategyPayload
     # the `payload_attribute` is not used in `VotingRound`, but is necessary because of the `_MetaAbstractRound` checks
-    payload_attribute = get_name(ModelStrategyPayload.vote)
+    payload_attribute = "vote"
     done_event = Event.DONE
     negative_event = Event.NEGATIVE
     none_event = Event.NONE
@@ -280,8 +277,8 @@ class ModelStrategyRound(VotingRound, APYEstimationAbstractRound):
 class CollectHistoryRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
     """A round in which agents collect historical data"""
 
-    allowed_tx_type = FetchingPayload.transaction_type
-    payload_attribute = get_name(FetchingPayload.history)
+    payload_class = FetchingPayload
+    payload_attribute = "history"
     collection_key = get_name(SynchronizedData.participant_to_history)
     selection_key = get_name(SynchronizedData.history_hash)
     synchronized_data_class = SynchronizedData
@@ -323,8 +320,8 @@ class CollectLatestHistoryBatchRound(CollectHistoryRound):
 class TransformRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
     """A round in which agents transform data"""
 
-    allowed_tx_type = TransformationPayload.transaction_type
-    payload_attribute = get_name(TransformationPayload.transformed_history_hash)
+    payload_class = TransformationPayload
+    payload_attribute = "transformed_history_hash"
     synchronized_data_class = SynchronizedData
 
     def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
@@ -363,8 +360,8 @@ class TransformRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound)
 class PreprocessRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
     """A round in which the agents preprocess the data"""
 
-    allowed_tx_type = PreprocessPayload.transaction_type
-    payload_attribute = get_name(PreprocessPayload.train_test_hash)
+    payload_class = PreprocessPayload
+    payload_attribute = "train_test_hash"
     synchronized_data_class = SynchronizedData
 
     def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
@@ -397,8 +394,8 @@ class PreprocessRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound
 class PrepareBatchRound(CollectSameUntilThresholdRound):
     """A round in which agents prepare a batch of data"""
 
-    allowed_tx_type = BatchPreparationPayload.transaction_type
-    payload_attribute = get_name(BatchPreparationPayload.prepared_batch)
+    payload_class = BatchPreparationPayload
+    payload_attribute = "prepared_batch"
     synchronized_data_class = SynchronizedData
     done_event = Event.DONE
     no_majority_event = Event.NO_MAJORITY
@@ -415,8 +412,8 @@ class RandomnessRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound
     any random number generators.
     """
 
-    allowed_tx_type = RandomnessPayload.transaction_type
-    payload_attribute = get_name(RandomnessPayload.randomness)
+    payload_class = RandomnessPayload
+    payload_attribute = "randomness"
     synchronized_data_class = SynchronizedData
 
     def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
@@ -451,8 +448,8 @@ class RandomnessRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound
 class OptimizeRound(CollectSameUntilThresholdRound):
     """A round in which agents agree on the optimal hyperparameters"""
 
-    allowed_tx_type = OptimizationPayload.transaction_type
-    payload_attribute = get_name(OptimizationPayload.best_params)
+    payload_class = OptimizationPayload
+    payload_attribute = "best_params"
     synchronized_data_class = SynchronizedData
     done_event = Event.DONE
     no_majority_event = Event.NO_MAJORITY
@@ -464,8 +461,8 @@ class OptimizeRound(CollectSameUntilThresholdRound):
 class TrainRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
     """A round in which agents train a model"""
 
-    allowed_tx_type = TrainingPayload.transaction_type
-    payload_attribute = get_name(TrainingPayload.models_hash)
+    payload_class = TrainingPayload
+    payload_attribute = "models_hash"
     synchronized_data_class = SynchronizedData
 
     def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
@@ -507,8 +504,8 @@ class TrainRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
 class TestRound(CollectSameUntilThresholdRound):
     """A round in which agents test a model"""
 
-    allowed_tx_type = _TestingPayload.transaction_type
-    payload_attribute = get_name(_TestingPayload.report_hash)
+    payload_class = _TestingPayload
+    payload_attribute = "report_hash"
     synchronized_data_class = SynchronizedData
     done_event = Event.DONE
     no_majority_event = Event.NO_MAJORITY
@@ -520,8 +517,8 @@ class TestRound(CollectSameUntilThresholdRound):
 class UpdateForecasterRound(CollectSameUntilThresholdRound):
     """A round in which agents update the forecasting model"""
 
-    allowed_tx_type = UpdatePayload.transaction_type
-    payload_attribute = get_name(UpdatePayload.updated_models_hash)
+    payload_class = UpdatePayload
+    payload_attribute = "updated_models_hash"
     synchronized_data_class = SynchronizedData
     done_event = Event.DONE
     no_majority_event = Event.NO_MAJORITY
@@ -533,8 +530,8 @@ class UpdateForecasterRound(CollectSameUntilThresholdRound):
 class EstimateRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
     """A round in which agents make predictions using a model"""
 
-    allowed_tx_type = EstimatePayload.transaction_type
-    payload_attribute = get_name(EstimatePayload.estimations_hash)
+    payload_class = EstimatePayload
+    payload_attribute = "estimations_hash"
     synchronized_data_class = SynchronizedData
 
     def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
@@ -568,8 +565,8 @@ class EstimateRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
 class EmitRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
     """A round that represents the emission of the estimates to the backend"""
 
-    allowed_tx_type = EmitPayload.transaction_type
-    payload_attribute = get_name(EmitPayload.period_count)
+    payload_class = EmitPayload
+    payload_attribute = "period_count"
     synchronized_data_class = SynchronizedData
     done_event = Event.DONE
     no_majority_event = Event.NO_MAJORITY

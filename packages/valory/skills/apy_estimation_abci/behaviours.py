@@ -37,6 +37,7 @@ from typing import (
     Tuple,
     Type,
     Union,
+    ValuesView,
     cast,
 )
 
@@ -205,25 +206,27 @@ class APYEstimationBaseBehaviour(BaseBehaviour, ABC):
         y_split = Y_SPLIT_TEMPLATE.substitute(split=split)
         return self.from_data_dir_with_period_specifier(y_split)
 
-    def load_split(self, split: str) -> Optional[Dict[str, pd.DataFrame]]:
+    def load_split(
+        self, split_name: str
+    ) -> Generator[None, None, Optional[Dict[str, pd.DataFrame]]]:
         """Load a split of the data."""
-        return self.get_from_ipfs(
-            getattr(self.synchronized_data, f"{split}_hash"),
-            self.split_path(split),
-            multiple=True,
-            filetype=ExtendedSupportedFiletype.CSV,
+        split = yield from self.get_from_ipfs(
+            getattr(self.synchronized_data, f"{split_name}_hash"),
+            filetype=ExtendedSupportedFiletype.CSV,  # type: ignore
         )
 
-    def load_transformed_hist_data(self) -> Optional[pd.DataFrame]:
+        return cast(Optional[Dict[str, pd.DataFrame]], split)
+
+    def load_transformed_hist_data(
+        self,
+    ) -> Generator[None, None, Optional[pd.DataFrame]]:
         """Load the transformed historical data."""
-        return self.get_from_ipfs(
+        transformed = yield from self.get_from_ipfs(
             self.synchronized_data.transformed_history_hash,
-            self.context.data_dir,
-            filename=TRANSFORMED_HISTORICAL_DATA_PATH_TEMPLATE.substitute(
-                period_count=self.synchronized_data.latest_transformation_period
-            ),
             custom_loader=load_hist,
         )
+
+        return transformed
 
 
 class ModelStrategyBehaviour(APYEstimationBaseBehaviour):
@@ -259,7 +262,7 @@ class ModelStrategyBehaviour(APYEstimationBaseBehaviour):
 
 class FetchBehaviour(
     APYEstimationBaseBehaviour, SubgraphsMixin
-):  # pylint: disable=too-many-ancestors
+):  # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Observe historical data."""
 
     matching_round = CollectHistoryRound
@@ -303,6 +306,7 @@ class FetchBehaviour(
         self._target_per_pool = 0
         self._target = 0
         self._pairs_exist = False
+        self._end_timestamp = self.params.end or -1
 
     @property
     def current_pair_ids(self) -> List[str]:
@@ -357,11 +361,11 @@ class FetchBehaviour(
 
     def setup(self) -> None:
         """Set the behaviour up."""
-        if self.params.end is None or self.batch:
+        if self._end_timestamp == -1 or self.batch:
             last_timestamp = cast(
                 SharedState, self.context.state
             ).round_sequence.abci_app.last_timestamp
-            self.params.end = int(calendar.timegm(last_timestamp.timetuple()))
+            self._end_timestamp = int(calendar.timegm(last_timestamp.timetuple()))
 
         self._unit = sec_to_unit(self.params.interval)
         self._target_per_pool = int(
@@ -374,7 +378,7 @@ class FetchBehaviour(
 
         filename = (
             HISTORICAL_DATA_BATCH_PATH_TEMPLATE.substitute(
-                batch_number=self.params.end,
+                batch_number=self._end_timestamp,
                 period_count=self.synchronized_data.period_count,
             )
             if self.batch
@@ -421,8 +425,8 @@ class FetchBehaviour(
     def _reset_timestamps_iterator(self) -> None:
         """Reset the timestamps iterator."""
         # `start` and `end` are set in the `setup` method and therefore cannot be `None` at this point
-        start = cast(int, self.params.start)
-        end = cast(int, self.params.end)
+        start = self._end_timestamp - self.params.ts_length
+        end = cast(int, self._end_timestamp)
 
         if self.batch:
             # the value for this interval does not matter as long as it is valid
@@ -742,7 +746,7 @@ class FetchBehaviour(
 
             if self.total_downloaded > 0:
                 # Send the file to IPFS and get its hash.
-                self._hist_hash = self.send_to_ipfs(
+                self._hist_hash = yield from self.send_to_ipfs(
                     self._save_path, self._pairs_hist, filetype=SupportedFiletype.JSON
                 )
 
@@ -791,15 +795,12 @@ class TransformBehaviour(
         self._pairs_hist: Optional[ResponseItemType] = None
         self._transformed_hist_hash: Optional[str] = None
         self._latest_observations_hist_hash: Optional[str] = None
+        self._task_prepared = False
 
-    def setup(self) -> None:
-        """Setup behaviour."""
-        self._pairs_hist = self.get_from_ipfs(
+    def prepare_task(self) -> Generator:
+        """Prepare the transform task."""
+        self._pairs_hist = yield from self.get_from_ipfs(  # type: ignore
             self.synchronized_data.history_hash,
-            self.context.data_dir,
-            filename=HISTORICAL_DATA_PATH_TEMPLATE.substitute(
-                period_count=self.synchronized_data.period_count
-            ),
             filetype=SupportedFiletype.JSON,
         )
 
@@ -816,8 +817,13 @@ class TransformBehaviour(
             )
             self._async_result = self.context.task_manager.get_task_result(task_id)
 
+        self._task_prepared = True
+
     def async_act(self) -> Generator:
         """Do the action."""
+        if not self._task_prepared:
+            yield from self.prepare_task()
+
         if self._pairs_hist is not None:
             self._async_result = cast(AsyncResult, self._async_result)
             if not self._async_result.ready():
@@ -833,10 +839,10 @@ class TransformBehaviour(
             )
 
             # Send the transformed history to IPFS and get its hash.
-            self._transformed_hist_hash = self.send_to_ipfs(
+            self._transformed_hist_hash = yield from self.send_to_ipfs(
                 self._transformed_history_save_path,
                 transformed_history,
-                filetype=ExtendedSupportedFiletype.CSV,
+                filetype=ExtendedSupportedFiletype.CSV,  # type: ignore
             )
 
             # Get the latest observation for each pool id.
@@ -847,10 +853,10 @@ class TransformBehaviour(
                     period_count=self.synchronized_data.period_count
                 )
             )
-            self._latest_observations_hist_hash = self.send_to_ipfs(
+            self._latest_observations_hist_hash = yield from self.send_to_ipfs(
                 latest_observations_save_path,
                 latest_observations,
-                filetype=ExtendedSupportedFiletype.CSV,
+                filetype=ExtendedSupportedFiletype.CSV,  # type: ignore
             )
 
         # Pass the hashes as a Payload.
@@ -883,10 +889,11 @@ class PreprocessBehaviour(APYEstimationBaseBehaviour):
             "train_hash": None,
             "test_hash": None,
         }
+        self._task_prepared = False
 
-    def setup(self) -> None:
-        """Setup behaviour."""
-        self._pairs_hist = self.load_transformed_hist_data()
+    def prepare_task(self) -> Generator:
+        """Prepare the preprocessing task."""
+        self._pairs_hist = yield from self.load_transformed_hist_data()
 
         if self._pairs_hist is not None:
             preprocess_task = PreprocessTask()
@@ -895,12 +902,17 @@ class PreprocessBehaviour(APYEstimationBaseBehaviour):
             )
             self._async_result = self.context.task_manager.get_task_result(task_id)
 
+        self._task_prepared = True
+
     def async_act(self) -> Generator:
         """Do the action."""
+        if not self._task_prepared:
+            yield from self.prepare_task()
+
         if self._pairs_hist is not None:
             self._async_result = cast(AsyncResult, self._async_result)
             if not self._async_result.ready():
-                self.context.logger.debug("The transform task is not finished yet.")
+                self.context.logger.debug("The preprocessing task is not finished yet.")
                 yield from self.sleep(self.params.sleep_time)
                 return
 
@@ -916,18 +928,23 @@ class PreprocessBehaviour(APYEstimationBaseBehaviour):
                 "train": train_splits,
                 "test": test_splits,
             }.items():
-                split_hash = self.send_to_ipfs(
+                split_hash = yield from self.send_to_ipfs(
                     self.split_path(split_name),
                     split,
                     multiple=True,
-                    filetype=ExtendedSupportedFiletype.CSV,
+                    filetype=ExtendedSupportedFiletype.CSV,  # type: ignore
                 )
                 self._preprocessed_pairs_hashes[f"{split_name}_hash"] = split_hash
 
-        # Pass the hashes as a Payload.
-        payload = PreprocessPayload(
-            self.context.agent_address, **self._preprocessed_pairs_hashes
+        hashes = self._preprocessed_pairs_hashes.values()
+        train_test_hash = (
+            None
+            if any(hash_ is None for hash_ in hashes)
+            else "".join(cast(ValuesView[str], hashes))
         )
+
+        # Pass the hashes as a Payload.
+        payload = PreprocessPayload(self.context.agent_address, train_test_hash)
 
         # Finish behaviour.
         with self.context.benchmark_tool.measure(self.behaviour_id).consensus():
@@ -952,28 +969,30 @@ class PrepareBatchBehaviour(APYEstimationBaseBehaviour):
         self._async_result: Optional[AsyncResult] = None
         self._prepared_batches_save_path = ""
         self._prepared_batches_hash: Optional[str] = None
+        self._task_prepared = False
 
     def setup(self) -> None:
         """Setup behaviour."""
-        # These are the previous and the currently fetched batches. They are required for the task.
-        self._batches = (
-            self.get_from_ipfs(
-                self.synchronized_data.latest_observation_hist_hash,
-                self.context.data_dir,
-                filename=LATEST_OBSERVATIONS_PATH_TEMPLATE.substitute(
-                    period_count=self.synchronized_data.period_count - 1
-                ),
-                custom_loader=load_hist,
+        self._prepared_batches_save_path = os.path.join(
+            self.context.data_dir,
+            LATEST_OBSERVATIONS_PATH_TEMPLATE.substitute(
+                period_count=self.synchronized_data.period_count
             ),
-            self.get_from_ipfs(
-                self.synchronized_data.batch_hash,
-                self.context.data_dir,
-                filename=HISTORICAL_DATA_BATCH_PATH_TEMPLATE.substitute(
-                    batch_number=self.params.end,
-                    period_count=self.synchronized_data.period_count,
-                ),
-                filetype=SupportedFiletype.JSON,
-            ),
+        )
+
+    def prepare_task(self) -> Generator:
+        """Prepare the batch preparation task."""
+        previous_batch = yield from self.get_from_ipfs(
+            self.synchronized_data.latest_observation_hist_hash,
+            custom_loader=load_hist,
+        )
+        current_batch = yield from self.get_from_ipfs(
+            self.synchronized_data.batch_hash,
+            filetype=SupportedFiletype.JSON,
+        )
+        self._batches = cast(
+            Tuple[Optional[pd.DataFrame], Optional[ResponseItemType]],
+            (previous_batch, current_batch),
         )
 
         if not any(batch is None for batch in self._batches):
@@ -983,15 +1002,13 @@ class PrepareBatchBehaviour(APYEstimationBaseBehaviour):
             )
             self._async_result = self.context.task_manager.get_task_result(task_id)
 
-        self._prepared_batches_save_path = os.path.join(
-            self.context.data_dir,
-            LATEST_OBSERVATIONS_PATH_TEMPLATE.substitute(
-                period_count=self.synchronized_data.period_count
-            ),
-        )
+        self._task_prepared = True
 
     def async_act(self) -> Generator:
         """Do the action."""
+        if not self._task_prepared:
+            yield from self.prepare_task()
+
         if not any(batch is None for batch in self._batches):
             self._async_result = cast(AsyncResult, self._async_result)
             if not self._async_result.ready():
@@ -1006,10 +1023,10 @@ class PrepareBatchBehaviour(APYEstimationBaseBehaviour):
             )
 
             # Send the file to IPFS and get its hash.
-            self._prepared_batches_hash = self.send_to_ipfs(
+            self._prepared_batches_hash = yield from self.send_to_ipfs(
                 self._prepared_batches_save_path,
                 prepared_batches,
-                filetype=ExtendedSupportedFiletype.CSV,
+                filetype=ExtendedSupportedFiletype.CSV,  # type: ignore
             )
 
         # Pass the hash as a Payload.
@@ -1105,11 +1122,12 @@ class OptimizeBehaviour(APYEstimationBaseBehaviour):
         self._best_params_with_status: PoolToHyperParamsWithStatusType = {}
         self._best_params_per_pool: PoolToHyperParamsType = {}
         self._best_params_hash: Optional[str] = None
+        self._task_prepared = False
 
-    def setup(self) -> None:
-        """Setup behaviour."""
+    def prepare_task(self) -> Generator:
+        """Prepare the optimization task."""
         # Load training data.
-        self._y = self.load_split("train")
+        self._y = yield from self.load_split("train")
 
         if self._y is not None:
             optimize_task = OptimizeTask()
@@ -1123,8 +1141,13 @@ class OptimizeBehaviour(APYEstimationBaseBehaviour):
             )
             self._async_result = self.context.task_manager.get_task_result(task_id)
 
+        self._task_prepared = True
+
     def async_act(self) -> Generator:
         """Do the action."""
+        if not self._task_prepared:
+            yield from self.prepare_task()
+
         if self._y is not None:
             self._async_result = cast(AsyncResult, self._async_result)
             if not self._async_result.ready():
@@ -1161,7 +1184,7 @@ class OptimizeBehaviour(APYEstimationBaseBehaviour):
             )
 
             # Store the best params from the results.
-            self._best_params_hash = self.send_to_ipfs(
+            self._best_params_hash = yield from self.send_to_ipfs(
                 self.from_data_dir_with_period_specifier(BEST_PARAMS_PATH),
                 self._best_params_per_pool,
                 multiple=True,
@@ -1193,18 +1216,17 @@ class TrainBehaviour(APYEstimationBaseBehaviour):
         self._best_params: Optional[PoolToHyperParamsType] = None
         self._y: Optional[PoolIdToTrainDataType] = None
         self._models_hash: Optional[str] = None
+        self._task_prepared = False
 
-    def setup(self) -> None:
-        """Setup behaviour."""
+    def prepare_task(self) -> Generator:
+        """Prepare the training task."""
         # Load the best params from the optimization results.
-        self._best_params = self.get_from_ipfs(
+        self._best_params = yield from self.get_from_ipfs(  # type: ignore
             self.synchronized_data.params_hash,
-            self.from_data_dir_with_period_specifier(BEST_PARAMS_PATH),
-            multiple=True,
             filetype=SupportedFiletype.JSON,
         )
 
-        pool_to_train_data = self.load_split("train")
+        pool_to_train_data = yield from self.load_split("train")
         if pool_to_train_data is not None:
             self._y = {
                 pool_id: pool_splits.values.ravel()
@@ -1212,7 +1234,7 @@ class TrainBehaviour(APYEstimationBaseBehaviour):
             }
 
         if self.synchronized_data.full_training and self._y is not None:
-            pool_to_test_data = self.load_split("test")
+            pool_to_test_data = yield from self.load_split("test")
             if pool_to_test_data is None:  # pragma: nocover
                 self._y = None
             else:
@@ -1233,8 +1255,13 @@ class TrainBehaviour(APYEstimationBaseBehaviour):
             )
             self._async_result = self.context.task_manager.get_task_result(task_id)
 
+        self._task_prepared = True
+
     def async_act(self) -> Generator:
         """Do the action."""
+        if not self._task_prepared:
+            yield from self.prepare_task()
+
         if not any(arg is None for arg in (self._y, self._best_params)):
             self._async_result = cast(AsyncResult, self._async_result)
             if not self._async_result.ready():
@@ -1256,11 +1283,11 @@ class TrainBehaviour(APYEstimationBaseBehaviour):
             )
 
             # Send the file to IPFS and get its hash.
-            self._models_hash = self.send_to_ipfs(
+            self._models_hash = yield from self.send_to_ipfs(
                 forecaster_save_path,
                 forecasters,
                 multiple=True,
-                filetype=ExtendedSupportedFiletype.PM_PIPELINE,
+                filetype=ExtendedSupportedFiletype.PM_PIPELINE,  # type: ignore
             )
 
         payload = TrainingPayload(self.context.agent_address, self._models_hash)
@@ -1286,12 +1313,13 @@ class TestBehaviour(APYEstimationBaseBehaviour):
         self._y_test: Optional[PoolIdToTrainDataType] = None
         self._forecasters: Optional[PoolIdToForecasterType] = None
         self._report_hash: Optional[str] = None
+        self._task_prepared = False
 
-    def setup(self) -> None:
-        """Setup behaviour."""
+    def prepare_task(self) -> Generator:
+        """Prepare the test task."""
         # Load data.
         for split in ("train", "test"):
-            y = self.load_split(split)
+            y = yield from self.load_split(split)
             if y is not None:
                 setattr(
                     self,
@@ -1302,13 +1330,9 @@ class TestBehaviour(APYEstimationBaseBehaviour):
                     },
                 )
 
-        models_path = self.from_data_dir_with_period_specifier(FORECASTERS_PATH)
-
-        self._forecasters = self.get_from_ipfs(
+        self._forecasters = yield from self.get_from_ipfs(  # type: ignore
             self.synchronized_data.models_hash,
-            models_path,
-            multiple=True,
-            filetype=ExtendedSupportedFiletype.PM_PIPELINE,
+            filetype=ExtendedSupportedFiletype.PM_PIPELINE,  # type: ignore
         )
 
         if not any(
@@ -1325,8 +1349,13 @@ class TestBehaviour(APYEstimationBaseBehaviour):
             )
             self._async_result = self.context.task_manager.get_task_result(task_id)
 
+        self._task_prepared = True
+
     def async_act(self) -> Generator:
         """Do the action."""
+        if not self._task_prepared:
+            yield from self.prepare_task()
+
         if not any(
             arg is None for arg in (self._y_train, self._y_test, self._forecasters)
         ):
@@ -1345,7 +1374,7 @@ class TestBehaviour(APYEstimationBaseBehaviour):
             )
 
             # Send the file to IPFS and get its hash.
-            self._report_hash = self.send_to_ipfs(
+            self._report_hash = yield from self.send_to_ipfs(
                 self.from_data_dir_with_period_specifier(REPORTS_PATH),
                 report,
                 multiple=True,
@@ -1375,27 +1404,20 @@ class UpdateForecasterBehaviour(APYEstimationBaseBehaviour):
         self._y: Optional[pd.DataFrame] = None
         self._forecasters: Optional[PoolIdToForecasterType] = None
         self._models_hash: Optional[str] = None
+        self._task_prepared = False
 
-    def setup(self) -> None:
-        """Setup behaviour."""
+    def prepare_task(self) -> Generator:
+        """Prepare the forecaster's update task."""
         # Load data batch.
-        self._y = self.get_from_ipfs(
+        self._y = yield from self.get_from_ipfs(
             self.synchronized_data.latest_observation_hist_hash,
-            self.context.data_dir,
-            filename=LATEST_OBSERVATIONS_PATH_TEMPLATE.substitute(
-                period_count=self.synchronized_data.period_count
-            ),
-            filetype=ExtendedSupportedFiletype.CSV,
+            filetype=ExtendedSupportedFiletype.CSV,  # type: ignore
         )
 
         # Load forecasters.
-        self._forecasters = self.get_from_ipfs(
+        self._forecasters = yield from self.get_from_ipfs(  # type: ignore
             self.synchronized_data.models_hash,
-            self.from_data_dir_with_period_specifier(
-                FULLY_TRAINED_FORECASTERS_PATH, previous_period=True
-            ),
-            multiple=True,
-            filetype=ExtendedSupportedFiletype.PM_PIPELINE,
+            filetype=ExtendedSupportedFiletype.PM_PIPELINE,  # type: ignore
         )
 
         if not any(arg is None for arg in (self._y, self._forecasters)):
@@ -1405,8 +1427,13 @@ class UpdateForecasterBehaviour(APYEstimationBaseBehaviour):
             )
             self._async_result = self.context.task_manager.get_task_result(task_id)
 
+        self._task_prepared = True
+
     def async_act(self) -> Generator:
         """Do the action."""
+        if not self._task_prepared:
+            yield from self.prepare_task()
+
         if not any(arg is None for arg in (self._y, self._forecasters)):
             self._async_result = cast(AsyncResult, self._async_result)
             if not self._async_result.ready():
@@ -1417,13 +1444,13 @@ class UpdateForecasterBehaviour(APYEstimationBaseBehaviour):
             self.context.logger.info("Forecasters have been updated.")
 
             # Send the file to IPFS and get its hash.
-            self._models_hash = self.send_to_ipfs(
+            self._models_hash = yield from self.send_to_ipfs(
                 self.from_data_dir_with_period_specifier(
                     FULLY_TRAINED_FORECASTERS_PATH
                 ),
                 self._forecasters,
                 multiple=True,
-                filetype=ExtendedSupportedFiletype.PM_PIPELINE,
+                filetype=ExtendedSupportedFiletype.PM_PIPELINE,  # type: ignore
             )
 
         payload = UpdatePayload(self.context.agent_address, self._models_hash)
@@ -1448,16 +1475,15 @@ class EstimateBehaviour(APYEstimationBaseBehaviour):
         self._transformed_data: Optional[pd.DataFrame] = None
         self._forecasters: Optional[PoolIdToForecasterType] = None
         self._estimations_hash: Optional[str] = None
+        self._task_prepared = False
 
-    def setup(self) -> None:
-        """Setup behaviour."""
+    def prepare_task(self) -> Generator:
+        """Prepare the estimation task."""
         # load transformed historical data and forecasters
-        self._transformed_data = self.load_transformed_hist_data()
-        self._forecasters = self.get_from_ipfs(
+        self._transformed_data = yield from self.load_transformed_hist_data()
+        self._forecasters = yield from self.get_from_ipfs(  # type: ignore
             self.synchronized_data.models_hash,
-            self.from_data_dir_with_period_specifier(FULLY_TRAINED_FORECASTERS_PATH),
-            multiple=True,
-            filetype=ExtendedSupportedFiletype.PM_PIPELINE,
+            filetype=ExtendedSupportedFiletype.PM_PIPELINE,  # type: ignore
         )
 
         if not any(arg is None for arg in (self._transformed_data, self._forecasters)):
@@ -1472,8 +1498,13 @@ class EstimateBehaviour(APYEstimationBaseBehaviour):
             )
             self._async_result = self.context.task_manager.get_task_result(task_id)
 
+        self._task_prepared = True
+
     def async_act(self) -> Generator:
         """Do the action."""
+        if not self._task_prepared:
+            yield from self.prepare_task()
+
         if self._forecasters is not None:
             self._async_result = cast(AsyncResult, self._async_result)
             if not self._async_result.ready():
@@ -1489,14 +1520,14 @@ class EstimateBehaviour(APYEstimationBaseBehaviour):
             )
 
             # Send the file to IPFS and get its hash.
-            self._estimations_hash = self.send_to_ipfs(
+            self._estimations_hash = yield from self.send_to_ipfs(
                 self.from_data_dir(
                     ESTIMATIONS_PATH_TEMPLATE.substitute(
                         period_count=self.synchronized_data.period_count
                     )
                 ),
                 estimates,
-                filetype=ExtendedSupportedFiletype.CSV,
+                filetype=ExtendedSupportedFiletype.CSV,  # type: ignore
             )
 
         payload = EstimatePayload(self.context.agent_address, self._estimations_hash)
@@ -1514,17 +1545,14 @@ class EmitEstimatesBehaviour(APYEstimationBaseBehaviour):
 
     matching_round = EmitRound
 
-    def _get_finalized_estimates(self) -> Optional[pd.DataFrame]:
+    def _get_finalized_estimates(self) -> Generator[None, None, Optional[pd.DataFrame]]:
         """Fetch the finalized estimates from IPFS and log the result."""
         # Load estimations.
-        estimations = self.get_from_ipfs(
+        estimations = yield from self.get_from_ipfs(
             self.synchronized_data.estimates_hash,
-            self.context.data_dir,
-            filename=ESTIMATIONS_PATH_TEMPLATE.substitute(
-                period_count=self.synchronized_data.period_count
-            ),
-            filetype=ExtendedSupportedFiletype.CSV,
+            filetype=ExtendedSupportedFiletype.CSV,  # type: ignore
         )
+        estimations = cast(Optional[pd.DataFrame], estimations)
         if estimations is not None:
             self.context.logger.info(f"Finalized estimates: {estimations.to_string()}.")
         else:
@@ -1590,7 +1618,7 @@ class EmitEstimatesBehaviour(APYEstimationBaseBehaviour):
         """Do the action."""
         estimations = None
         if self.synchronized_data.is_most_voted_estimate_set:
-            estimations = self._get_finalized_estimates()
+            estimations = yield from self._get_finalized_estimates()
         else:
             self.context.logger.error("Finalized estimates not available!")
 

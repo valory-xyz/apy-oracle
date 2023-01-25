@@ -28,19 +28,19 @@ import logging
 import os
 import shutil
 import time
+from builtins import dict
 from contextlib import suppress
 from datetime import datetime
 from enum import Enum
 from itertools import product
 from math import ceil
 from multiprocessing.pool import AsyncResult
-from pathlib import Path, PosixPath
+from pathlib import Path
 from typing import (
     Any,
     Callable,
     Dict,
     Generator,
-    Iterator,
     List,
     Optional,
     Tuple,
@@ -58,17 +58,12 @@ import pytest
 from _pytest.logging import LogCaptureFixture
 from _pytest.monkeypatch import MonkeyPatch
 from aea.skills.tasks import TaskManager
-from aea_cli_ipfs.ipfs_utils import IPFSDaemon
 from hypothesis import HealthCheck, assume, database, given, settings
 from hypothesis import strategies as st
 
 from packages.valory.protocols.abci import AbciMessage  # noqa: F401
 from packages.valory.skills.abstract_round_abci.base import AbciAppDB
-from packages.valory.skills.abstract_round_abci.behaviour_utils import (
-    BaseBehaviour,
-    IPFSBehaviour,
-)
-from packages.valory.skills.abstract_round_abci.io_.store import SupportedFiletype
+from packages.valory.skills.abstract_round_abci.behaviour_utils import BaseBehaviour
 from packages.valory.skills.abstract_round_abci.models import ApiSpecs
 from packages.valory.skills.abstract_round_abci.test_tools.base import (
     FSMBehaviourBaseCase,
@@ -94,21 +89,6 @@ from packages.valory.skills.apy_estimation_abci.behaviours import (
     TrainBehaviour,
     TransformBehaviour,
     UpdateForecasterBehaviour,
-)
-from packages.valory.skills.apy_estimation_abci.constants import (
-    BEST_PARAMS_PATH,
-    ESTIMATIONS_PATH_TEMPLATE,
-    FORECASTERS_PATH,
-    FULLY_TRAINED_FORECASTERS_PATH,
-    HISTORICAL_DATA_BATCH_PATH_TEMPLATE,
-    HISTORICAL_DATA_PATH_TEMPLATE,
-    LATEST_OBSERVATIONS_PATH_TEMPLATE,
-    PERIOD_SPECIFIER_TEMPLATE,
-    TRANSFORMED_HISTORICAL_DATA_PATH_TEMPLATE,
-    Y_SPLIT_TEMPLATE,
-)
-from packages.valory.skills.apy_estimation_abci.io_.store import (
-    ExtendedSupportedFiletype,
 )
 from packages.valory.skills.apy_estimation_abci.ml.forecasting import (
     PoolIdToForecasterType,
@@ -148,20 +128,6 @@ def hypothesis_cleanup() -> Generator:
             shutil.rmtree(hypothesis_dir)
 
 
-@pytest.fixture(scope="module")
-def ipfs_daemon() -> Iterator[bool]:
-    """Starts an IPFS daemon for the tests."""
-    print("Starting IPFS daemon...")
-    daemon = IPFSDaemon()
-    daemon.start()
-    yield daemon.is_started()
-    print("Tearing down IPFS daemon...")
-    daemon.stop()
-
-
-use_ipfs_daemon = pytest.mark.usefixtures("ipfs_daemon")
-
-
 class DummyAsyncResult(object):
     """Dummy class for AsyncResult."""
 
@@ -189,7 +155,17 @@ class DummyAsyncResult(object):
         return self._task_result
 
 
-@use_ipfs_daemon
+def wrap_dummy_ipfs_operation(return_value: Any) -> Callable:
+    """Wrap dummy_get_from_ipfs."""
+
+    def dummy_ipfs_operation(*args: Any, **kwargs: Any) -> Generator[None, None, Any]:
+        """A mock for an IPFS operation."""
+        yield
+        return return_value
+
+    return dummy_ipfs_operation
+
+
 class APYEstimationFSMBehaviourBaseCase(FSMBehaviourBaseCase):
     """Base case for testing APYEstimation FSMBehaviour."""
 
@@ -212,10 +188,14 @@ class APYEstimationFSMBehaviourBaseCase(FSMBehaviourBaseCase):
         super().setup()
         assert self.behaviour.current_behaviour is not None
         self.behaviour.current_behaviour.batch = False
-        self.behaviour.current_behaviour.params.n_observations = N_OBSERVATIONS
-        self.behaviour.current_behaviour.params.interval = HISTORY_INTERVAL
-        self.behaviour.current_behaviour.params.end = HISTORY_END
-        self.behaviour.current_behaviour.params.interval_not_acceptable = False
+        self.behaviour.current_behaviour.params.__dict__[
+            "n_observations"
+        ] = N_OBSERVATIONS
+        self.behaviour.current_behaviour.params.__dict__["interval"] = HISTORY_INTERVAL
+        self.behaviour.current_behaviour.params.__dict__["end"] = HISTORY_END
+        self.behaviour.current_behaviour.params.__dict__[
+            "interval_not_acceptable"
+        ] = False
 
         for api in (
             "randomness_api",
@@ -293,7 +273,9 @@ class TestModelStrategyBehaviour(APYEstimationFSMBehaviourBaseCase):
         behaviour = cast(ModelStrategyBehaviour, self.behaviour.current_behaviour)
         assert behaviour.behaviour_id == self.behaviour_class.auto_behaviour_id()
 
-        behaviour.params.n_estimations_before_retrain = n_estimations_before_retrain
+        behaviour.params.__dict__[
+            "n_estimations_before_retrain"
+        ] = n_estimations_before_retrain
 
         with caplog.at_level(
             logging.INFO,
@@ -365,7 +347,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
         behaviour._progress.initialized = progress_initialized
         behaviour._progress.current_dex_name = current_dex_name
-        behaviour.params.pair_ids = pairs_ids
+        behaviour.params.__dict__["pair_ids"] = pairs_ids
 
         assert expected_pair_ids == behaviour.current_pair_ids
         self.end_round()
@@ -453,7 +435,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             self.synchronized_data,
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
-        behaviour.params.pair_ids = pairs_ids
+        behaviour.params.__dict__["pair_ids"] = pairs_ids
         behaviour._pairs_hist = pairs_hist
         behaviour._progress.initialized = progress_initialized
         behaviour._progress.current_dex_name = current_dex_name
@@ -520,7 +502,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             self.synchronized_data,
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
-        behaviour.params.interval_not_acceptable = interval_not_acceptable
+        behaviour.params.__dict__["interval_not_acceptable"] = interval_not_acceptable
         assert behaviour.shift == expected
         self.end_round()
 
@@ -591,7 +573,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             self.synchronized_data,
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
-        behaviour.params.pair_ids = pairs_ids
+        behaviour.params.__dict__["pair_ids"] = pairs_ids
         # we do this because of https://github.com/valory-xyz/open-autonomy/pull/646
         behaviour.get_subgraph = mock.MagicMock()  # type: ignore
         # we do this because of https://github.com/valory-xyz/open-autonomy/pull/646
@@ -648,10 +630,10 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
         behaviour.batch = batch
-        behaviour.params.n_observations = n_observations
-        behaviour.params.interval = interval
-        behaviour.params.end = end
-        behaviour.params.interval_not_acceptable = interval_not_acceptable
+        behaviour.params.__dict__["n_observations"] = n_observations
+        behaviour.params.__dict__["interval"] = interval
+        behaviour.params.__dict__["interval_not_acceptable"] = interval_not_acceptable
+        behaviour._end_timestamp = end
 
         behaviour._reset_timestamps_iterator()
 
@@ -709,20 +691,22 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
         behaviour._progress.apy_shift = apy_shift
-        behaviour.params.interval_not_acceptable = interval_not_acceptable
+        behaviour.params.__dict__["interval_not_acceptable"] = interval_not_acceptable
         behaviour._utilized_subgraphs["test"] = ApiSpecs(
             name="",
             skill_context=mock.MagicMock(),
             url="test",
             api_id="test",
             method="test",
+            headers=[],
+            parameters=[],
         )
         assert behaviour._utilized_subgraphs["test"] is not None
         behaviour.batch = batch
 
         # start of setting the `currently_downloaded`
         # we cannot simply mock because of https://github.com/valory-xyz/open-autonomy/pull/646
-        behaviour.params.pair_ids = pairs_ids
+        behaviour.params.__dict__["pair_ids"] = pairs_ids
         behaviour._progress.current_dex_name = "uniswap_subgraph"
         behaviour._pairs_hist = [{"test": "test"} for _ in range(currently_downloaded)]
         # end of setting the `currently_downloaded`
@@ -795,6 +779,8 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             url="test",
             api_id="test",
             method="GET",
+            headers=[],
+            parameters=[],
             name="test",
             skill_context=self.behaviour.context,
             backoff_factor=SLEEP_TIME_TWEAK,
@@ -837,11 +823,17 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
 
         self.end_round()
 
+    @mock.patch.object(
+        BaseBehaviour,
+        "send_to_ipfs",
+        side_effect=wrap_dummy_ipfs_operation("hash"),
+    )
     @pytest.mark.parametrize(
         "interval, interval_not_acceptable", ((UNITS_TO_UNIX["hour"], True),)
     )
     def test_fetch_behaviour(
         self,
+        _send_to_ipfs: mock._patch,
         block_from_timestamp_q: str,
         timestamp_gte: str,
         timestamp_lte: str,
@@ -859,9 +851,9 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             self.behaviour, FetchBehaviour.auto_behaviour_id(), self.synchronized_data
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
-        behaviour.params.interval = interval
-        behaviour.params.pair_ids = pairs_ids
-        behaviour.params.interval_not_acceptable = interval_not_acceptable
+        behaviour.params.__dict__["interval"] = interval
+        behaviour.params.__dict__["pair_ids"] = pairs_ids
+        behaviour.params.__dict__["interval_not_acceptable"] = interval_not_acceptable
         # we do this because of https://github.com/valory-xyz/open-autonomy/pull/646
         behaviour._check_given_pairs = mock.MagicMock()  # type: ignore
         behaviour._pairs_exist = True
@@ -937,6 +929,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         )
 
         behaviour.act_wrapper()
+        behaviour.act_wrapper()
         self.mock_a2a_transaction()
         self._test_done_flag_set()
         self.end_round()
@@ -999,10 +992,10 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             self.behaviour, FetchBehaviour.auto_behaviour_id(), self.synchronized_data
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
-        behaviour.params.pair_ids = pairs_ids
+        behaviour.params.__dict__["pair_ids"] = pairs_ids
         # make sure that the first generated timestamp (`behaviour.params.start` property)
         # will be the `timestamp_gte` which is used in `block_from_timestamp_q`
-        behaviour.params.end = (
+        behaviour._end_timestamp = (
             int(timestamp_gte)
             + behaviour.params.interval * behaviour.params.n_observations
         )
@@ -1130,10 +1123,10 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             self.behaviour, FetchBehaviour.auto_behaviour_id(), self.synchronized_data
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
-        behaviour.params.pair_ids = pairs_ids
+        behaviour.params.__dict__["pair_ids"] = pairs_ids
         # make sure that the first generated timestamp (`behaviour.params.start` property)
         # will be the `timestamp_gte` which is used in `block_from_timestamp_q`
-        behaviour.params.end = (
+        behaviour._end_timestamp = (
             int(timestamp_gte)
             + behaviour.params.interval * behaviour.params.n_observations
         )
@@ -1330,10 +1323,10 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             self.behaviour, FetchBehaviour.auto_behaviour_id(), self.synchronized_data
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
-        behaviour.params.pair_ids = pairs_ids
+        behaviour.params.__dict__["pair_ids"] = pairs_ids
         # make sure that the first generated timestamp (`behaviour.params.start` property)
         # will be the `timestamp_gte` which is used in `block_from_timestamp_q`
-        behaviour.params.end = (
+        behaviour._end_timestamp = (
             int(timestamp_gte)
             + behaviour.params.interval * behaviour.params.n_observations
         )
@@ -1464,10 +1457,15 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         behaviour.act_wrapper()
         self.end_round()
 
+    @mock.patch.object(
+        BaseBehaviour,
+        "send_to_ipfs",
+        side_effect=wrap_dummy_ipfs_operation("hash"),
+    )
     @pytest.mark.parametrize("target_per_pool", (0, 3))
     def test_fetch_behaviour_stop_iteration(
         self,
-        tmp_path: PosixPath,
+        _send_to_ipfs: mock._patch,
         caplog: LogCaptureFixture,
         no_action: Callable[[Any], None],
         target_per_pool: int,
@@ -1483,7 +1481,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
         )
         behaviour = cast(FetchBehaviour, self.behaviour.current_behaviour)
         # set `n_observations` to `0` in order to raise a `StopIteration`.
-        behaviour.params.n_observations = 0
+        behaviour.params.__dict__["n_observations"] = 0
         # we do this because of https://github.com/valory-xyz/open-autonomy/pull/646
         behaviour._check_given_pairs = mock.MagicMock()  # type: ignore
         behaviour._pairs_exist = True
@@ -1512,7 +1510,7 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
 
         behaviour._pairs_hist = [{"pool1": "test"}, {"pool2": "test"}]
         behaviour._target_per_pool = target_per_pool
-        behaviour.context._agent_context._data_dir = tmp_path  # type: ignore
+        behaviour.act_wrapper()
         behaviour.act_wrapper()
         self.mock_a2a_transaction()
         self._test_done_flag_set()
@@ -1562,33 +1560,17 @@ class TestTransformBehaviour(APYEstimationFSMBehaviourBaseCase):
 
     behaviour_class = TransformBehaviour
     next_behaviour_class = PreprocessBehaviour
+    dummy_ipfs_object = {"test": "test"}
 
-    def _fast_forward(self, tmp_path: PosixPath, ipfs_succeed: bool = True) -> None:
+    def _fast_forward(self) -> None:
         """Setup `TestTransformBehaviour`."""
-        # Set data directory to a temporary path for tests.
-        self.behaviour.context._agent_context._data_dir = tmp_path  # type: ignore
-
         # Send historical data to IPFS and get the hash.
-        if ipfs_succeed:
-            hash_ = cast(BaseBehaviour, self.behaviour.current_behaviour).send_to_ipfs(
-                os.path.join(
-                    tmp_path,
-                    HISTORICAL_DATA_PATH_TEMPLATE.substitute(
-                        period_count=self.synchronized_data.period_count
-                    ),
-                ),
-                {"test": "test"},
-                filetype=SupportedFiletype.JSON,
-            )
-        else:
-            hash_ = "test"
-
         self.fast_forward_to_behaviour(
             self.behaviour,
             self.behaviour_class.auto_behaviour_id(),
             SynchronizedData(
                 AbciAppDB(
-                    setup_data=dict(most_voted_randomness=[0], history_hash=[hash_]),
+                    setup_data=dict(most_voted_randomness=[0], history_hash=["hash"]),
                 )
             ),
         )
@@ -1600,37 +1582,50 @@ class TestTransformBehaviour(APYEstimationFSMBehaviourBaseCase):
             == self.behaviour_class.auto_behaviour_id()
         )
 
-    def test_setup(self, tmp_path: PosixPath) -> None:
+    @mock.patch.object(
+        BaseBehaviour,
+        "get_from_ipfs",
+        side_effect=wrap_dummy_ipfs_operation(dummy_ipfs_object),
+    )
+    def test_prepare_task(self, _get_from_ipfs: mock._patch) -> None:
         """Test behaviour setup."""
-        self._fast_forward(tmp_path)
+        self._fast_forward()
         self.behaviour.context.task_manager.start()
-        cast(TransformBehaviour, self.behaviour.current_behaviour).setup()
+        prepare_gen = cast(
+            TransformBehaviour, self.behaviour.current_behaviour
+        ).prepare_task()
+        next(prepare_gen)
+        with pytest.raises(StopIteration):
+            next(prepare_gen)
         self.end_round()
 
+    @mock.patch.object(
+        BaseBehaviour,
+        "get_from_ipfs",
+        side_effect=wrap_dummy_ipfs_operation(dummy_ipfs_object),
+    )
     def test_task_not_ready(
         self,
+        _get_from_ipfs: mock._patch,
         monkeypatch: MonkeyPatch,
         caplog: LogCaptureFixture,
-        tmp_path: PosixPath,
     ) -> None:
         """Run test for `transform_behaviour` when task result is not ready."""
-        self._fast_forward(tmp_path)
+        self._fast_forward()
         self.behaviour.context.task_manager.start()
         monkeypatch.setattr(AsyncResult, "ready", lambda *_: False)
-        cast(
-            TransformBehaviour, self.behaviour.current_behaviour
-        ).params.sleep_time = SLEEP_TIME_TWEAK
+        self.behaviour.current_behaviour.params.__dict__["sleep_time"] = SLEEP_TIME_TWEAK  # type: ignore
 
         with caplog.at_level(
             logging.DEBUG,
             logger="aea.test_agent_name.packages.valory.skills.apy_estimation_abci",
         ):
             self.behaviour.act_wrapper()
-
-        assert (
-            f"[test_agent_name] Entered in the '{TransformBehaviour.auto_behaviour_id()}' behaviour"
-            in caplog.text
-        )
+            assert (
+                f"[test_agent_name] Entered in the '{TransformBehaviour.auto_behaviour_id()}' behaviour"
+                in caplog.text
+            )
+            self.behaviour.act_wrapper()
 
         assert (
             "[test_agent_name] The transform task is not finished yet." in caplog.text
@@ -1647,16 +1642,21 @@ class TestTransformBehaviour(APYEstimationFSMBehaviourBaseCase):
         )
         self.end_round()
 
+    @mock.patch.object(
+        BaseBehaviour,
+        "send_to_ipfs",
+        side_effect=wrap_dummy_ipfs_operation("hash"),
+    )
     @pytest.mark.parametrize("ipfs_succeed", (True, False))
     def test_transform_behaviour(
         self,
+        _send_to_ipfs: mock._patch,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         transformed_historical_data_no_datetime_conversion: pd.DataFrame,
         ipfs_succeed: bool,
     ) -> None:
         """Run test for `transform_behaviour`."""
-        self._fast_forward(tmp_path, ipfs_succeed)
+        self._fast_forward()
 
         monkeypatch.setattr(
             tasks,
@@ -1676,6 +1676,16 @@ class TestTransformBehaviour(APYEstimationFSMBehaviourBaseCase):
             lambda *_, **__: 3,
         )
 
+        item_to_send = self.dummy_ipfs_object if ipfs_succeed else None
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(item_to_send),
+        ):
+            for _ in range(3):
+                self.behaviour.act_wrapper()
+
         self.behaviour.act_wrapper()
         self.mock_a2a_transaction()
         self._test_done_flag_set()
@@ -1693,17 +1703,9 @@ class TestPreprocessBehaviour(APYEstimationFSMBehaviourBaseCase):
 
     def _fast_forward(
         self,
-        data_found: bool,
         transformed_historical_data_no_datetime_conversion: pd.DataFrame,
-        monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
     ) -> pd.DataFrame:
         """Fast-forward to behaviour."""
-        self.behaviour.context._agent_context._data_dir = tmp_path  # type: ignore
-        if data_found:
-            monkeypatch.setattr(
-                IPFSBehaviour, "get_from_ipfs", lambda *_, **__: {"test": "test"}
-            )
         # Increase the amount of dummy data for the train-test split,
         # as many times as the threshold in `group_and_filter_pair_data`.
         transformed_historical_data = pd.DataFrame(
@@ -1728,27 +1730,29 @@ class TestPreprocessBehaviour(APYEstimationFSMBehaviourBaseCase):
         behaviour = cast(PreprocessBehaviour, self.behaviour.current_behaviour)
         assert behaviour.behaviour_id == self.behaviour_class.auto_behaviour_id()
 
-        behaviour.params.sleep_time = SLEEP_TIME_TWEAK
+        behaviour.params.__dict__["sleep_time"] = SLEEP_TIME_TWEAK  # type: ignore
 
         return transformed_historical_data
 
+    @mock.patch.object(
+        BaseBehaviour,
+        "send_to_ipfs",
+        side_effect=wrap_dummy_ipfs_operation("hash"),
+    )
     @pytest.mark.parametrize(
         "data_found, task_ready", ((True, True), (True, False), (False, False))
     )
     def test_preprocess_behaviour(
         self,
+        _send_to_ipfs: mock._patch,
         data_found: bool,
         task_ready: bool,
         transformed_historical_data_no_datetime_conversion: pd.DataFrame,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
     ) -> None:
         """Run test for `preprocess_behaviour`."""
         transformed_historical_data = self._fast_forward(
-            data_found,
             transformed_historical_data_no_datetime_conversion,
-            monkeypatch,
-            tmp_path,
         )
 
         # Convert the `blockTimestamp` to a pandas datetime.
@@ -1768,7 +1772,16 @@ class TestPreprocessBehaviour(APYEstimationFSMBehaviourBaseCase):
             lambda *_, **__: 3,
         )
 
-        self.behaviour.act_wrapper()
+        if data_found:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation({"test": "test"}),
+            ):
+                self.behaviour.act_wrapper()
+
+        for _ in range(3):
+            self.behaviour.act_wrapper()
 
         if data_found:
             assert (
@@ -1800,53 +1813,8 @@ class TestPrepareBatchBehaviour(APYEstimationFSMBehaviourBaseCase):
 
     def _fast_forward(
         self,
-        tmp_path: PosixPath,
-        transformed_historical_data: pd.DataFrame,
-        batch: ResponseItemType,
-        ipfs_succeed: bool = True,
     ) -> None:
         """Setup `PrepareBatchBehaviour`."""
-        # Set data directory to a temporary path for tests.
-        self.behaviour.context._agent_context._data_dir = tmp_path  # type: ignore
-        current_behaviour = cast(
-            APYEstimationBaseBehaviour, self.behaviour.current_behaviour
-        )
-
-        # Create a dictionary with all the dummy data to send to IPFS.
-        data_to_send = {
-            "hist": {
-                "filepath": os.path.join(
-                    tmp_path,
-                    LATEST_OBSERVATIONS_PATH_TEMPLATE.substitute(
-                        period_count=self.synchronized_data.period_count - 1
-                    ),
-                ),
-                "obj": transformed_historical_data.iloc[[0, 2]].reset_index(drop=True),
-                "filetype": ExtendedSupportedFiletype.CSV,
-            },
-            "batch": {
-                "filepath": os.path.join(
-                    tmp_path,
-                    HISTORICAL_DATA_BATCH_PATH_TEMPLATE.substitute(
-                        batch_number=current_behaviour.params.end,
-                        period_count=self.synchronized_data.period_count,
-                    ),
-                ),
-                "obj": batch,
-                "filetype": SupportedFiletype.JSON,
-            },
-        }
-
-        # Send dummy data to IPFS and get the hashes.
-        if ipfs_succeed:
-            hashes = {}
-            for item_name, item_args in data_to_send.items():
-                hashes[item_name] = cast(
-                    BaseBehaviour, self.behaviour.current_behaviour
-                ).send_to_ipfs(**item_args)
-        else:
-            hashes = {item_name: "test" for item_name, _ in data_to_send.items()}
-
         # fast-forward to the `PrepareBatchBehaviour` behaviour.
         self.fast_forward_to_behaviour(
             self.behaviour,
@@ -1855,8 +1823,8 @@ class TestPrepareBatchBehaviour(APYEstimationFSMBehaviourBaseCase):
                 AbciAppDB(
                     setup_data=AbciAppDB.data_to_lists(
                         dict(
-                            latest_observation_hist_hash=hashes["hist"],
-                            batch_hash=hashes["batch"],
+                            latest_observation_hist_hash="hist",
+                            batch_hash="batch",
                         )
                     ),
                 )
@@ -1870,18 +1838,15 @@ class TestPrepareBatchBehaviour(APYEstimationFSMBehaviourBaseCase):
             == self.behaviour_class.auto_behaviour_id()
         )
 
-    def test_prepare_batch_behaviour_setup(
+    def test_prepare_task(
         self,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         transformed_historical_data_no_datetime_conversion: pd.DataFrame,
         batch: ResponseItemType,
         prepare_batch_task_result: Dict[str, pd.DataFrame],
     ) -> None:
         """Test behaviour setup."""
-        self._fast_forward(
-            tmp_path, transformed_historical_data_no_datetime_conversion, batch
-        )
+        self._fast_forward()
 
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 0)
         monkeypatch.setattr(
@@ -1893,24 +1858,43 @@ class TestPrepareBatchBehaviour(APYEstimationFSMBehaviourBaseCase):
         current_behaviour = cast(
             PrepareBatchBehaviour, self.behaviour.current_behaviour
         )
-        current_behaviour.setup()
+        gen = current_behaviour.prepare_task()
+
+        hist = transformed_historical_data_no_datetime_conversion.iloc[
+            [0, 2]
+        ].reset_index(drop=True)
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(hist),
+        ):
+            next(gen)
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(batch),
+        ):
+            next(gen)
+
+        with pytest.raises(StopIteration):
+            next(gen)
+
+        assert current_behaviour._task_prepared
         assert not any(batch is None for batch in current_behaviour._batches)
+        pd.testing.assert_frame_equal(current_behaviour._batches[0], hist)
+        assert current_behaviour._batches[1] == batch
         self.end_round()
 
     def test_task_not_ready(
         self,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         transformed_historical_data_no_datetime_conversion: pd.DataFrame,
         batch: ResponseItemType,
         prepare_batch_task_result: Dict[str, pd.DataFrame],
     ) -> None:
         """Run test for behaviour when task result is not ready."""
-        self._fast_forward(
-            tmp_path,
-            transformed_historical_data_no_datetime_conversion,
-            batch,
-        )
+        self._fast_forward()
 
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 0)
         monkeypatch.setattr(
@@ -1919,9 +1903,26 @@ class TestPrepareBatchBehaviour(APYEstimationFSMBehaviourBaseCase):
             lambda *_: DummyAsyncResult(prepare_batch_task_result, ready=False),
         )
 
-        cast(
-            PrepareBatchBehaviour, self.behaviour.current_behaviour
-        ).params.sleep_time = SLEEP_TIME_TWEAK
+        hist = transformed_historical_data_no_datetime_conversion.iloc[
+            [0, 2]
+        ].reset_index(drop=True)
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(hist),
+        ):
+            self.behaviour.act_wrapper()
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(batch),
+        ):
+            self.behaviour.act_wrapper()
+
+        cast(PrepareBatchBehaviour, self.behaviour.current_behaviour).params.__dict__[
+            "sleep_time"
+        ] = SLEEP_TIME_TWEAK
         self.behaviour.act_wrapper()
         time.sleep(SLEEP_TIME_TWEAK + 0.01)
         self.behaviour.act_wrapper()
@@ -1934,23 +1935,23 @@ class TestPrepareBatchBehaviour(APYEstimationFSMBehaviourBaseCase):
         )
         self.end_round()
 
+    @mock.patch.object(
+        BaseBehaviour,
+        "send_to_ipfs",
+        side_effect=wrap_dummy_ipfs_operation("hash"),
+    )
     @pytest.mark.parametrize("ipfs_succeed", (True, False))
     def test_prepare_batch_behaviour(
         self,
+        _send_to_ipfs: mock._patch,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         transformed_historical_data_no_datetime_conversion: pd.DataFrame,
         batch: ResponseItemType,
         prepare_batch_task_result: Dict[str, pd.DataFrame],
         ipfs_succeed: bool,
     ) -> None:
         """Run test for `prepare_behaviour`."""
-        self._fast_forward(
-            tmp_path,
-            transformed_historical_data_no_datetime_conversion,
-            batch,
-            ipfs_succeed,
-        )
+        self._fast_forward()
 
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 0)
         monkeypatch.setattr(
@@ -1962,7 +1963,35 @@ class TestPrepareBatchBehaviour(APYEstimationFSMBehaviourBaseCase):
         behaviour = cast(BaseBehaviour, self.behaviour.current_behaviour)
         assert behaviour.behaviour_id == self.behaviour_class.auto_behaviour_id()
 
-        self.behaviour.act_wrapper()
+        if ipfs_succeed:
+            hist = transformed_historical_data_no_datetime_conversion.iloc[
+                [0, 2]
+            ].reset_index(drop=True)
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(hist),
+            ):
+                self.behaviour.act_wrapper()
+
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(batch),
+            ):
+                self.behaviour.act_wrapper()
+
+        else:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(None),
+            ):
+                for _ in range(2):
+                    self.behaviour.act_wrapper()
+
+        for _ in range(2):
+            self.behaviour.act_wrapper()
         self.mock_a2a_transaction()
         self._test_done_flag_set()
         self.end_round()
@@ -2129,10 +2158,9 @@ class TestRandomnessBehaviour(APYEstimationFSMBehaviourBaseCase):
             ).behaviour_id
             == self.randomness_behaviour_class.auto_behaviour_id()
         )
-        with mock.patch.object(
-            self.behaviour.context.randomness_api,
-            "is_retries_exceeded",
-            return_value=True,
+        with mock.patch.dict(
+            self.behaviour.context.randomness_api.__dict__,
+            {"is_retries_exceeded": mock.MagicMock(return_value=True)},
         ):
             self.behaviour.act_wrapper()
             behaviour = cast(BaseBehaviour, self.behaviour.current_behaviour)
@@ -2172,45 +2200,14 @@ class TestOptimizeBehaviour(APYEstimationFSMBehaviourBaseCase):
 
     behaviour_class = OptimizeBehaviour
     next_behaviour_class = TrainBehaviour
+    dummy_train_splits = {
+        f"train_{i}": pd.DataFrame([i for i in range(5)]) for i in range(3)
+    }
 
     def _fast_forward(
         self,
-        tmp_path: PosixPath,
-        ipfs_succeed: bool = True,
     ) -> None:
         """Setup `OptimizeBehaviour`."""
-        # Set data directory to a temporary path for tests.
-        self.behaviour.context._agent_context._data_dir = tmp_path  # type: ignore
-
-        # Create a dictionary with all the dummy data to send to IPFS.
-        data_to_send = {}
-        for split in ("train", "test"):
-            data_to_send[split] = {
-                "filepath": os.path.join(
-                    tmp_path,
-                    Y_SPLIT_TEMPLATE.substitute(split=split),
-                    PERIOD_SPECIFIER_TEMPLATE.substitute(
-                        period_count=self.synchronized_data.period_count
-                    ),
-                ),
-                "obj": {
-                    f"{split}_{i}": pd.DataFrame([i for i in range(5)])
-                    for i in range(3)
-                },
-                "multiple": True,
-                "filetype": ExtendedSupportedFiletype.CSV,
-            }
-
-        # Send dummy data to IPFS and get the hashes.
-        if ipfs_succeed:
-            hashes = {}
-            for item_name, item_args in data_to_send.items():
-                hashes[item_name] = cast(
-                    BaseBehaviour, self.behaviour.current_behaviour
-                ).send_to_ipfs(**item_args)
-        else:
-            hashes = {item_name: "non_existing" for item_name in data_to_send.keys()}
-
         # fast-forward to the `OptimizeBehaviour` behaviour.
         self.fast_forward_to_behaviour(
             self.behaviour,
@@ -2219,7 +2216,7 @@ class TestOptimizeBehaviour(APYEstimationFSMBehaviourBaseCase):
                 AbciAppDB(
                     setup_data=dict(
                         most_voted_randomness=[0],
-                        most_voted_split=[hashes["train"] + hashes["test"]],
+                        most_voted_split=["train_test_hash"],
                     ),
                 )
             ),
@@ -2230,14 +2227,13 @@ class TestOptimizeBehaviour(APYEstimationFSMBehaviourBaseCase):
             == self.behaviour_class.auto_behaviour_id()
         )
 
-    def test_setup(
+    def test_prepare_task(
         self,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         optimize_task_result_empty: optuna.Study,
     ) -> None:
-        """Test behaviour setup."""
-        self._fast_forward(tmp_path)
+        """Test behaviour's task preparation."""
+        self._fast_forward()
 
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 0)
         monkeypatch.setattr(
@@ -2246,18 +2242,28 @@ class TestOptimizeBehaviour(APYEstimationFSMBehaviourBaseCase):
             lambda *_: DummyAsyncResult(optimize_task_result_empty),
         )
         current_behaviour = cast(OptimizeBehaviour, self.behaviour.current_behaviour)
-        current_behaviour.setup()
-        assert current_behaviour._y is not None
+        gen = current_behaviour.prepare_task()
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(self.dummy_train_splits),
+        ):
+            next(gen)
+
+        with pytest.raises(StopIteration):
+            next(gen)
+
+        assert current_behaviour._y == self.dummy_train_splits
         self.end_round()
 
     def test_task_not_ready(
         self,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         optimize_task_result_empty: optuna.Study,
     ) -> None:
         """Run test for behaviour when task result is not ready."""
-        self._fast_forward(tmp_path)
+        self._fast_forward()
 
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 0)
         monkeypatch.setattr(
@@ -2266,9 +2272,16 @@ class TestOptimizeBehaviour(APYEstimationFSMBehaviourBaseCase):
             lambda *_: DummyAsyncResult(optimize_task_result_empty, ready=False),
         )
 
-        cast(
-            OptimizeBehaviour, self.behaviour.current_behaviour
-        ).params.sleep_time = SLEEP_TIME_TWEAK
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(self.dummy_train_splits),
+        ):
+            self.behaviour.act_wrapper()
+
+        cast(OptimizeBehaviour, self.behaviour.current_behaviour).params.__dict__[
+            "sleep_time"
+        ] = SLEEP_TIME_TWEAK
         self.behaviour.act_wrapper()
         time.sleep(SLEEP_TIME_TWEAK + 0.01)
         self.behaviour.act_wrapper()
@@ -2281,17 +2294,22 @@ class TestOptimizeBehaviour(APYEstimationFSMBehaviourBaseCase):
         )
         self.end_round()
 
+    @mock.patch.object(
+        BaseBehaviour,
+        "send_to_ipfs",
+        side_effect=wrap_dummy_ipfs_operation("hash"),
+    )
     @pytest.mark.parametrize("ipfs_succeed", (True, False))
     def test_optimize_behaviour(
         self,
+        _send_to_ipfs: mock._patch,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         caplog: LogCaptureFixture,
         optimize_task_result: PoolToHyperParamsWithStatusType,
         ipfs_succeed: bool,
     ) -> None:
         """Run test for `optimize_behaviour`."""
-        self._fast_forward(tmp_path, ipfs_succeed)
+        self._fast_forward()
 
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 3)
         monkeypatch.setattr(
@@ -2299,6 +2317,15 @@ class TestOptimizeBehaviour(APYEstimationFSMBehaviourBaseCase):
             "get_task_result",
             lambda *_: DummyAsyncResult(optimize_task_result),
         )
+
+        split_mock = self.dummy_train_splits if ipfs_succeed else None
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(split_mock),
+        ):
+            self.behaviour.act_wrapper()
 
         with caplog.at_level(
             logging.WARNING,
@@ -2317,6 +2344,7 @@ class TestOptimizeBehaviour(APYEstimationFSMBehaviourBaseCase):
                 "Parameters have been set randomly!"
             ) in caplog.text
 
+        self.behaviour.act_wrapper()
         self.mock_a2a_transaction()
         self._test_done_flag_set()
         self.end_round()
@@ -2330,62 +2358,19 @@ class TestTrainBehaviour(APYEstimationFSMBehaviourBaseCase):
 
     behaviour_class = TrainBehaviour
     next_behaviour_class = _TestBehaviour
+    dummy_params = {
+        "pool1.json": {"p": 1, "q": 1, "d": 1, "m": 1},
+        "pool2.json": {"p": 2, "q": 2, "d": 1, "m": 1},
+    }
+    dummy_split = {
+        f"pool{i}.csv": pd.DataFrame([i for i in range(5)]) for i in range(3)
+    }
 
     def _fast_forward(
         self,
-        tmp_path: PosixPath,
-        ipfs_succeed: bool = True,
         full_training: bool = False,
     ) -> None:
         """Setup `TestTrainBehaviour`."""
-        # Set data directory to a temporary path for tests.
-        self.behaviour.context._agent_context._data_dir = tmp_path  # type: ignore
-
-        # Create a dictionary with all the dummy data to send to IPFS.
-        data_to_send = {
-            "params": {
-                "filepath": os.path.join(
-                    tmp_path,
-                    BEST_PARAMS_PATH,
-                    PERIOD_SPECIFIER_TEMPLATE.substitute(
-                        period_count=self.synchronized_data.period_count
-                    ),
-                ),
-                "obj": {
-                    "pool1.json": {"p": 1, "q": 1, "d": 1, "m": 1},
-                    "pool2.json": {"p": 2, "q": 2, "d": 1, "m": 1},
-                },
-                "multiple": True,
-                "filetype": SupportedFiletype.JSON,
-            }
-        }
-        for split in ("train", "test"):
-            data_to_send[split] = {
-                "filepath": os.path.join(
-                    tmp_path,
-                    Y_SPLIT_TEMPLATE.substitute(split=split),
-                    PERIOD_SPECIFIER_TEMPLATE.substitute(
-                        period_count=self.synchronized_data.period_count
-                    ),
-                ),
-                "obj": {
-                    f"pool{i}.csv": pd.DataFrame([i for i in range(5)])
-                    for i in range(3)
-                },
-                "multiple": True,
-                "filetype": ExtendedSupportedFiletype.CSV,
-            }
-
-        # Send dummy data to IPFS and get the hashes.
-        if ipfs_succeed:
-            hashes = {}
-            for item_name, item_args in data_to_send.items():
-                hashes[item_name] = cast(
-                    BaseBehaviour, self.behaviour.current_behaviour
-                ).send_to_ipfs(**item_args)
-        else:
-            hashes = {item_name: "non_existing" for item_name in data_to_send.keys()}
-
         # fast-forward to the `TrainBehaviour` behaviour.
         self.fast_forward_to_behaviour(
             self.behaviour,
@@ -2395,8 +2380,8 @@ class TestTrainBehaviour(APYEstimationFSMBehaviourBaseCase):
                     setup_data=AbciAppDB.data_to_lists(
                         dict(
                             full_training=full_training,
-                            params_hash=hashes["params"],
-                            most_voted_split=hashes["train"] + hashes["test"],
+                            params_hash="params",
+                            most_voted_split="train_test",
                         )
                     ),
                 )
@@ -2411,31 +2396,58 @@ class TestTrainBehaviour(APYEstimationFSMBehaviourBaseCase):
         )
 
     @pytest.mark.parametrize(
-        "full_training, ipfs_succeed", product((True, False), repeat=2)
+        "ipfs_succeed, full_training", product((True, False), repeat=2)
     )
-    def test_setup(
+    def test_prepare_task(
         self,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         no_action: Callable[[Any], None],
         ipfs_succeed: bool,
         full_training: bool,
     ) -> None:
         """Test behaviour setup."""
-        self._fast_forward(tmp_path, ipfs_succeed, full_training)
+        self._fast_forward(full_training)
 
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 0)
         monkeypatch.setattr(TaskManager, "get_task_result", no_action)
 
         current_behaviour = cast(TrainBehaviour, self.behaviour.current_behaviour)
-        current_behaviour.setup()
+        gen = current_behaviour.prepare_task()
 
         if ipfs_succeed:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(self.dummy_params),
+            ):
+                next(gen)
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(self.dummy_split),
+            ):
+                next(gen)
+                if full_training:
+                    next(gen)
+            with pytest.raises(StopIteration):
+                next(gen)
+
             assert not any(
                 arg is None
                 for arg in (current_behaviour._y, current_behaviour._best_params)
             )
         else:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(None),
+            ):
+                for _ in range(2):
+                    next(gen)
+
+            with pytest.raises(StopIteration):
+                next(gen)
+
             assert all(
                 arg is None
                 for arg in (current_behaviour._y, current_behaviour._best_params)
@@ -2446,17 +2458,32 @@ class TestTrainBehaviour(APYEstimationFSMBehaviourBaseCase):
     def test_task_not_ready(
         self,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
     ) -> None:
         """Run test for behaviour when task result is not ready."""
-        self._fast_forward(tmp_path)
+        self._fast_forward()
 
         self.behaviour.context.task_manager.start()
 
         monkeypatch.setattr(AsyncResult, "ready", lambda *_: False)
-        cast(
-            TrainBehaviour, self.behaviour.current_behaviour
-        ).params.sleep_time = SLEEP_TIME_TWEAK
+        cast(TrainBehaviour, self.behaviour.current_behaviour).params.__dict__[
+            "sleep_time"
+        ] = SLEEP_TIME_TWEAK
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(self.dummy_params),
+        ):
+            self.behaviour.act_wrapper()
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(self.dummy_split),
+        ):
+            for _ in range(2):
+                self.behaviour.act_wrapper()
+
         self.behaviour.act_wrapper()
         time.sleep(SLEEP_TIME_TWEAK + 0.01)
         self.behaviour.act_wrapper()
@@ -2469,16 +2496,21 @@ class TestTrainBehaviour(APYEstimationFSMBehaviourBaseCase):
         )
         self.end_round()
 
+    @mock.patch.object(
+        BaseBehaviour,
+        "send_to_ipfs",
+        side_effect=wrap_dummy_ipfs_operation("hash"),
+    )
     @pytest.mark.parametrize("ipfs_succeed", (True, False))
     def test_train_behaviour(
         self,
+        _send_to_ipfs: mock._patch,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         train_task_result: PoolIdToForecasterType,
         ipfs_succeed: bool,
     ) -> None:
         """Run test for `train_behaviour`."""
-        self._fast_forward(tmp_path, ipfs_succeed)
+        self._fast_forward()
 
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 3)
         monkeypatch.setattr(
@@ -2486,6 +2518,23 @@ class TestTrainBehaviour(APYEstimationFSMBehaviourBaseCase):
             "get_task_result",
             lambda *_: DummyAsyncResult(train_task_result),
         )
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(self.dummy_params),
+        ):
+            self.behaviour.act_wrapper()
+
+        item_to_mock = self.dummy_split if ipfs_succeed else None
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(item_to_mock),
+        ):
+            for _ in range(2):
+                self.behaviour.act_wrapper()
 
         # act.
         self.behaviour.act_wrapper()
@@ -2502,57 +2551,15 @@ class TestTestBehaviour(APYEstimationFSMBehaviourBaseCase):
 
     behaviour_class = _TestBehaviour
     next_behaviour_class = TrainBehaviour
+    dummy_models = {f"pool{i}.joblib": DummyPipeline() for i in range(3)}
+    dummy_splits = {
+        f"pool{i}.csv": pd.DataFrame([i for i in range(5)]) for i in range(3)
+    }
 
     def _fast_forward(
         self,
-        tmp_path: PosixPath,
-        ipfs_succeed: bool = True,
     ) -> None:
         """Setup `TestTrainBehaviour`."""
-        # Set data directory to a temporary path for tests.
-        self.behaviour.context._agent_context._data_dir = tmp_path  # type: ignore
-
-        # Create a dictionary with all the dummy data to send to IPFS.
-        data_to_send = {
-            "model": {
-                "filepath": os.path.join(
-                    tmp_path,
-                    FORECASTERS_PATH,
-                    PERIOD_SPECIFIER_TEMPLATE.substitute(
-                        period_count=self.synchronized_data.period_count
-                    ),
-                ),
-                "obj": {f"pool{i}.joblib": DummyPipeline() for i in range(3)},
-                "multiple": True,
-                "filetype": ExtendedSupportedFiletype.PM_PIPELINE,
-            }
-        }
-        for split in ("train", "test"):
-            data_to_send[split] = {
-                "filepath": os.path.join(
-                    tmp_path,
-                    Y_SPLIT_TEMPLATE.substitute(split=split),
-                    PERIOD_SPECIFIER_TEMPLATE.substitute(
-                        period_count=self.synchronized_data.period_count
-                    ),
-                ),
-                "obj": {
-                    f"pool{i}.csv": pd.DataFrame([i for i in range(5)])
-                    for i in range(3)
-                },
-                "multiple": True,
-                "filetype": ExtendedSupportedFiletype.CSV,
-            }
-
-        # Send dummy data to IPFS and get the hashes.
-        if ipfs_succeed:
-            hashes = {}
-            for item_name, item_args in data_to_send.items():
-                hashes[item_name] = cast(
-                    BaseBehaviour, self.behaviour.current_behaviour
-                ).send_to_ipfs(**item_args)
-        else:
-            hashes = {item_name: "non_existing" for item_name in data_to_send.keys()}
 
         # fast-forward to the `TestBehaviour` behaviour.
         self.fast_forward_to_behaviour(
@@ -2561,8 +2568,8 @@ class TestTestBehaviour(APYEstimationFSMBehaviourBaseCase):
             SynchronizedData(
                 AbciAppDB(
                     setup_data=dict(
-                        models_hash=[hashes["model"]],
-                        most_voted_split=[hashes["train"] + hashes["test"]],
+                        models_hash=["model"],
+                        most_voted_split=["train_test"],
                     ),
                 )
             ),
@@ -2576,21 +2583,20 @@ class TestTestBehaviour(APYEstimationFSMBehaviourBaseCase):
         )
 
     @pytest.mark.parametrize("ipfs_succeed", (True, False))
-    def test_setup(
+    def test_prepare_task(
         self,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         ipfs_succeed: bool,
         no_action: Callable[[Any], None],
     ) -> None:
-        """Test behaviour setup."""
-        self._fast_forward(tmp_path, ipfs_succeed)
+        """Test the task preparation."""
+        self._fast_forward()
 
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 0)
         monkeypatch.setattr(TaskManager, "get_task_result", no_action)
 
         current_behaviour = cast(_TestBehaviour, self.behaviour.current_behaviour)
-        current_behaviour.setup()
+        gen = current_behaviour.prepare_task()
 
         is_none = (
             arg is None
@@ -2599,9 +2605,40 @@ class TestTestBehaviour(APYEstimationFSMBehaviourBaseCase):
                 for arg_name in ("_y_train", "_y_test", "_forecasters")
             )
         )
+
         if ipfs_succeed:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(self.dummy_splits),
+            ):
+                for _ in range(2):
+                    next(gen)
+
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(self.dummy_models),
+            ):
+                next(gen)
+
+            with pytest.raises(StopIteration):
+                next(gen)
+
             assert not any(is_none)
+
         else:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(None),
+            ):
+                for _ in range(3):
+                    next(gen)
+
+                with pytest.raises(StopIteration):
+                    next(gen)
+
             assert all(is_none)
 
         self.end_round()
@@ -2609,16 +2646,31 @@ class TestTestBehaviour(APYEstimationFSMBehaviourBaseCase):
     def test_task_not_ready(
         self,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
     ) -> None:
         """Run test for behaviour when task result is not ready."""
-        self._fast_forward(tmp_path)
+        self._fast_forward()
 
         self.behaviour.context.task_manager.start()
         monkeypatch.setattr(AsyncResult, "ready", lambda *_: False)
-        cast(
-            _TestBehaviour, self.behaviour.current_behaviour
-        ).params.sleep_time = SLEEP_TIME_TWEAK
+        cast(_TestBehaviour, self.behaviour.current_behaviour).params.__dict__[
+            "sleep_time"
+        ] = SLEEP_TIME_TWEAK
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(self.dummy_splits),
+        ):
+            for _ in range(2):
+                self.behaviour.act_wrapper()
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(self.dummy_models),
+        ):
+            self.behaviour.act_wrapper()
+
         self.behaviour.act_wrapper()
         time.sleep(SLEEP_TIME_TWEAK + 0.01)
         self.behaviour.act_wrapper()
@@ -2631,16 +2683,21 @@ class TestTestBehaviour(APYEstimationFSMBehaviourBaseCase):
         )
         self.end_round()
 
+    @mock.patch.object(
+        BaseBehaviour,
+        "send_to_ipfs",
+        side_effect=wrap_dummy_ipfs_operation("hash"),
+    )
     @pytest.mark.parametrize("ipfs_succeed", (True, False))
     def test_test_behaviour(
         self,
+        _send_to_ipfs: mock._patch,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         ipfs_succeed: bool,
         _test_task_result: PoolIdToTestReportType,
     ) -> None:
         """Run test for `test_behaviour`."""
-        self._fast_forward(tmp_path, ipfs_succeed)
+        self._fast_forward()
 
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 3)
         monkeypatch.setattr(
@@ -2648,6 +2705,33 @@ class TestTestBehaviour(APYEstimationFSMBehaviourBaseCase):
             "get_task_result",
             lambda *_: DummyAsyncResult(_test_task_result),
         )
+
+        if ipfs_succeed:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(self.dummy_splits),
+            ):
+                for _ in range(2):
+                    self.behaviour.act_wrapper()
+
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(self.dummy_models),
+            ):
+                self.behaviour.act_wrapper()
+
+            self.behaviour.act_wrapper()
+
+        else:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(None),
+            ):
+                for _ in range(3):
+                    self.behaviour.act_wrapper()
 
         # test act.
         self.behaviour.act_wrapper()
@@ -2664,55 +2748,12 @@ class TestUpdateForecasterBehaviour(APYEstimationFSMBehaviourBaseCase):
 
     behaviour_class = UpdateForecasterBehaviour
     next_behaviour_class = EstimateBehaviour
+    dummy_models = {f"pool{i}.joblib": DummyPipeline() for i in range(3)}
 
     def _fast_forward(
         self,
-        tmp_path: PosixPath,
-        prepare_batch_task_result: pd.DataFrame,
-        ipfs_succeed: bool = True,
     ) -> None:
         """Setup `TestUpdateForecasterBehaviour`."""
-        # Set data directory to a temporary path for tests.
-        self.behaviour.context._agent_context._data_dir = tmp_path  # type: ignore
-
-        # Create a dictionary with all the dummy data to send to IPFS.
-        data_to_send = {
-            "model": {
-                "filepath": os.path.join(
-                    tmp_path,
-                    FULLY_TRAINED_FORECASTERS_PATH,
-                    PERIOD_SPECIFIER_TEMPLATE.substitute(
-                        period_count=self.synchronized_data.period_count - 1
-                    ),
-                ),
-                "obj": {f"pool{i}.joblib": DummyPipeline() for i in range(3)},
-                "multiple": True,
-                "filetype": ExtendedSupportedFiletype.PM_PIPELINE,
-            },
-            "observation": {
-                "filepath": os.path.join(
-                    tmp_path,
-                    LATEST_OBSERVATIONS_PATH_TEMPLATE.substitute(
-                        period_count=self.synchronized_data.period_count
-                    ),
-                ),
-                "obj": prepare_batch_task_result,
-                "filetype": ExtendedSupportedFiletype.CSV,
-            },
-        }
-
-        # Send dummy data to IPFS and get the hashes.
-        if ipfs_succeed:
-            hashes = {}
-            for item_name, item_args in data_to_send.items():
-                hashes[item_name] = cast(
-                    BaseBehaviour, self.behaviour.current_behaviour
-                ).send_to_ipfs(**item_args)
-        else:
-            hashes = {
-                item_name: "non_existing" for item_name, _ in data_to_send.items()
-            }
-
         # fast-forward to the `TestBehaviour` behaviour.
         self.fast_forward_to_behaviour(
             self.behaviour,
@@ -2720,8 +2761,8 @@ class TestUpdateForecasterBehaviour(APYEstimationFSMBehaviourBaseCase):
             SynchronizedData(
                 AbciAppDB(
                     setup_data=dict(
-                        models_hash=[hashes["model"]],
-                        latest_observation_hist_hash=[hashes["observation"]],
+                        models_hash=["model"],
+                        latest_observation_hist_hash=["observation"],
                     ),
                 )
             ),
@@ -2735,16 +2776,15 @@ class TestUpdateForecasterBehaviour(APYEstimationFSMBehaviourBaseCase):
         )
 
     @pytest.mark.parametrize("ipfs_succeed", (True, False))
-    def test_update_forecaster_setup(
+    def test_prepare_task(
         self,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         no_action: Callable[[Any], None],
         prepare_batch_task_result: pd.DataFrame,
         ipfs_succeed: bool,
     ) -> None:
         """Run test for `UpdateForecasterBehaviour`'s setup method."""
-        self._fast_forward(tmp_path, prepare_batch_task_result, ipfs_succeed)
+        self._fast_forward()
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 0)
         monkeypatch.setattr(TaskManager, "get_task_result", no_action)
 
@@ -2755,18 +2795,51 @@ class TestUpdateForecasterBehaviour(APYEstimationFSMBehaviourBaseCase):
             current_behaviour.behaviour_id
             == UpdateForecasterBehaviour.auto_behaviour_id()
         )
-        current_behaviour.setup()
+        gen = current_behaviour.prepare_task()
 
-        is_none = (
-            arg is None
-            for arg in (
-                getattr(current_behaviour, arg_name)
-                for arg_name in ("_y", "_forecasters")
-            )
-        )
         if ipfs_succeed:
-            assert not any(is_none)
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(prepare_batch_task_result),
+            ):
+                next(gen)
+
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(self.dummy_models),
+            ):
+                next(gen)
+
+            with pytest.raises(StopIteration):
+                next(gen)
+
+            pd.testing.assert_frame_equal(
+                current_behaviour._y, prepare_batch_task_result
+            )
+            assert current_behaviour._forecasters == self.dummy_models
+
         else:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(None),
+            ):
+                for _ in range(2):
+                    next(gen)
+
+            with pytest.raises(StopIteration):
+                next(gen)
+
+            is_none = (
+                arg is None
+                for arg in (
+                    getattr(current_behaviour, arg_name)
+                    for arg_name in ("_y", "_forecasters")
+                )
+            )
+
             assert all(is_none)
 
         self.end_round()
@@ -2774,18 +2847,32 @@ class TestUpdateForecasterBehaviour(APYEstimationFSMBehaviourBaseCase):
     def test_task_not_ready(
         self,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         prepare_batch_task_result: pd.DataFrame,
     ) -> None:
         """Run test for behaviour when task result is not ready."""
-        self._fast_forward(tmp_path, prepare_batch_task_result)
+        self._fast_forward()
 
         self.behaviour.context.task_manager.start()
 
         monkeypatch.setattr(AsyncResult, "ready", lambda *_: False)
-        cast(
-            TrainBehaviour, self.behaviour.current_behaviour
-        ).params.sleep_time = SLEEP_TIME_TWEAK
+        cast(TrainBehaviour, self.behaviour.current_behaviour).params.__dict__[
+            "sleep_time"
+        ] = SLEEP_TIME_TWEAK
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(prepare_batch_task_result),
+        ):
+            self.behaviour.act_wrapper()
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(self.dummy_models),
+        ):
+            self.behaviour.act_wrapper()
+
         self.behaviour.act_wrapper()
         time.sleep(SLEEP_TIME_TWEAK + 0.01)
         self.behaviour.act_wrapper()
@@ -2798,23 +2885,54 @@ class TestUpdateForecasterBehaviour(APYEstimationFSMBehaviourBaseCase):
         )
         self.end_round()
 
+    @mock.patch.object(
+        BaseBehaviour,
+        "send_to_ipfs",
+        side_effect=wrap_dummy_ipfs_operation("hash"),
+    )
     @pytest.mark.parametrize("ipfs_succeed", (True, False))
     def test_update_forecaster_behaviour(
         self,
-        tmp_path: PosixPath,
+        _send_to_ipfs: mock._patch,
         monkeypatch: MonkeyPatch,
         prepare_batch_task_result: pd.DataFrame,
         train_task_result: PoolIdToForecasterType,
         ipfs_succeed: bool,
     ) -> None:
         """Run test for `UpdateForecasterBehaviour`."""
-        self._fast_forward(tmp_path, prepare_batch_task_result, ipfs_succeed)
+        self._fast_forward()
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 3)
         monkeypatch.setattr(
             TaskManager,
             "get_task_result",
             lambda *_: DummyAsyncResult(train_task_result),
         )
+
+        if ipfs_succeed:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(prepare_batch_task_result),
+            ):
+                self.behaviour.act_wrapper()
+
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(self.dummy_models),
+            ):
+                self.behaviour.act_wrapper()
+
+            self.behaviour.act_wrapper()
+
+        else:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(None),
+            ):
+                for _ in range(2):
+                    self.behaviour.act_wrapper()
 
         self.behaviour.act_wrapper()
         self.mock_a2a_transaction()
@@ -2829,63 +2947,20 @@ class TestEstimateBehaviour(APYEstimationFSMBehaviourBaseCase):
 
     behaviour_class = EstimateBehaviour
     next_behaviour_class = EmitEstimatesBehaviour
+    dummy_models = {f"pool{i}.joblib": DummyPipeline() for i in range(3)}
 
     def _fast_forward(
         self,
-        tmp_path: PosixPath,
-        transformed_historical_data_no_datetime_conversion: pd.DataFrame,
-        ipfs_succeed: bool = True,
     ) -> None:
         """Setup `TestTransformBehaviour`."""
-        # Set data directory to a temporary path for tests.
-        self.behaviour.context._agent_context._data_dir = tmp_path  # type: ignore
-
-        # Create a dictionary with all the dummy data to send to IPFS.
-        data_to_send = {
-            "models": {
-                "filepath": os.path.join(
-                    tmp_path,
-                    FULLY_TRAINED_FORECASTERS_PATH,
-                    PERIOD_SPECIFIER_TEMPLATE.substitute(
-                        period_count=self.synchronized_data.period_count
-                    ),
-                ),
-                "obj": {f"pool{i}.joblib": DummyPipeline() for i in range(3)},
-                "multiple": True,
-                "filetype": ExtendedSupportedFiletype.PM_PIPELINE,
-            },
-            "transform": {
-                "filepath": os.path.join(
-                    tmp_path,
-                    TRANSFORMED_HISTORICAL_DATA_PATH_TEMPLATE.substitute(
-                        period_count=self.synchronized_data.period_count
-                    ),
-                ),
-                "obj": transformed_historical_data_no_datetime_conversion,
-                "filetype": ExtendedSupportedFiletype.CSV,
-            },
-        }
-
-        # Send dummy data to IPFS and get the hashes.
-        if ipfs_succeed:
-            hashes = {}
-            for item_name, item_args in data_to_send.items():
-                hashes[item_name] = cast(
-                    BaseBehaviour, self.behaviour.current_behaviour
-                ).send_to_ipfs(**item_args)
-        else:
-            hashes = {
-                item_name: "non_existing" for item_name, _ in data_to_send.items()
-            }
-
         self.fast_forward_to_behaviour(
             self.behaviour,
             self.behaviour_class.auto_behaviour_id(),
             SynchronizedData(
                 AbciAppDB(
                     setup_data=dict(
-                        models_hash=[hashes["models"]],
-                        transformed_history_hash=[hashes["transform"]],
+                        models_hash=["models"],
+                        transformed_history_hash=["transform"],
                         latest_transformation_period=[0],
                     ),
                 )
@@ -2900,47 +2975,92 @@ class TestEstimateBehaviour(APYEstimationFSMBehaviourBaseCase):
         )
 
     @pytest.mark.parametrize("ipfs_succeed", (True, False))
-    def test_estimate_setup(
+    def test_prepare_task(
         self,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         no_action: Callable[[Any], None],
         transformed_historical_data_no_datetime_conversion: pd.DataFrame,
         ipfs_succeed: bool,
     ) -> None:
-        """Run test for `EstimateBehaviour`'s setup method."""
-        self._fast_forward(
-            tmp_path, transformed_historical_data_no_datetime_conversion, ipfs_succeed
-        )
+        """Run test for `EstimateBehaviour`'s task preparation method."""
+        self._fast_forward()
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 0)
         monkeypatch.setattr(TaskManager, "get_task_result", no_action)
 
         current_behaviour = cast(
             UpdateForecasterBehaviour, self.behaviour.current_behaviour
         )
-        current_behaviour.setup()
+        gen = current_behaviour.prepare_task()
 
         if ipfs_succeed:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(
+                    transformed_historical_data_no_datetime_conversion
+                ),
+            ):
+                next(gen)
+
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(self.dummy_models),
+            ):
+                next(gen)
+
+            with pytest.raises(StopIteration):
+                next(gen)
+
             assert current_behaviour._forecasters is not None
+
         else:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(None),
+            ):
+                for _ in range(2):
+                    next(gen)
+
+            with pytest.raises(StopIteration):
+                next(gen)
+
             assert current_behaviour._forecasters is None
+
         self.end_round()
 
     def test_task_not_ready(
         self,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         transformed_historical_data_no_datetime_conversion: pd.DataFrame,
     ) -> None:
         """Run test for behaviour when task result is not ready."""
-        self._fast_forward(tmp_path, transformed_historical_data_no_datetime_conversion)
+        self._fast_forward()
 
         self.behaviour.context.task_manager.start()
 
         monkeypatch.setattr(AsyncResult, "ready", lambda *_: False)
-        cast(
-            TrainBehaviour, self.behaviour.current_behaviour
-        ).params.sleep_time = SLEEP_TIME_TWEAK
+        cast(TrainBehaviour, self.behaviour.current_behaviour).params.__dict__[
+            "sleep_time"
+        ] = SLEEP_TIME_TWEAK
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(
+                transformed_historical_data_no_datetime_conversion
+            ),
+        ):
+            self.behaviour.act_wrapper()
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(self.dummy_models),
+        ):
+            self.behaviour.act_wrapper()
+
         self.behaviour.act_wrapper()
         time.sleep(SLEEP_TIME_TWEAK + 0.01)
         self.behaviour.act_wrapper()
@@ -2953,22 +3073,53 @@ class TestEstimateBehaviour(APYEstimationFSMBehaviourBaseCase):
         )
         self.end_round()
 
+    @mock.patch.object(
+        BaseBehaviour,
+        "send_to_ipfs",
+        side_effect=wrap_dummy_ipfs_operation("hash"),
+    )
     @pytest.mark.parametrize("ipfs_succeed", (True, False))
     def test_estimate_behaviour(
         self,
+        _send_to_ipfs: mock._patch,
         monkeypatch: MonkeyPatch,
-        tmp_path: PosixPath,
         transformed_historical_data_no_datetime_conversion: pd.DataFrame,
         ipfs_succeed: bool,
     ) -> None:
         """Run test for `EstimateBehaviour`."""
-        self._fast_forward(
-            tmp_path, transformed_historical_data_no_datetime_conversion, ipfs_succeed
-        )
+        self._fast_forward()
         monkeypatch.setattr(TaskManager, "enqueue_task", lambda *_, **__: 0)
         monkeypatch.setattr(
             TaskManager, "get_task_result", lambda *_: DummyAsyncResult(pd.DataFrame())
         )
+
+        if ipfs_succeed:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(
+                    transformed_historical_data_no_datetime_conversion
+                ),
+            ):
+                self.behaviour.act_wrapper()
+
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(self.dummy_models),
+            ):
+                self.behaviour.act_wrapper()
+
+            self.behaviour.act_wrapper()
+
+        else:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(None),
+            ):
+                for _ in range(2):
+                    self.behaviour.act_wrapper()
 
         self.behaviour.act_wrapper()
         self.mock_a2a_transaction()
@@ -2996,46 +3147,44 @@ class TestEmitEstimatesBehaviour(APYEstimationFSMBehaviourBaseCase):
     )
     def test_get_finalized_estimates(
         self,
-        tmp_path: PosixPath,
         caplog: LogCaptureFixture,
         ipfs_succeed: bool,
         log_level: int,
         log_message: str,
     ) -> None:
         """Test `_get_finalized_estimates` method."""
-        # Set data directory to a temporary path for tests.
-        self.behaviour.context._agent_context._data_dir = tmp_path  # type: ignore
-
         # Send dummy estimations to IPFS and get the hash.
-        if ipfs_succeed:
-            hash_ = cast(BaseBehaviour, self.behaviour.current_behaviour).send_to_ipfs(
-                os.path.join(
-                    tmp_path,
-                    ESTIMATIONS_PATH_TEMPLATE.substitute(
-                        period_count=self.synchronized_data.period_count
-                    ),
-                ),
-                pd.DataFrame({"pool1": [1.435, 4.234], "pool2": [3.45, 23.64]}),
-                filetype=ExtendedSupportedFiletype.CSV,
-            )
-        else:
-            hash_ = "non_existing"
-
         self.fast_forward_to_behaviour(
             behaviour=self.behaviour,
             behaviour_id=self.behaviour_class.auto_behaviour_id(),
             synchronized_data=SynchronizedData(
-                AbciAppDB(setup_data=dict(estimates_hash=[hash_]))
+                AbciAppDB(setup_data=dict(estimates_hash=["hash"]))
             ),
         )
         behaviour = cast(EmitEstimatesBehaviour, self.behaviour.current_behaviour)
         assert behaviour.behaviour_id == self.behaviour_class.auto_behaviour_id()
 
+        gen = behaviour._get_finalized_estimates()
+        estimates_mock = (
+            pd.DataFrame({"pool1": [1.435, 4.234], "pool2": [3.45, 23.64]})
+            if ipfs_succeed
+            else None
+        )
+
+        with mock.patch.object(
+            BaseBehaviour,
+            "get_from_ipfs",
+            side_effect=wrap_dummy_ipfs_operation(estimates_mock),
+        ):
+            next(gen)
+
         with caplog.at_level(
             log_level,
             logger="aea.test_agent_name.packages.valory.skills.apy_estimation_abci",
         ):
-            behaviour._get_finalized_estimates()
+            with pytest.raises(StopIteration):
+                next(gen)
+
         assert log_message in caplog.text
         self.end_round()
 
@@ -3116,7 +3265,7 @@ class TestEmitEstimatesBehaviour(APYEstimationFSMBehaviourBaseCase):
         behaviour._pack_for_server = lambda **_: mock.MagicMock(hex=lambda: "test_hex")  # type: ignore
         behaviour.get_signature = lambda _, **__: iter(("test",))  # type: ignore
         behaviour.get_http_response = lambda **_: iter(("test",))  # type: ignore
-        behaviour.context.server_api.process_response = lambda _: expected  # type: ignore
+        behaviour.context.server_api.__dict__["process_response"] = lambda _: expected  # type: ignore
         # init the generator
         send_gen = behaviour._send_to_server(pd.DataFrame())
 
@@ -3173,11 +3322,20 @@ class TestEmitEstimatesBehaviour(APYEstimationFSMBehaviourBaseCase):
         assert behaviour.behaviour_id == self.behaviour_class.auto_behaviour_id()
 
         # we do this because of https://github.com/valory-xyz/open-autonomy/pull/646
-        behaviour._get_finalized_estimates = lambda: estimations  # type: ignore
         behaviour._send_to_server = mock.MagicMock()  # type: ignore
 
-        behaviour.params.is_broadcasting_to_server = is_broadcasting_to_server
-        behaviour.params.observation_interval = SLEEP_TIME_TWEAK
+        behaviour.params.__dict__[
+            "is_broadcasting_to_server"
+        ] = is_broadcasting_to_server
+        behaviour.params.__dict__["observation_interval"] = SLEEP_TIME_TWEAK
+
+        if is_most_voted_estimate_set:
+            with mock.patch.object(
+                BaseBehaviour,
+                "get_from_ipfs",
+                side_effect=wrap_dummy_ipfs_operation(estimations),
+            ):
+                behaviour.act_wrapper()
 
         with caplog.at_level(
             log_level,
