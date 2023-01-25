@@ -10,10 +10,10 @@ fingerprint:
   __init__.py: bafybeidae7gbyipqow44nxwnrvd5jyllepqbfq6xwako2o4bv2mjiwwo4u
   behaviours.py: bafybeiefkxsdgpmhkuzkijz53sxgnyijp74putt5aly25x5ys75ain22la
   composition.py: bafybeihm6gggjokqxlgdlcqoirljahjqtpog3okhc5m3lofhcl5rjucfkm
-  dialogues.py: bafybeielsp4eu7gr7lelednobuq32bav5kp7so4geut7j2rg7bkn2wuzee
+  dialogues.py: bafybeihp3ujpngrqm6fencr25azq7zccvdcszljie7532l4uugxipnxn3q
   fsm_specification.yaml: bafybeigwhi5nlgkeufnunw54rkpu34w74hrn3r3oozdw5ttwni6nilc7aq
-  handlers.py: bafybeibmzghvqekt7iymu6s6yn5tk7lpdmejba4n7dpsz2do3cgfqz7b2a
-  models.py: bafybeifwgzudlyjmsewcwcv2ihtvg2jjrc2xtgzb6bz3lxo6cwcfhpgr4y
+  handlers.py: bafybeicize7jjlb22grwb7fkwo36fh7ja3ajtta56utg4l4pn7ckvbnqa4
+  models.py: bafybeiehj2apbm25mb6qvxyr6chfwss5gjjjhvytotpoyvm6d7mzqu7tqu
   tests/__init__.py: bafybeiapnbylokinzkfybybxsuoz5sdwmfw7rzctbqhvnt2ydvvy5twhaa
   tests/test_behaviours.py: bafybeidwejgvyhfiswn4e4jt6czz3xjy6dfw65zbm2euyoe5wn3u3dvpne
   tests/test_dialogues.py: bafybeihfvevfoo6h42ibcjxhhdopusgygikcrlgipgnyoivdkpk64uxpey
@@ -24,10 +24,10 @@ connections: []
 contracts: []
 protocols: []
 skills:
-- valory/abstract_round_abci:0.1.0:bafybeibfemo6nqd5itfd2damllya56qi4jrtythwcsb7wyt55qtxtsuu3u
-- valory/apy_estimation_abci:0.1.0:bafybeifog7jgfxd3borezolgf5hxj2riscfnqwwnn7nzpuxn2yfv75jxim
-- valory/registration_abci:0.1.0:bafybeih6tbs4mt6x7g642kwhthxxs3qxpzsh4cy7uavrk4att3mqul6hhu
-- valory/reset_pause_abci:0.1.0:bafybeihjsv2mkwrf55wtmawn7kjylm75thg7jjp7y4bfnezrkr3hu7jytu
+- valory/abstract_round_abci:0.1.0:bafybeicvbxixjsu3bgjk5frqz5mq2kmv44grwd6324viz4tehw3yejfhji
+- valory/apy_estimation_abci:0.1.0:bafybeibwfynk7lwfwnn4u72ghg36nk7bxd3ptv3moymrgjxluajo34kwwa
+- valory/registration_abci:0.1.0:bafybeihai2otcmnb2w7k64bnwf5qagfexg5gqow74xhj3wynikgdxre3ka
+- valory/reset_pause_abci:0.1.0:bafybeifs6zpg5nbvuapmxafzo6fdhoz5ebpiujetvk243apo3iwl2rn45i
 behaviours:
   main:
     args: {}
@@ -100,11 +100,9 @@ models:
     class_name: LedgerApiDialogues
   params:
     args:
-      n_estimations_before_retrain: 60
       broadcast_to_server: true
       cleanup_history_depth: 1
       cleanup_history_depth_current: null
-      max_attempts: 10
       consensus:
         max_participants: 1
       decimals: 5
@@ -132,7 +130,9 @@ models:
       history_interval_in_unix: 86400
       ipfs_domain_name: /dns/registry.autonolas.tech/tcp/443/https
       keeper_timeout: 30.0
+      max_attempts: 10
       max_healthcheck: 120
+      n_estimations_before_retrain: 60
       n_observations: 10
       observation_interval: 10
       on_chain_service_id: null
@@ -169,9 +169,9 @@ models:
       tendermint_max_retries: 5
       tendermint_p2p_url: localhost:26656
       tendermint_url: http://localhost:26657
-      tx_timeout: 10.0
       testing:
         steps_forward: 1
+      tx_timeout: 10.0
     class_name: APYParams
   randomness_api:
     args:

@@ -8,45 +8,45 @@ aea_version: '>=1.0.0, <2.0.0'
 fingerprint:
   README.md: bafybeicam57nm46ptlgr3gbg4hzmcid5qozna6ydvunz2or6j43hcahlma
   __init__.py: bafybeif4et2adwa4mtx4clsfcpqk77w23kdq5642vulkddnrsxms6ngbma
-  behaviours.py: bafybeibiqxar6wwmveyialmjrxcljdmugsn4kgnglrcujaqd5sdc2i2zaa
+  behaviours.py: bafybeiagszzcsio5apabs5jjfvlicm3uq7vuc7qgsd6ix36nao6fqtttzq
   constants.py: bafybeibx3m2zjvyq5gdqjhjqnqtenmub47mvtokrfzscrc5loqoy2f5pii
-  dialogues.py: bafybeig4tc4thbpsixmbn35kj7jim2gzd7cvxxu4u3xoeyxqzpumuhrdzm
+  dialogues.py: bafybeihp3ujpngrqm6fencr25azq7zccvdcszljie7532l4uugxipnxn3q
   fsm_specification.yaml: bafybeiajwz3kezsxlfwocqvydy77lxhffhvwqsp2wba332pxi37dengixm
-  handlers.py: bafybeibmzghvqekt7iymu6s6yn5tk7lpdmejba4n7dpsz2do3cgfqz7b2a
+  handlers.py: bafybeicize7jjlb22grwb7fkwo36fh7ja3ajtta56utg4l4pn7ckvbnqa4
   io_/__init__.py: bafybeidxth2otiyp5gfk2l3zjvnfktgrtpwzsknihkef3v2lhwbkgum3ea
-  io_/load.py: bafybeicmhoscwsihvu2gjeuabl74vme2ur36g7w6xczf2exuiozbzzwtsq
-  io_/store.py: bafybeibjo6uaq4ikorbj4r2osqrcabed23tgxzzgwsuwf37w24o3vo5cfq
+  io_/load.py: bafybeifmmsupui5cqwiahxcsddr4l75kr6bxaizxcxfmmctci2vmpkgoxu
+  io_/store.py: bafybeidvm2hlohbrwckbdqh2hxiow63dxai3jclzm4e6j4govibph3wk4e
   ml/__init__.py: bafybeibceypb22objsuli3abse3rgyycs4hodokjfj5oei4ms4xlqkra5a
   ml/forecasting.py: bafybeiafpvnosan4ubm35tcl3wlxlro43nbx6hf5il6pn43f7win2hcsei
   ml/optimization.py: bafybeicyfabutvdyfvv2u3b6sdxfr4c5f7vvgvba4snovy5atx3zuj3nha
   ml/preprocessing.py: bafybeieha65b5cslcyyjobjupebyqovod7aigohdidcawz5b6tlxqxpruq
-  models.py: bafybeifa3xmpsbgo6zgsxi56aweaivdsrv6mso3uwquqibptg5qknqbwsy
-  payloads.py: bafybeibk4lkx5gjqyxlnwex62u7n2ctgknommriazfd54u2t7qxkakjq2a
-  rounds.py: bafybeidxhxqfeaeezz7hmaeyqgmotue3tlu4tcjdgngpvg4szv6463jfce
+  models.py: bafybeiajyruiycdlujh64lcesmtcozu3rdoaslqs3pvr6db54ws7expqja
+  payloads.py: bafybeidzaniymd33djbwysqbth5ecrvimsrhukazqj72vuyzafore4ptcm
+  rounds.py: bafybeibolyacy4zilqjh7qgathkginbmslj4d7xnmhcpqummlp7srh5zqq
   tasks.py: bafybeihudp5vyhelqnl5eqakjpvuekaoamtbrghss4k2yysvkczspjbbia
   tests/__init__.py: bafybeiapnbylokinzkfybybxsuoz5sdwmfw7rzctbqhvnt2ydvvy5twhaa
-  tests/conftest.py: bafybeidxwxmqv4qmgskehl5ywezywr5jv5rab6dq3atpmuqjdybehwsnya
-  tests/test_apis.py: bafybeia7d2n2cz5bzedtgsisy4gxvvll3tmkbmqa6ot7d3rwyvfhjbrqle
-  tests/test_behaviours.py: bafybeiaircp3uxwtsh6f6suy3hpwwhxxufllgpdtcbhcksespmo5oqn6aa
+  tests/conftest.py: bafybeiekcvjzard4sz5om656nz3wgdyaybx45a4ec2tymcaupphlwlqwnm
+  tests/test_apis.py: bafybeignuaxsr72apcgcxjcmwa4r6ifzbcksdqhjva2jlpa7fdrqzwywem
+  tests/test_behaviours.py: bafybeihzv3ixkj4lbsamvt2hg5oiwpcoyobaxvzs34anm6gpzooe5iku6i
   tests/test_dialogues.py: bafybeiab5la63tomj6272c727vo6fq2ltdatbbs4nglwj4te3ghdyli7sa
   tests/test_handlers.py: bafybeigcoykpzwmbh5hbwub3bx4lr4fwutstqmbjahqpwx3zwu5ing75de
   tests/test_ml/__init__.py: bafybeigluuyaz73cej42yohuvoxnrx65hqsqoqmpzgof4b7co246s3jxjy
   tests/test_ml/test_forecasting.py: bafybeih6un4hazyym2al5qjbjvk2c3a6hdnlpgfcsw3abwlanw6oesglce
   tests/test_ml/test_optimization.py: bafybeihnvcgqttwmbi2idvmkrrd5becqry4bannzuww6webxfuznjocdfy
   tests/test_ml/test_preprocessing.py: bafybeicqer5b6fhzoimtrk4mwmh62km6olwljmhxvi6p7zdm6o4jbycfji
-  tests/test_models.py: bafybeigrgegxxxemdmfml3rr75nk3iw6unehkzaofnuiunnmibutgs33w4
-  tests/test_payloads.py: bafybeig7jwpqn33dvvfldf4tomgjtesl5zf7iwayvcvasopxekftwbe4ke
-  tests/test_rounds.py: bafybeiaxf2nlkwyojkuvocl5l3qhfoksl2urkhzejro57ngw656uqpadea
+  tests/test_models.py: bafybeidqygpmkro3q7pekgc42w46vzj2nyw43dhduem3xs23w2x4evfx6e
+  tests/test_payloads.py: bafybeie5e6qedhuvn7apky3enallsotqbexghdnmwufh6mclm7mu3rikgq
+  tests/test_rounds.py: bafybeie7jxesvz6atcbcybemdrj67tvx6367wnysjbquiixyg4xnfqauvi
   tests/test_tasks.py: bafybeifumykfnu4ymcgbpimgmg5ipmfhwgdjggfblyejc3m4eceij554je
   tests/test_tools/__init__.py: bafybeidxxdakfp7rkavdx24vv3bwp6siep7plys7nfrnlwh2opmwbflj2q
   tests/test_tools/conftest.py: bafybeifagmpxjwj5aas2mhuk46k6hocyklmrvwut7h5pxsxuqx6vyyveyu
-  tests/test_tools/test_etl.py: bafybeifldxmv6q5537pqpizh2jqfpq3k66bfpcydygcjxbxorpttw4ieuq
+  tests/test_tools/test_etl.py: bafybeigkf6i7tv3gc6pytbtodvjqe4ptjfn3zg5lnq3jzgdmw2m2ev2jna
   tests/test_tools/test_general.py: bafybeiab33zi5lmubeyqkgabo3dcaen442ziijyrgsiusuezsnetmnr2s4
   tests/test_tools/test_queries.py: bafybeigxt5lvvv2tjff2pi2l64lk6q7alykuidfbeb3ri4gzqxjxlimqna
   tools/__init__.py: bafybeid6nc7k2qjndgigeoxhtun27ih5wof3hl4j6fsijulttuwhjydyeu
   tools/etl.py: bafybeiefhoxhthvq6w7azrzkxual4nghh4rxmtplgsn46htxmat3p64afa
   tools/general.py: bafybeico7gnyqzns4vwfekpuds4k6f3juwqkrpme2prdza6zcusjqxpiwi
-  tools/io_.py: bafybeiay2r3f2zsmiqt4xb47lm42tg3lhjbhknnmej3grifemc5eumongu
+  tools/io_.py: bafybeibqtsdpag2ieofmdu32skowi5eugdqgv7rn423xpvrdg2vwosdkqe
   tools/queries.py: bafybeibz5ipezydyf6qwa7os54a5v6e5l34ja2sripiektufdltx4titcy
 fingerprint_ignore_patterns: []
 connections: []
@@ -55,7 +55,7 @@ protocols:
 - valory/abci:0.1.0:bafybeihkgako44fzgurcv4hgbems4ptdtosae4lopnnr75eczb6kx3x2lm
 - valory/http:1.0.0:bafybeifru3qs6udfzprax7jxktbsuzn7immfvi3scgfspifq3zdxwkgvnm
 skills:
-- valory/abstract_round_abci:0.1.0:bafybeibfemo6nqd5itfd2damllya56qi4jrtythwcsb7wyt55qtxtsuu3u
+- valory/abstract_round_abci:0.1.0:bafybeicvbxixjsu3bgjk5frqz5mq2kmv44grwd6324viz4tehw3yejfhji
 behaviours:
   main:
     args: {}
@@ -128,11 +128,9 @@ models:
     class_name: LedgerApiDialogues
   params:
     args:
-      n_estimations_before_retrain: 60
       broadcast_to_server: false
       cleanup_history_depth: 1
       cleanup_history_depth_current: null
-      max_attempts: 10
       consensus:
         max_participants: 1
       decimals: 5
@@ -160,7 +158,9 @@ models:
       history_interval_in_unix: 86400
       ipfs_domain_name: /dns/registry.autonolas.tech/tcp/443/https
       keeper_timeout: 30.0
+      max_attempts: 10
       max_healthcheck: 120
+      n_estimations_before_retrain: 60
       n_observations: 10
       observation_interval: 10
       on_chain_service_id: null
@@ -198,9 +198,9 @@ models:
       tendermint_max_retries: 5
       tendermint_p2p_url: localhost:26656
       tendermint_url: http://localhost:26657
-      tx_timeout: 10.0
       testing:
         steps_forward: 1
+      tx_timeout: 10.0
     class_name: APYParams
   randomness_api:
     args:
