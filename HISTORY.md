@@ -1,6 +1,15 @@
 # Release History - `apy-oracle`
 
 
+## 0.8.0 (2023-01-26)
+
+- Adds missing section to docs #28
+- Handles past blocks errors #30
+- Adds doc linters #31
+- Bumps `open-autonomy` and `open-aea` and addresses breaking changes #32
+- Adds release workflow #33
+
+
 ## 0.7.0 (2023-01-20)
 
 - Integrates ACN #27
