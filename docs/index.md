@@ -13,7 +13,7 @@ Once you have {{set_up_system}} to work with the Open Autonomy framework, you ca
 1. Fetch the ML APY Prediction Oracle service.
 
 	```bash
-	autonomy fetch valory/apy_estimation:0.1.0:bafybeiegdp27guyd7trulwuuaxsxtzukmot5fznc347o3wui674evkxvnq --service
+	autonomy fetch valory/apy_estimation:0.1.0:bafybeifewq4ujcldyj5dtraxy6a3mcx27qcgxf6siqzv7gmvy2zdmkecue --service
 	```
 
 2. Build the Docker image of the service agents
