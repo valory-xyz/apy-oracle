@@ -1,5 +1,9 @@
 # Release History - `apy-oracle`
 
+## 0.8.0.post1 (2023-01-27)
+
+- Fixes ACN configuration #35
+
 
 ## 0.8.0 (2023-01-26)
 
