@@ -1,4 +1,4 @@
-![MLKit](images/ml-apy-prediction-oracle-icon.png){ align=left width="150" }
+![MLKit](images/mlkit.svg){ align=left }
 The MLKit helps you build services with custom machine-learning capabilities.
 For example, the ML APY Prediction Oracle is an {{agent_service_link}} that predicts the yield of liquidity pools using customizable machine learning techniques. Currently, the live demo makes predictions for [Uniswap](https://uniswap.org/) and [SpookySwap](https://spooky.fi).
 
