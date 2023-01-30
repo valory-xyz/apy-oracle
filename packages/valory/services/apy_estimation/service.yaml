@@ -7,7 +7,7 @@ license: Apache-2.0
 fingerprint:
   README.md: bafybeibhbkelnxxvsln677imq65vgbglmlhyxtax4iqtzempjiwcoef3gq
 fingerprint_ignore_patterns: []
-agent: valory/apy_estimation:0.1.0:bafybeic2htv62fu4eirgpbs6it3q5hjgdh54niocyvx2cmnwqozj2igzc4
+agent: valory/apy_estimation:0.1.0:bafybeiebcujxrqe5qqfjmypakvbrlf3f53jyuy6afcviy7skfzvnbwth2m
 number_of_agents: 4
 ---
 extra:
@@ -15,9 +15,10 @@ extra:
     args:
       setup: &id001
         all_participants:
-        - - '0x0000000000000000000000000000000000000000'
-        safe_contract_address:
-        - '0x0000000000000000000000000000000000000000'
+        - - '0x8d1D7b3cd99a3C35A481F069ec10513183d5d49E'
+          - '0x2c288d3f6FFC2548EC81808Fccbf7629352C49e4'
+          - '0xa6DB574Fc218F88508C225733ae9c07AC600B9Ae'
+          - '0x690f453Ca39ED23D5D8E481AddAea8b18fe0edB1'
   deposit_endpoint:
     args: &id002
       url: ${SERVICE_APY_DEPOSIT_ENDPOINT:str:http://172.17.0.2:9999/apy/deposit}

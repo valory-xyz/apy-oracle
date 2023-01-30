@@ -25,7 +25,7 @@ contracts: []
 protocols: []
 skills:
 - valory/abstract_round_abci:0.1.0:bafybeicvbxixjsu3bgjk5frqz5mq2kmv44grwd6324viz4tehw3yejfhji
-- valory/apy_estimation_abci:0.1.0:bafybeibwfynk7lwfwnn4u72ghg36nk7bxd3ptv3moymrgjxluajo34kwwa
+- valory/apy_estimation_abci:0.1.0:bafybeifzleouupvjrmdaz4rvbnwd6zeh6ck32jpgm5cizgtytumcp223ha
 - valory/registration_abci:0.1.0:bafybeihai2otcmnb2w7k64bnwf5qagfexg5gqow74xhj3wynikgdxre3ka
 - valory/reset_pause_abci:0.1.0:bafybeifs6zpg5nbvuapmxafzo6fdhoz5ebpiujetvk243apo3iwl2rn45i
 behaviours:
@@ -161,7 +161,7 @@ models:
         all_participants:
         - - '0x0000000000000000000000000000000000000000'
         safe_contract_address:
-        - - '0x0000000000000000000000000000000000000000'
+        - '0x0000000000000000000000000000000000000000'
       share_tm_config_on_startup: false
       sleep_time: 5
       tendermint_check_sleep_delay: 3
