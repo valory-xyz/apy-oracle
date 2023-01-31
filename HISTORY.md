@@ -1,5 +1,11 @@
 # Release History - `apy-oracle`
 
+## 0.8.0.post2 (2023-01-31)
+
+- Updates kits icons #38
+- Fixes addresses configuration #37
+
+
 ## 0.8.0.post1 (2023-01-27)
 
 - Fixes ACN configuration #35
