@@ -29,6 +29,7 @@ import os
 import shutil
 import time
 from builtins import dict
+from collections import OrderedDict
 from contextlib import suppress
 from datetime import datetime
 from enum import Enum
@@ -698,8 +699,8 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             url="test",
             api_id="test",
             method="test",
-            headers=[],
-            parameters=[],
+            headers=OrderedDict(),
+            parameters=OrderedDict(),
         )
         assert behaviour._utilized_subgraphs["test"] is not None
         behaviour.batch = batch
@@ -779,8 +780,8 @@ class TestFetchAndBatchBehaviours(APYEstimationFSMBehaviourBaseCase):
             url="test",
             api_id="test",
             method="GET",
-            headers=[],
-            parameters=[],
+            headers=OrderedDict(),
+            parameters=OrderedDict(),
             name="test",
             skill_context=self.behaviour.context,
             backoff_factor=SLEEP_TIME_TWEAK,

@@ -131,6 +131,7 @@ from packages.valory.skills.apy_estimation_abci.tasks import (
 )
 from packages.valory.skills.apy_estimation_abci.tools.etl import ResponseItemType
 from packages.valory.skills.apy_estimation_abci.tools.general import (
+    filter_out_numbers,
     gen_unix_timestamps,
     sec_to_unit,
     unit_amount_from_sec,
@@ -859,11 +860,25 @@ class TransformBehaviour(
                 filetype=ExtendedSupportedFiletype.CSV,  # type: ignore
             )
 
+        if any(
+            hash_ is None
+            for hash_ in (
+                self._transformed_hist_hash,
+                self._latest_observations_hist_hash,
+            )
+        ):
+            period_count = (
+                self._transformed_hist_hash
+            ) = self._latest_observations_hist_hash = None
+        else:
+            period_count = self.synchronized_data.period_count
+
         # Pass the hashes as a Payload.
         payload = TransformationPayload(
             self.context.agent_address,
             self._transformed_hist_hash,
             self._latest_observations_hist_hash,
+            period_count,
         )
 
         # Finish behaviour.
@@ -1087,10 +1102,10 @@ class RandomnessBehaviour(APYEstimationBaseBehaviour):
             observation["randomness"] = ""
             observation["round"] = ""
 
+        filtered_randomness = filter_out_numbers(observation["randomness"])
         payload = RandomnessPayload(
             self.context.agent_address,
-            observation["round"],
-            observation["randomness"],
+            filtered_randomness,
         )
         with self.context.benchmark_tool.measure(self.behaviour_id).consensus():
             yield from self.send_a2a_transaction(payload)
@@ -1530,7 +1545,14 @@ class EstimateBehaviour(APYEstimationBaseBehaviour):
                 filetype=ExtendedSupportedFiletype.CSV,  # type: ignore
             )
 
-        payload = EstimatePayload(self.context.agent_address, self._estimations_hash)
+        n_estimations = (
+            self.synchronized_data.n_estimations + 1
+            if self._estimations_hash is not None
+            else None
+        )
+        payload = EstimatePayload(
+            self.context.agent_address, n_estimations, self._estimations_hash
+        )
 
         # Finish behaviour.
         with self.context.benchmark_tool.measure(self.behaviour_id).consensus():

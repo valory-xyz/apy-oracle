@@ -22,6 +22,7 @@
 # pylint: skip-file
 
 import re
+from collections import OrderedDict
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from unittest.mock import MagicMock
@@ -58,7 +59,6 @@ class APYParamsKwargsType(TypedDict):
     tendermint_max_retries: int
     reset_tendermint_after: int
     ipfs_domain_name: str
-    consensus: Dict[str, int]
     max_healthcheck: int
     round_timeout_seconds: float
     sleep_time: int
@@ -102,7 +102,6 @@ APY_PARAMS_KWARGS = APYParamsKwargsType(
     tendermint_max_retries=0,
     reset_tendermint_after=0,
     ipfs_domain_name="test",
-    consensus={"max_participants": 0},
     max_healthcheck=0,
     round_timeout_seconds=0.1,
     sleep_time=0,
@@ -110,7 +109,7 @@ APY_PARAMS_KWARGS = APYParamsKwargsType(
     retry_timeout=0,
     request_timeout=0.1,
     request_retry_delay=0.1,
-    observation_interval=0,
+    observation_interval=10,
     drand_public_key="test",
     history_interval_in_unix=86400,
     n_observations=10,
@@ -161,7 +160,6 @@ class TestSharedState:
     ) -> None:
         """Test setup."""
         shared_state.context.params.setup_params = {"test": []}
-        shared_state.context.params.consensus_params = MagicMock()
         shared_state.setup()
         assert shared_state.abci_app_cls == APYEstimationAbciApp
 
@@ -229,8 +227,8 @@ class TestSubgraphsMixin:
                 "method": "method",
                 "bundle_id": 0,
                 "chain_subgraph": "chain_subgraph",
-                "headers": [],
-                "parameters": [],
+                "headers": OrderedDict(),
+                "parameters": OrderedDict(),
             }
             self.context.test = None
             self.context.spooky_subgraph = SpookySwapSubgraph(

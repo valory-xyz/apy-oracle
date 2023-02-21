@@ -69,9 +69,9 @@ models:
     args:
       api_id: eth
       headers:
-      - Content-Type: application/json
+        Content-Type: application/json
       method: POST
-      parameters: []
+      parameters: {}
       response_key: data
       response_type: dict
       retries: 5
@@ -81,9 +81,9 @@ models:
     args:
       api_id: fantom
       headers:
-      - Content-Type: application/json
+        Content-Type: application/json
       method: POST
-      parameters: []
+      parameters: {}
       response_key: data
       response_type: dict
       retries: 5
@@ -103,8 +103,6 @@ models:
       broadcast_to_server: true
       cleanup_history_depth: 1
       cleanup_history_depth_current: null
-      consensus:
-        max_participants: 1
       decimals: 5
       drand_public_key: 868f005eb8e6e4ca0a47c8a77ceaa5309a47978a7c71bc5cce96366b5d7a569937c529eeda66c7293784a9402801af31
       estimation:
@@ -162,6 +160,8 @@ models:
         - - '0x0000000000000000000000000000000000000000'
         safe_contract_address:
         - '0x0000000000000000000000000000000000000000'
+        consensus_threshold:
+        - null
       share_tm_config_on_startup: false
       sleep_time: 5
       tendermint_check_sleep_delay: 3
@@ -176,9 +176,9 @@ models:
   randomness_api:
     args:
       api_id: cloudflare
-      headers: []
+      headers: {}
       method: GET
-      parameters: []
+      parameters: {}
       response_key: null
       response_type: dict
       retries: 5
@@ -191,9 +191,9 @@ models:
     args:
       api_id: oracle_server
       headers:
-      - Content-Type: application/json
+        Content-Type: application/json
       method: POST
-      parameters: []
+      parameters: {}
       response_key: null
       response_type: dict
       retries: 5
@@ -211,9 +211,9 @@ models:
       error_key: errors
       error_type: dict
       headers:
-      - Content-Type: application/json
+        Content-Type: application/json
       method: POST
-      parameters: []
+      parameters: {}
       response_key: data
       response_type: dict
       retries: 5
@@ -234,9 +234,9 @@ models:
       error_key: errors
       error_type: dict
       headers:
-      - Content-Type: application/json
+        Content-Type: application/json
       method: POST
-      parameters: []
+      parameters: {}
       response_key: data
       response_type: dict
       retries: 5

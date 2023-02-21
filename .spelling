@@ -341,7 +341,6 @@ starts_monitoring_thread
 _CollectUntilAllRound
 round_id
 allowed_tx_type
-payload_attribute
 _synchronized_data
 synchronized_data
 end_block

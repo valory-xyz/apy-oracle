@@ -24,7 +24,7 @@ from typing import Dict, FrozenSet, Optional, Tuple
 
 import pytest
 
-from packages.valory.skills.abstract_round_abci.base import AbciAppDB
+from packages.valory.skills.abstract_round_abci.base import AbciAppDB, CollectionRound
 from packages.valory.skills.abstract_round_abci.test_tools.rounds import (
     BaseCollectSameUntilThresholdRoundTest,
 )
@@ -56,8 +56,8 @@ from packages.valory.skills.apy_estimation_abci.rounds import TrainRound, Transf
 
 
 MAX_PARTICIPANTS: int = 4
-RANDOMNESS: str = "d1c29dce46f979f9748210d24bce4eae8be91272f5ca1a6aea2832d3dd676f51"
-INVALID_RANDOMNESS: str = "invalid_randomness"
+RANDOMNESS: int = 1785937125
+INVALID_RANDOMNESS = None
 
 
 def get_participants() -> FrozenSet[str]:
@@ -76,13 +76,12 @@ def get_participant_to_fetching(
 
 
 def get_participant_to_randomness(
-    participants: FrozenSet[str], round_id: int
+    participants: FrozenSet[str],
 ) -> Dict[str, RandomnessPayload]:
     """participant_to_randomness"""
     return {
         participant: RandomnessPayload(
             sender=participant,
-            round_id=round_id,
             randomness=RANDOMNESS,
         )
         for participant in participants
@@ -90,13 +89,12 @@ def get_participant_to_randomness(
 
 
 def get_participant_to_invalid_randomness(
-    participants: FrozenSet[str], round_id: int
+    participants: FrozenSet[str],
 ) -> Dict[str, RandomnessPayload]:
     """Invalid participant_to_randomness"""
     return {
         participant: RandomnessPayload(
             sender=participant,
-            round_id=round_id,
             randomness=INVALID_RANDOMNESS,
         )
         for participant in participants
@@ -106,10 +104,17 @@ def get_participant_to_invalid_randomness(
 def get_transformation_payload(
     participants: FrozenSet[str],
     transformation_hash: Optional[str],
+    latest_observation_hist_hash: Optional[str],
+    latest_transformation_period: Optional[int],
 ) -> Dict[str, TransformationPayload]:
     """Get transformation payloads."""
     return {
-        participant: TransformationPayload(participant, transformation_hash, "x1")
+        participant: TransformationPayload(
+            participant,
+            transformation_hash,
+            latest_observation_hist_hash,
+            latest_transformation_period,
+        )
         for participant in participants
     }
 
@@ -164,10 +169,11 @@ def get_participant_to_test_payload(
 def get_participant_to_estimate_payload(
     participants: FrozenSet[str],
     estimations_hash: Optional[str],
+    n_estimations: Optional[int] = 1,
 ) -> Dict[str, EstimatePayload]:
     """Get estimate payload."""
     return {
-        participant: EstimatePayload(participant, estimations_hash)
+        participant: EstimatePayload(participant, n_estimations, estimations_hash)
         for participant in participants
     }
 
@@ -188,7 +194,7 @@ class TestCollectHistoryRound(BaseCollectSameUntilThresholdRoundTest):
         expected_event: Event,
     ) -> None:
         """Runs test."""
-        test_round = CollectHistoryRound(self.synchronized_data, self.consensus_params)
+        test_round = CollectHistoryRound(self.synchronized_data)
         self._complete_run(
             self._test_round(
                 test_round=test_round,
@@ -204,7 +210,7 @@ class TestCollectHistoryRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = CollectHistoryRound(self.synchronized_data, self.consensus_params)
+        test_round = CollectHistoryRound(self.synchronized_data)
         self._test_no_majority_event(test_round)
 
 
@@ -215,46 +221,50 @@ class TestTransformRound(BaseCollectSameUntilThresholdRoundTest):
     _event_class = Event
 
     @pytest.mark.parametrize(
-        "most_voted_payload, expected_event",
-        (("x0", Event.DONE), (None, Event.FILE_ERROR)),
+        "transformed_history_hash, latest_observation_hist_hash, latest_transformation_period, expected_event",
+        (("x0", "x1", 10, Event.DONE), (None, None, None, Event.FILE_ERROR)),
     )
     def test_run(
         self,
-        most_voted_payload: Optional[str],
+        transformed_history_hash: Optional[str],
+        latest_observation_hist_hash: Optional[str],
+        latest_transformation_period: Optional[int],
         expected_event: Event,
     ) -> None:
         """Runs test."""
-        previous_period = 8
-        latest_transformation_period = 0
-        current_period = previous_period + 1
+        initial_latest_transformation_period = 2
+        initial_period_count = 2
 
         test_round = TransformRound(
             self.synchronized_data.update(
-                latest_transformation_period=latest_transformation_period,
-                period_count=previous_period,
-            ),
-            self.consensus_params,
+                latest_transformation_period=initial_latest_transformation_period,
+                period_count=initial_period_count,
+            )
         )
         self._complete_run(
             self._test_round(
                 test_round=test_round,
                 round_payloads=get_transformation_payload(
-                    self.participants, most_voted_payload
+                    self.participants,
+                    transformed_history_hash,
+                    latest_observation_hist_hash,
+                    latest_transformation_period,
                 ),
                 synchronized_data_update_fn=lambda _synchronized_data, _: _synchronized_data.update(
-                    period_count=current_period
+                    latest_transformation_period=latest_transformation_period
+                    or initial_latest_transformation_period,
                 ),
                 synchronized_data_attr_checks=[
                     lambda _synchronized_data: _synchronized_data.latest_transformation_period,
                 ],
-                most_voted_payload=most_voted_payload,
+                most_voted_payload=transformed_history_hash,
                 exit_event=expected_event,
             )
         )
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = TransformRound(self.synchronized_data, self.consensus_params)
+        test_round = TransformRound(self.synchronized_data)
         self._test_no_majority_event(test_round)
 
 
@@ -275,7 +285,7 @@ class TestPreprocessRound(BaseCollectSameUntilThresholdRoundTest):
     ) -> None:
         """Runs test."""
 
-        test_round = PreprocessRound(self.synchronized_data, self.consensus_params)
+        test_round = PreprocessRound(self.synchronized_data)
         self._complete_run(
             self._test_round(
                 test_round=test_round,
@@ -293,7 +303,7 @@ class TestPreprocessRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = PreprocessRound(self.synchronized_data, self.consensus_params)
+        test_round = PreprocessRound(self.synchronized_data)
         self._test_no_majority_event(test_round)
 
 
@@ -308,11 +318,11 @@ class TestRandomnessRound(BaseCollectSameUntilThresholdRoundTest):
     ) -> None:
         """Run tests."""
 
-        test_round = RandomnessRound(self.synchronized_data, self.consensus_params)
+        test_round = RandomnessRound(self.synchronized_data)
         self._complete_run(
             self._test_round(
                 test_round=test_round,
-                round_payloads=get_participant_to_randomness(self.participants, 1),
+                round_payloads=get_participant_to_randomness(self.participants),
                 synchronized_data_update_fn=lambda synchronized_data, _: synchronized_data,
                 synchronized_data_attr_checks=[],
                 most_voted_payload=RANDOMNESS,
@@ -322,13 +332,11 @@ class TestRandomnessRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_invalid_randomness(self) -> None:
         """Test the no-majority event."""
-        test_round = RandomnessRound(self.synchronized_data, self.consensus_params)
+        test_round = RandomnessRound(self.synchronized_data)
         self._complete_run(
             self._test_round(
                 test_round=test_round,
-                round_payloads=get_participant_to_invalid_randomness(
-                    self.participants, 1
-                ),
+                round_payloads=get_participant_to_invalid_randomness(self.participants),
                 synchronized_data_update_fn=lambda synchronized_data, _: synchronized_data,
                 synchronized_data_attr_checks=[],
                 most_voted_payload=INVALID_RANDOMNESS,
@@ -338,7 +346,7 @@ class TestRandomnessRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = RandomnessRound(self.synchronized_data, self.consensus_params)
+        test_round = RandomnessRound(self.synchronized_data)
         self._test_no_majority_event(test_round)
 
 
@@ -351,7 +359,7 @@ class TestOptimizeRound(BaseCollectSameUntilThresholdRoundTest):
     def test_run(self) -> None:
         """Runs test."""
 
-        test_round = OptimizeRound(self.synchronized_data, self.consensus_params)
+        test_round = OptimizeRound(self.synchronized_data)
         self._complete_run(
             self._test_round(
                 test_round=test_round,
@@ -365,7 +373,7 @@ class TestOptimizeRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = OptimizeRound(self.synchronized_data, self.consensus_params)
+        test_round = OptimizeRound(self.synchronized_data)
         self._test_no_majority_event(test_round)
 
 
@@ -392,8 +400,7 @@ class TestTrainRound(BaseCollectSameUntilThresholdRoundTest):
         """Runs test."""
 
         test_round = TrainRound(
-            self.synchronized_data.update(full_training=full_training),
-            self.consensus_params,
+            self.synchronized_data.update(full_training=full_training)
         )
         self._complete_run(
             self._test_round(
@@ -410,7 +417,7 @@ class TestTrainRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = TrainRound(self.synchronized_data, self.consensus_params)
+        test_round = TrainRound(self.synchronized_data)
         self._test_no_majority_event(test_round)
 
 
@@ -423,10 +430,7 @@ class TestTestRound(BaseCollectSameUntilThresholdRoundTest):
     def test_run(self) -> None:
         """Runs test."""
 
-        test_round = _TestRound(
-            self.synchronized_data.update(full_training=False),
-            self.consensus_params,
-        )
+        test_round = _TestRound(self.synchronized_data.update(full_training=False))
         self._complete_run(
             self._test_round(
                 test_round=test_round,
@@ -444,7 +448,7 @@ class TestTestRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = _TestRound(self.synchronized_data, self.consensus_params)
+        test_round = _TestRound(self.synchronized_data)
         self._test_no_majority_event(test_round)
 
 
@@ -455,42 +459,40 @@ class TestEstimateRound(BaseCollectSameUntilThresholdRoundTest):
     _event_class = Event
 
     @pytest.mark.parametrize(
-        "most_voted_payload, expected_event",
+        "n_estimations, estimate_hash, expected_event",
         (
-            ("test_hash", Event.DONE),
-            (None, Event.FILE_ERROR),
+            (1, "test_hash", Event.DONE),
+            (None, None, Event.FILE_ERROR),
         ),
     )
     def test_estimation_cycle_run(
         self,
-        most_voted_payload: Optional[str],
+        n_estimations: Optional[int],
+        estimate_hash: Optional[str],
         expected_event: Event,
     ) -> None:
         """Runs test."""
-        n_estimations = 0
-
-        test_round = EstimateRound(
-            self.synchronized_data.update(n_estimations=n_estimations),
-            self.consensus_params,
-        )
+        test_round = EstimateRound(self.synchronized_data.update(n_estimations=0))
         self._complete_run(
             self._test_round(
                 test_round=test_round,
                 round_payloads=get_participant_to_estimate_payload(
-                    self.participants, most_voted_payload
+                    self.participants,
+                    estimate_hash,
+                    n_estimations,
                 ),
                 synchronized_data_update_fn=lambda _synchronized_data, _: _synchronized_data.update(
                     n_estimations=n_estimations,
                 ),
-                synchronized_data_attr_checks=[lambda _: n_estimations + 1],
-                most_voted_payload=most_voted_payload,
+                synchronized_data_attr_checks=[lambda _: n_estimations],
+                most_voted_payload=n_estimations,
                 exit_event=expected_event,
             )
         )
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = EstimateRound(self.synchronized_data, self.consensus_params)
+        test_round = EstimateRound(self.synchronized_data)
         self._test_no_majority_event(test_round)
 
 
@@ -511,13 +513,15 @@ def test_period() -> None:
         db=AbciAppDB(
             setup_data=AbciAppDB.data_to_lists(
                 dict(
-                    participants=participants,
+                    participants=tuple(participants),
                     setup_params=setup_params,
                     most_voted_randomness=most_voted_randomness,
                     estimates_hash=estimates_hash,
                     full_training=full_training,
                     n_estimations=n_estimations,
-                    participant_to_estimate=participant_to_estimate,
+                    participant_to_estimate=CollectionRound.serialize_collection(
+                        participant_to_estimate
+                    ),
                 )
             ),
         )
