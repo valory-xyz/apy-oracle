@@ -1622,7 +1622,7 @@ class TestTransformBehaviour(APYEstimationFSMBehaviourBaseCase):
         ):
             self.behaviour.act_wrapper()
             assert (
-                f"[test_agent_name] Entered in the '{TransformBehaviour.auto_behaviour_id()}' behaviour"
+                f"[test_agent_name] Entered in the {TransformBehaviour.auto_behaviour_id()!r} behaviour"
                 in caplog.text
             )
             self.behaviour.act_wrapper()
