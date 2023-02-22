@@ -25,19 +25,22 @@ clean-pyc:
 	find . -name '.DS_Store' -exec rm -fr {} +
 
 .PHONY: clean-test
-clean-test:
+clean-test: clean-cache
 	rm -fr .tox/
 	rm -f .coverage
 	find . -name ".coverage*" -not -name ".coveragerc" -exec rm -fr "{}" \;
 	rm -fr coverage.xml
 	rm -fr htmlcov/
-	rm -fr .hypothesis
-	rm -fr .pytest_cache
-	rm -fr .mypy_cache/
-	rm -fr .hypothesis/
 	find . -name 'log.txt' -exec rm -fr {} +
 	find . -name 'log.*.txt' -exec rm -fr {} +
 	rm -rf leak_report
+
+# removes various cache files
+.PHONY: clean-cache
+clean-cache:
+	find . -type d -name .hypothesis -prune -exec rm -rf {} \;
+	rm -fr .pytest_cache
+	rm -fr .mypy_cache/
 
 # isort: fix import orders
 # black: format files according to the pep standards
@@ -69,11 +72,12 @@ security:
 # update copyright headers
 # generate latest hashes for updated packages
 .PHONY: generators
-generators:
+generators: clean-cache
 	tox -e abci-docstrings
 	tox -e fix-copyright
 	autonomy hash all
 	autonomy packages lock
+	tox -e fix-doc-hashes
 
 .PHONY: common-checks-1
 common-checks-1:

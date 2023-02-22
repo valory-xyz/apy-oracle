@@ -38,8 +38,7 @@ class ModelStrategyPayload(BaseAPYPayload):
 class RandomnessPayload(BaseAPYPayload):
     """Represent a transaction payload of type 'randomness'."""
 
-    round_id: int
-    randomness: str
+    randomness: Optional[int]
 
 
 @dataclass(frozen=True)
@@ -55,6 +54,7 @@ class TransformationPayload(BaseAPYPayload):
 
     transformed_history_hash: Optional[str]
     latest_observation_hist_hash: Optional[str]
+    latest_transformation_period: Optional[int]
 
 
 @dataclass(frozen=True)
@@ -103,6 +103,7 @@ class UpdatePayload(BaseAPYPayload):
 class EstimatePayload(BaseAPYPayload):
     """Represent a transaction payload of type 'estimate'."""
 
+    n_estimations: Optional[int]
     estimations_hash: Optional[str]
 
 

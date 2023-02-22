@@ -70,13 +70,16 @@ class TestPayloads:
             sender="sender",
             transformed_history_hash="x0",
             latest_observation_hist_hash="x1",
+            latest_transformation_period=9,
         )
 
         assert payload.transformed_history_hash == "x0"
         assert payload.latest_observation_hist_hash == "x1"
+        assert payload.latest_transformation_period == 9
         assert payload.data == {
             "transformed_history_hash": "x0",
             "latest_observation_hist_hash": "x1",
+            "latest_transformation_period": 9,
         }
 
     @staticmethod
@@ -92,11 +95,10 @@ class TestPayloads:
     def test_randomness_payload() -> None:
         """Test `RandomnessPayload`"""
 
-        payload = RandomnessPayload(sender="sender", round_id=1, randomness="1")
+        payload = RandomnessPayload(sender="sender", randomness=1)
 
-        assert payload.round_id == 1
-        assert payload.randomness == "1"
-        assert payload.data == {"round_id": 1, "randomness": "1"}
+        assert payload.randomness == 1
+        assert payload.data == {"randomness": 1}
 
     @staticmethod
     def test_batch_preparation_payload() -> None:
@@ -147,10 +149,13 @@ class TestPayloads:
     @staticmethod
     def test_estimate_payload() -> None:
         """Test `EstimatePayload`"""
-        payload = EstimatePayload(sender="sender", estimations_hash="test_hash")
+        payload = EstimatePayload(
+            sender="sender", estimations_hash="test_hash", n_estimations=3
+        )
 
         assert payload.estimations_hash == "test_hash"
-        assert payload.data == {"estimations_hash": "test_hash"}
+        assert payload.n_estimations == 3
+        assert payload.data == {"estimations_hash": "test_hash", "n_estimations": 3}
 
     @staticmethod
     def test_emit_payload() -> None:

@@ -68,7 +68,7 @@ def __make_request_no_retries(
         )
 
     r = requests.post(
-        url=api_specs["url"], headers=api_specs["headers"][0], json={"query": query}
+        url=api_specs["url"], headers=api_specs["headers"], json={"query": query}
     )
 
     if r.status_code != 200 and raise_on_error:
