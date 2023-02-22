@@ -18,16 +18,16 @@ fingerprint:
   tests/test_behaviours.py: bafybeidwejgvyhfiswn4e4jt6czz3xjy6dfw65zbm2euyoe5wn3u3dvpne
   tests/test_dialogues.py: bafybeihfvevfoo6h42ibcjxhhdopusgygikcrlgipgnyoivdkpk64uxpey
   tests/test_handlers.py: bafybeic2lfcmgaahaamemmsw5chw64lpawrjstcwazuif6fza5rzzwcmt4
-  tests/test_models.py: bafybeidv6ioa6sj3yaapomqpvm3mvaumxodqy7paqambizd4wqm57e6eci
+  tests/test_models.py: bafybeicbji7zx3ztjrrxltqs677feg5lmwfjub5irn5gpjk6jfcgpghibe
 fingerprint_ignore_patterns: []
 connections: []
 contracts: []
 protocols: []
 skills:
-- valory/abstract_round_abci:0.1.0:bafybeicvbxixjsu3bgjk5frqz5mq2kmv44grwd6324viz4tehw3yejfhji
-- valory/apy_estimation_abci:0.1.0:bafybeifzleouupvjrmdaz4rvbnwd6zeh6ck32jpgm5cizgtytumcp223ha
-- valory/registration_abci:0.1.0:bafybeihai2otcmnb2w7k64bnwf5qagfexg5gqow74xhj3wynikgdxre3ka
-- valory/reset_pause_abci:0.1.0:bafybeifs6zpg5nbvuapmxafzo6fdhoz5ebpiujetvk243apo3iwl2rn45i
+- valory/abstract_round_abci:0.1.0:bafybeiami2y2uwvtmjf76hl3jvfahujdir5docjby6erdyjl66ekoblesi
+- valory/apy_estimation_abci:0.1.0:bafybeicdqign3xfcdbjfbtlhcn4smmdjnpb6t4f5xkkxjsx2qqfgyx6eoa
+- valory/registration_abci:0.1.0:bafybeieaggf6mc43tses5k7fg3pyxca43wsmfvnnzszzucohp5ebg3umwq
+- valory/reset_pause_abci:0.1.0:bafybeic6ayed23np6ngkawsf2you6nnfuvbq4smcepdvvcrw5wxn5jaevy
 behaviours:
   main:
     args: {}
