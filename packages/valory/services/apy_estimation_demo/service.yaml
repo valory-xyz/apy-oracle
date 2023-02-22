@@ -61,7 +61,7 @@ type: skill
         history_end: null
         ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
         share_tm_config_on_startup: ${USE_ACN:bool:false}
-        tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node1:26666}
+        tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_1:str:node1:26666}
     server_api:
       args: *id002
 2:
@@ -80,7 +80,7 @@ type: skill
         history_end: null
         ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
         share_tm_config_on_startup: ${USE_ACN:bool:false}
-        tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node2:26676}
+        tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_2:str:node2:26676}
     server_api:
       args: *id002
 3:
@@ -99,6 +99,6 @@ type: skill
         history_end: null
         ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
         share_tm_config_on_startup: ${USE_ACN:bool:false}
-        tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node3:26686}
+        tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_3:str:node3:26686}
     server_api:
       args: *id002
