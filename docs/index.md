@@ -13,47 +13,49 @@ Once you have {{set_up_system}} to work with the Open Autonomy framework, you ca
 1. Fetch the ML APY Prediction Oracle service.
 
 	```bash
-	autonomy fetch valory/apy_estimation:0.1.0:bafybeiezinjkrg3pdyopyywo6igiud3j2xabd4cswoz5wznzy3va4og7qi --service
+	autonomy fetch valory/apy_estimation_demo:0.1.0:bafybeigrudkt4x64mubsnubdxtqrw3xm3hwwodocup434tq6oxn6jrrupy --service
 	```
 
 2. Build the Docker image of the service agents
 
 	```bash
-	cd apy_estimation
+	cd apy_estimation_demo
 	autonomy build-image
 	```
 
 3. Prepare the `keys.json` file containing the wallet address and the private key for each of the agents.
 
-    ??? example "Example of a `keys.json` file"
+    ??? example "Generating an example `keys.json` file"
 
         <span style="color:red">**WARNING: Use this file for testing purposes only. Never use the keys or addresses provided in this example in a production environment or for personal use.**</span>
 
-        ```json
+        ```bash
+        cat > keys.json << EOF
         [
           {
-              "address": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
-              "private_key": "0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a"
+            "address": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+            "private_key": "0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a"
           },
           {
-              "address": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
-              "private_key": "0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba"
+            "address": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+            "private_key": "0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba"
           },
           {
-              "address": "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
-              "private_key": "0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e"
+            "address": "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
+            "private_key": "0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e"
           },
           {
-              "address": "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955",
-              "private_key": "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356"
+            "address": "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955",
+            "private_key": "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356"
           }
         ]
+        EOF
         ```
 
 4. Build the service deployment.
 
     ```bash
-    autonomy deploy build keys.json --aev
+    autonomy deploy build keys.json --aev -ltm
     ```
 
 5. Run the service.
