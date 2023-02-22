@@ -73,6 +73,11 @@ Once you have {{set_up_system}} to work with the Open Autonomy framework, you ca
 2. Make the necessary adjustments to tailor the service to your needs. This could include:
     * Adjust configuration parameters (e.g., in the `service.yaml` file).
     * Expand the service finite-state machine with your custom states.
+    * Set an environment variable to change a value in the service:
+        * SERVICE_APY_DEPOSIT_ENDPOINT: The endpoint to use for publishing the APY estimations
+        * SERVICE_APY_N_OBSERVATIONS: The number of observations to use for the timeseries for the optimization. This number of observations will be fetched for each pool.
+        * USE_ACN: whether the ACN network will be used to set the Tendermint network on startup.
+        * TM_P2P_ENDPOINT_NODE_0/TM_P2P_ENDPOINT_NODE_1/TM_P2P_ENDPOINT_NODE_2/TM_P2P_ENDPOINT_NODE_3: the p2p endpoints of the Tendermint nodes
 3. Run your service as detailed above.
 
 !!! tip "Looking for help building your own?"
