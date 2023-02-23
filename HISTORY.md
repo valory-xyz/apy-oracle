@@ -1,5 +1,14 @@
 # Release History - `apy-oracle`
 
+## 0.9.1 (2023-02-24)
+
+- Bumps `open-autonomy` to `0.9.1` #46
+- Makes set up step explicit in the demo instructions #45
+- Bumps `open-autonomy` and `open-aea` and addresses breaking changes #44
+- Fixes doc links linter and adds further paths to the check #43
+- Adds `/work` to the safe directories (#41) and uses checkout v3 (#40) to fix the release workflow
+
+
 ## 0.8.0.post2 (2023-01-31)
 
 - Updates kits icons #38
