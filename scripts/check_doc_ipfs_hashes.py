@@ -168,7 +168,7 @@ class PackageHashManager:
             # No match
             if not m_command and not m_package:
                 print(
-                    f"[{target_file}]: line '{package_line}' does not match an autonomy/aea command or package format"
+                    f"[{target_file}]: line {package_line!r} does not match an autonomy/aea command or package format"
                 )
                 return None
             m = m_command or m_package
@@ -185,7 +185,8 @@ class PackageHashManager:
 
                 # This hash does not exist in packages.json
                 print(
-                    f"[{target_file}]: unknown IPFS hash in line '{package_line}'. Can't fix because this command just uses the hash"
+                    f"[{target_file}]: unknown IPFS hash in line {package_line!r}. "
+                    "Can't fix because this command just uses the hash"
                 )
                 return None
 
@@ -220,7 +221,8 @@ class PackageHashManager:
 
                 if not package_type:
                     raise ValueError(
-                        f"[{target_file}]: could not infer the package type for line '{package_line}'\nPlease update the hash manually."
+                        f"[{target_file}]: could not infer the package type for line {package_line!r}"
+                        "\nPlease update the hash manually."
                     )
 
             return self.package_tree[d["vendor"]][package_type][d["package"]].hash
@@ -228,7 +230,7 @@ class PackageHashManager:
         # Otherwise log the error
         except KeyError:
             print(
-                f"[{target_file}]: could not find the corresponding hash for line '{package_line}'"
+                f"[{target_file}]: could not find the corresponding hash for line {package_line!r}"
             )
             return None
 
@@ -240,7 +242,7 @@ class PackageHashManager:
 
 
 def check_ipfs_hashes(  # pylint: disable=too-many-locals,too-many-statements
-    paths: List[Path] = None, fix: bool = False
+    paths: Optional[List[Path]] = None, fix: bool = False
 ) -> None:
     """Fix ipfs hashes in the docs"""
 

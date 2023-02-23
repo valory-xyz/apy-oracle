@@ -18,9 +18,10 @@
 # ------------------------------------------------------------------------------
 
 """This module contains the rounds for the APY estimation ABCI application."""
+
 from abc import ABC
 from enum import Enum
-from typing import Dict, List, Mapping, Optional, Set, Tuple, Type, cast
+from typing import Dict, Optional, Set, Tuple, Type, cast
 
 from packages.valory.skills.abstract_round_abci.base import (
     AbciApp,
@@ -29,7 +30,9 @@ from packages.valory.skills.abstract_round_abci.base import (
     AppState,
     BaseSynchronizedData,
     CollectSameUntilThresholdRound,
+    CollectionRound,
     DegenerateRound,
+    DeserializedCollection,
     VotingRound,
     get_name,
 )
@@ -51,7 +54,6 @@ from packages.valory.skills.apy_estimation_abci.payloads import (
     TransformationPayload,
     UpdatePayload,
 )
-from packages.valory.skills.apy_estimation_abci.tools.general import filter_out_numbers
 
 
 class Event(Enum):
@@ -145,97 +147,71 @@ class SynchronizedData(BaseSynchronizedData):
         """Get the n_estimations."""
         return cast(int, self.db.get("n_estimations", 0))
 
+    def _get_deserialized(self, key: str) -> DeserializedCollection:
+        """Strictly get a collection and return it deserialized."""
+        serialized = self.db.get_strict(key)
+        deserialized = CollectionRound.deserialize_collection(serialized)
+        return cast(DeserializedCollection, deserialized)
+
     @property
-    def participant_to_estimate(self) -> Mapping[str, EstimatePayload]:
+    def participant_to_estimate(self) -> DeserializedCollection:
         """Get the `participant_to_estimate`."""
-        return cast(
-            Mapping[str, EstimatePayload],
-            self.db.get_strict("participant_to_estimate"),
-        )
+        return self._get_deserialized("participant_to_estimate")
 
     @property
-    def participant_to_strategy_votes(self) -> Mapping[str, ModelStrategyPayload]:
+    def participant_to_strategy_votes(self) -> DeserializedCollection:
         """Get the participant_to_strategy_votes."""
-        return cast(
-            Mapping[str, ModelStrategyPayload],
-            self.db.get_strict("participant_to_strategy_votes"),
-        )
+        return self._get_deserialized("participant_to_strategy_votes")
 
     @property
-    def participant_to_history(self) -> Mapping[str, FetchingPayload]:
+    def participant_to_history(self) -> DeserializedCollection:
         """Get the participant_to_history."""
-        return cast(
-            Mapping[str, FetchingPayload], self.db.get_strict("participant_to_history")
-        )
+        return self._get_deserialized("participant_to_history")
 
     @property
-    def participant_to_full_training(self) -> Mapping[str, _TestingPayload]:
+    def participant_to_full_training(self) -> DeserializedCollection:
         """Get the participant_to_full_training."""
-        return cast(
-            Mapping[str, _TestingPayload],
-            self.db.get_strict("participant_to_full_training"),
-        )
+        return self._get_deserialized("participant_to_full_training")
 
     @property
-    def participant_to_update(self) -> Mapping[str, UpdatePayload]:
+    def participant_to_update(self) -> DeserializedCollection:
         """Get the participant_to_update."""
-        return cast(
-            Mapping[str, UpdatePayload], self.db.get_strict("participant_to_update")
-        )
+        return self._get_deserialized("participant_to_update")
 
     @property
-    def participant_to_batch(self) -> Mapping[str, BatchPreparationPayload]:
+    def participant_to_batch(self) -> DeserializedCollection:
         """Get the participant_to_batch."""
-        return cast(
-            Mapping[str, BatchPreparationPayload],
-            self.db.get_strict("participant_to_batch"),
-        )
+        return self._get_deserialized("participant_to_batch")
 
     @property
-    def participant_to_transform(self) -> Mapping[str, TransformationPayload]:
+    def participant_to_transform(self) -> DeserializedCollection:
         """Get the participant_to_transform."""
-        return cast(
-            Mapping[str, TransformationPayload],
-            self.db.get_strict("participant_to_transform"),
-        )
+        return self._get_deserialized("participant_to_transform")
 
     @property
-    def participant_to_preprocessing(self) -> Mapping[str, PreprocessPayload]:
+    def participant_to_preprocessing(self) -> DeserializedCollection:
         """Get the participant_to_preprocessing."""
-        return cast(
-            Mapping[str, PreprocessPayload],
-            self.db.get_strict("participant_to_preprocessing"),
-        )
+        return self._get_deserialized("participant_to_preprocessing")
 
     @property
-    def participant_to_params(self) -> Mapping[str, OptimizationPayload]:
+    def participant_to_params(self) -> DeserializedCollection:
         """Get the participant_to_params."""
-        return cast(
-            Mapping[str, OptimizationPayload],
-            self.db.get_strict("participant_to_params"),
-        )
+        return self._get_deserialized("participant_to_params")
 
     @property
-    def participant_to_training(self) -> Mapping[str, TrainingPayload]:
+    def participant_to_training(self) -> DeserializedCollection:
         """Get the participant_to_training."""
-        return cast(
-            Mapping[str, TrainingPayload], self.db.get_strict("participant_to_training")
-        )
+        return self._get_deserialized("participant_to_training")
 
     @property
-    def participant_to_batch_preparation(self) -> Mapping[str, BatchPreparationPayload]:
+    def participant_to_batch_preparation(self) -> DeserializedCollection:
         """Get the participant_to_batch_preparation."""
-        return cast(
-            Mapping[str, BatchPreparationPayload],
-            self.db.get_strict("participant_to_batch_preparation"),
-        )
+        return self._get_deserialized("participant_to_batch_preparation")
 
     @property
-    def participant_to_emit(self) -> Mapping[str, EmitPayload]:
+    def participant_to_emit(self) -> DeserializedCollection:
         """Get the participant_to_emit."""
-        return cast(
-            Mapping[str, EmitPayload], self.db.get_strict("participant_to_emit")
-        )
+        return self._get_deserialized("participant_to_emit")
 
     @property
     def most_voted_emission_period(self) -> int:
@@ -264,8 +240,6 @@ class ModelStrategyRound(VotingRound, APYEstimationAbstractRound):
     """A round that represents the model's strategy selection"""
 
     payload_class = ModelStrategyPayload
-    # the `payload_attribute` is not used in `VotingRound`, but is necessary because of the `_MetaAbstractRound` checks
-    payload_attribute = "vote"
     done_event = Event.DONE
     negative_event = Event.NEGATIVE
     none_event = Event.NONE
@@ -278,7 +252,6 @@ class CollectHistoryRound(CollectSameUntilThresholdRound, APYEstimationAbstractR
     """A round in which agents collect historical data"""
 
     payload_class = FetchingPayload
-    payload_attribute = "history"
     collection_key = get_name(SynchronizedData.participant_to_history)
     selection_key = get_name(SynchronizedData.history_hash)
     synchronized_data_class = SynchronizedData
@@ -294,7 +267,7 @@ class CollectHistoryRound(CollectSameUntilThresholdRound, APYEstimationAbstractR
 
             update_kwargs = {
                 "synchronized_data_class": self.synchronized_data_class,
-                self.collection_key: self.collection,
+                self.collection_key: self.serialized_collection,
                 self.selection_key: self.most_voted_payload,
             }
 
@@ -321,81 +294,34 @@ class TransformRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound)
     """A round in which agents transform data"""
 
     payload_class = TransformationPayload
-    payload_attribute = "transformed_history_hash"
+    collection_key = get_name(SynchronizedData.participant_to_transform)
+    selection_key = (
+        get_name(SynchronizedData.transformed_history_hash),
+        get_name(SynchronizedData.latest_observation_hist_hash),
+        get_name(SynchronizedData.latest_transformation_period),
+    )
     synchronized_data_class = SynchronizedData
-
-    def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
-        """Process the end of the block."""
-        if self.threshold_reached and self.most_voted_payload is None:
-            return self.synchronized_data, Event.FILE_ERROR
-
-        if self.threshold_reached:
-            synchronized_data = self.synchronized_data.update(
-                synchronized_data_class=self.synchronized_data_class,
-                **{
-                    get_name(
-                        SynchronizedData.participant_to_transform
-                    ): self.collection,
-                    get_name(
-                        SynchronizedData.transformed_history_hash
-                    ): self.most_voted_payload,
-                    get_name(SynchronizedData.latest_observation_hist_hash): cast(
-                        TransformationPayload, list(self.collection.values())[0]
-                    ).latest_observation_hist_hash,
-                    get_name(
-                        SynchronizedData.latest_transformation_period
-                    ): self.synchronized_data.period_count,
-                },
-            )
-            return synchronized_data, Event.DONE
-
-        if not self.is_majority_possible(
-            self.collection, self.synchronized_data.nb_participants
-        ):
-            return self._return_no_majority_event()
-
-        return None
+    done_event = Event.DONE
+    none_event = Event.FILE_ERROR
+    no_majority_event = Event.NO_MAJORITY
 
 
 class PreprocessRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
     """A round in which the agents preprocess the data"""
 
     payload_class = PreprocessPayload
-    payload_attribute = "train_test_hash"
     synchronized_data_class = SynchronizedData
-
-    def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
-        """Process the end of the block."""
-        if self.threshold_reached:
-            if self.most_voted_payload is None:
-                return self.synchronized_data, Event.FILE_ERROR
-
-            synchronized_data = self.synchronized_data.update(
-                synchronized_data_class=self.synchronized_data_class,
-                **{
-                    get_name(
-                        SynchronizedData.participant_to_preprocessing
-                    ): self.collection,
-                    get_name(
-                        SynchronizedData.most_voted_split
-                    ): self.most_voted_payload,
-                },
-            )
-            return synchronized_data, Event.DONE
-
-        if not self.is_majority_possible(
-            self.collection, self.synchronized_data.nb_participants
-        ):
-            return self._return_no_majority_event()
-
-        return None
+    collection_key = get_name(SynchronizedData.participant_to_preprocessing)
+    selection_key = get_name(SynchronizedData.most_voted_split)
+    done_event = Event.DONE
+    none_event = Event.FILE_ERROR
+    no_majority_event = Event.NO_MAJORITY
 
 
 class PrepareBatchRound(CollectSameUntilThresholdRound):
     """A round in which agents prepare a batch of data"""
 
     payload_class = BatchPreparationPayload
-    payload_attribute = "prepared_batch"
     synchronized_data_class = SynchronizedData
     done_event = Event.DONE
     no_majority_event = Event.NO_MAJORITY
@@ -413,43 +339,18 @@ class RandomnessRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound
     """
 
     payload_class = RandomnessPayload
-    payload_attribute = "randomness"
     synchronized_data_class = SynchronizedData
-
-    def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
-        """Process the end of the block."""
-        if self.threshold_reached:
-            filtered_randomness = filter_out_numbers(self.most_voted_payload)
-
-            if filtered_randomness is None:
-                return self.synchronized_data, Event.RANDOMNESS_INVALID
-
-            synchronized_data = self.synchronized_data.update(
-                synchronized_data_class=self.synchronized_data_class,
-                **{
-                    get_name(
-                        SynchronizedData.participant_to_randomness
-                    ): self.collection,
-                    get_name(
-                        SynchronizedData.most_voted_randomness
-                    ): filtered_randomness,
-                },
-            )
-            return synchronized_data, Event.DONE
-
-        if not self.is_majority_possible(
-            self.collection, self.synchronized_data.nb_participants
-        ):
-            return self._return_no_majority_event()
-
-        return None
+    done_event = Event.DONE
+    none_event = Event.RANDOMNESS_INVALID
+    no_majority_event = Event.NO_MAJORITY
+    collection_key = get_name(SynchronizedData.participant_to_randomness)
+    selection_key = get_name(SynchronizedData.most_voted_randomness)
 
 
 class OptimizeRound(CollectSameUntilThresholdRound):
     """A round in which agents agree on the optimal hyperparameters"""
 
     payload_class = OptimizationPayload
-    payload_attribute = "best_params"
     synchronized_data_class = SynchronizedData
     done_event = Event.DONE
     no_majority_event = Event.NO_MAJORITY
@@ -462,7 +363,6 @@ class TrainRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
     """A round in which agents train a model"""
 
     payload_class = TrainingPayload
-    payload_attribute = "models_hash"
     synchronized_data_class = SynchronizedData
 
     def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
@@ -474,7 +374,9 @@ class TrainRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
             update_params = dict(
                 synchronized_data_class=self.synchronized_data_class,
                 **{
-                    get_name(SynchronizedData.participant_to_training): self.collection,
+                    get_name(
+                        SynchronizedData.participant_to_training
+                    ): self.serialized_collection,
                     get_name(SynchronizedData.models_hash): self.most_voted_payload,
                 },
             )
@@ -505,7 +407,6 @@ class TestRound(CollectSameUntilThresholdRound):
     """A round in which agents test a model"""
 
     payload_class = _TestingPayload
-    payload_attribute = "report_hash"
     synchronized_data_class = SynchronizedData
     done_event = Event.DONE
     no_majority_event = Event.NO_MAJORITY
@@ -518,7 +419,6 @@ class UpdateForecasterRound(CollectSameUntilThresholdRound):
     """A round in which agents update the forecasting model"""
 
     payload_class = UpdatePayload
-    payload_attribute = "updated_models_hash"
     synchronized_data_class = SynchronizedData
     done_event = Event.DONE
     no_majority_event = Event.NO_MAJORITY
@@ -531,42 +431,21 @@ class EstimateRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
     """A round in which agents make predictions using a model"""
 
     payload_class = EstimatePayload
-    payload_attribute = "estimations_hash"
     synchronized_data_class = SynchronizedData
-
-    def end_block(self) -> Optional[Tuple[BaseSynchronizedData, Event]]:
-        """Process the end of the block."""
-        if self.threshold_reached:
-            if self.most_voted_payload is None:
-                return self.synchronized_data, Event.FILE_ERROR
-
-            synchronized_data = self.synchronized_data.update(
-                synchronized_data_class=self.synchronized_data_class,
-                **{
-                    get_name(SynchronizedData.participant_to_estimate): self.collection,
-                    get_name(SynchronizedData.n_estimations): cast(
-                        SynchronizedData, self.synchronized_data
-                    ).n_estimations
-                    + 1,
-                    get_name(SynchronizedData.estimates_hash): self.most_voted_payload,
-                },
-            )
-
-            return synchronized_data, Event.DONE
-
-        if not self.is_majority_possible(
-            self.collection, self.synchronized_data.nb_participants
-        ):
-            return self._return_no_majority_event()
-
-        return None
+    no_majority_event = Event.NO_MAJORITY
+    done_event = Event.DONE
+    none_event = Event.FILE_ERROR
+    collection_key = get_name(SynchronizedData.participant_to_estimate)
+    selection_key = (
+        get_name(SynchronizedData.n_estimations),
+        get_name(SynchronizedData.estimates_hash),
+    )
 
 
 class EmitRound(CollectSameUntilThresholdRound, APYEstimationAbstractRound):
     """A round that represents the emission of the estimates to the backend"""
 
     payload_class = EmitPayload
-    payload_attribute = "period_count"
     synchronized_data_class = SynchronizedData
     done_event = Event.DONE
     no_majority_event = Event.NO_MAJORITY
@@ -754,21 +633,21 @@ class APYEstimationAbciApp(AbciApp[Event]):  # pylint: disable=too-few-public-me
         FinishedAPYEstimationRound: {},
         FailedAPYRound: {},
     }
-    cross_period_persisted_keys = [
+    cross_period_persisted_keys = {
         get_name(SynchronizedData.full_training),
         get_name(SynchronizedData.n_estimations),
         get_name(SynchronizedData.models_hash),
         get_name(SynchronizedData.latest_transformation_period),
         get_name(SynchronizedData.transformed_history_hash),
         get_name(SynchronizedData.latest_observation_hist_hash),
-    ]
+    }
     final_states: Set[AppState] = {FinishedAPYEstimationRound, FailedAPYRound}
     event_to_timeout: Dict[Event, float] = {
         Event.ROUND_TIMEOUT: 30.0,
         Event.RESET_TIMEOUT: 30.0,
     }
-    db_pre_conditions: Dict[AppState, List[str]] = {ModelStrategyRound: []}
-    db_post_conditions: Dict[AppState, List[str]] = {
-        FinishedAPYEstimationRound: [],
-        FailedAPYRound: [],
+    db_pre_conditions: Dict[AppState, Set[str]] = {ModelStrategyRound: set()}
+    db_post_conditions: Dict[AppState, Set[str]] = {
+        FinishedAPYEstimationRound: set(),
+        FailedAPYRound: set(),
     }

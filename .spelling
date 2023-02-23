@@ -3,6 +3,15 @@
 # global dictionary is at the start, file overrides afterwards
 # one word per line, to define a file override use ' - filename'
 # where filename is relative to this configuration file
+SERVICE_APY_DEPOSIT_ENDPOINT
+SERVICE_APY_N_OBSERVATIONS
+timeseries
+USE_ACN
+TM_P2P_ENDPOINT_NODE_0
+TM_P2P_ENDPOINT_NODE_1
+TM_P2P_ENDPOINT_NODE_2
+TM_P2P_ENDPOINT_NODE_3
+p2p
 0.8.0.post1
 0.8.0.post2
 MLKit
@@ -341,7 +350,6 @@ starts_monitoring_thread
 _CollectUntilAllRound
 round_id
 allowed_tx_type
-payload_attribute
 _synchronized_data
 synchronized_data
 end_block

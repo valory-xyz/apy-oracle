@@ -21,16 +21,15 @@
 """Custom objects for the APY estimation ABCI application."""
 
 
-from typing import Any, Dict, List, Optional, OrderedDict, Set, Union, ValuesView, cast
+from typing import Any, Dict, List, Optional, Set, Union, ValuesView, cast
 
-from aea.skills.base import Model, SkillContext
+from aea.skills.base import SkillContext
 
 from packages.valory.skills.abstract_round_abci.models import ApiSpecs, BaseParams
 from packages.valory.skills.abstract_round_abci.models import (
     BenchmarkTool as BaseBenchmarkTool,
 )
 from packages.valory.skills.abstract_round_abci.models import Requests as BaseRequests
-from packages.valory.skills.abstract_round_abci.models import ResponseInfo, RetriesInfo
 from packages.valory.skills.abstract_round_abci.models import (
     SharedState as BaseSharedState,
 )
@@ -54,41 +53,24 @@ class SharedState(BaseSharedState):
     abci_app_cls = APYEstimationAbciApp
 
 
-# TODO remove this workaround when the types get fixed in `open-autonomy`
-class FixedApiSpecs(ApiSpecs):
-    """A model that wraps APIs to get cryptocurrency prices."""
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Initialize ApiSpecsModel."""
-        self.url: str = self._ensure("url", kwargs, str)
-        self.api_id: str = self._ensure("api_id", kwargs, str)
-        self.method: str = self._ensure("method", kwargs, str)
-        self.headers = self._ensure("headers", kwargs, List[OrderedDict[str, str]])
-        self.parameters = self._ensure("parameters", kwargs, List[List[str]])
-        self.response_info = ResponseInfo.from_json_dict(kwargs)
-        self.retries_info = RetriesInfo.from_json_dict(kwargs)
-        super(Model, self).__init__(*args, **kwargs)  # pylint: disable=bad-super-call
-        self._frozen = True
+class RandomnessApi(ApiSpecs):
+    """A model that wraps ApiSpecs for randomness api specifications."""
 
 
-class RandomnessApi(FixedApiSpecs):
-    """A model that wraps FixedApiSpecs for randomness api specifications."""
-
-
-class ServerApi(FixedApiSpecs):
+class ServerApi(ApiSpecs):
     """A model for oracle web server api specs."""
 
 
-class FantomSubgraph(FixedApiSpecs):
-    """A model that wraps FixedApiSpecs for Fantom subgraph specifications."""
+class FantomSubgraph(ApiSpecs):
+    """A model that wraps ApiSpecs for Fantom subgraph specifications."""
 
 
-class ETHSubgraph(FixedApiSpecs):
-    """A model that wraps FixedApiSpecs for ETH subgraph specifications."""
+class ETHSubgraph(ApiSpecs):
+    """A model that wraps ApiSpecs for ETH subgraph specifications."""
 
 
-class DEXSubgraph(FixedApiSpecs):
-    """A model that wraps FixedApiSpecs for DEX subgraph specifications."""
+class DEXSubgraph(ApiSpecs):
+    """A model that wraps ApiSpecs for DEX subgraph specifications."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize DEX Subgraph."""
@@ -106,7 +88,7 @@ class SpookySwapSubgraph(DEXSubgraph):
 
 
 PairIdsType = Dict[str, List[str]]
-ValidatedSubgraphType = Union[DEXSubgraph, FixedApiSpecs]
+ValidatedSubgraphType = Union[DEXSubgraph, ApiSpecs]
 ValidatedSubgraphsType = ValuesView[ValidatedSubgraphType]
 ValidatedSubgraphsMappingType = Dict[str, ValidatedSubgraphType]
 UnvalidatedSubgraphType = Optional[ValidatedSubgraphType]

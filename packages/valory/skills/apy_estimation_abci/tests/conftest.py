@@ -115,8 +115,8 @@ _BLOCK_Q_PARAMS: _BlockQParamsType = {
 @pytest.fixture
 def _common_specs() -> SpecsType:
     return {
-        "headers": [OrderedDict([("Content-Type", "application/json")])],
-        "parameters": [],
+        "headers": OrderedDict([("Content-Type", "application/json")]),
+        "parameters": OrderedDict(),
         "method": "POST",
         "name": "api",
         "skill_context": MagicMock(),
