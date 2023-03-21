@@ -57,12 +57,14 @@ jobs:
         sudo apt-get autoclean
         pip install tomte[tox]==0.2.2
         pip install --user --upgrade setuptools
-    - name: Check copyright
+    - name: Check copyright headers
       run: tox -e check-copyright
+    - name: License compatibility check
+      run: tox -e liccheck
     - name: Check pipfiles
       run: tox -e check-pipfiles
     - name: Check doc links and IPFS hashes
-      run: tox -e check-doc-links-hashes      
+      run: tox -e check-doc-links-hashes
 
   linter_checks:
     continue-on-error: False
