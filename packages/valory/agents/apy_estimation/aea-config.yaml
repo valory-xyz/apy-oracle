@@ -63,11 +63,11 @@ logging_config:
       propagate: true
 dependencies:
   open-aea-ledger-cosmos:
-    version: ==1.29.0
+    version: ==1.31.0
   open-aea-ledger-ethereum:
-    version: ==1.29.0
+    version: ==1.31.0
   open-aea-test-autonomy:
-    version: ==0.9.1
+    version: ==0.10.0.post1
 skill_exception_policy: just_log
 connection_exception_policy: just_log
 default_connection: null
