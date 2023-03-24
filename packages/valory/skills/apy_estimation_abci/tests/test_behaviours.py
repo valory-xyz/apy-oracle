@@ -3328,7 +3328,7 @@ class TestEmitEstimatesBehaviour(APYEstimationFSMBehaviourBaseCase):
         behaviour.params.__dict__[
             "is_broadcasting_to_server"
         ] = is_broadcasting_to_server
-        behaviour.params.__dict__["observation_interval"] = SLEEP_TIME_TWEAK
+        behaviour.params.__dict__["reset_pause_duration"] = SLEEP_TIME_TWEAK
 
         if is_most_voted_estimate_set:
             with mock.patch.object(

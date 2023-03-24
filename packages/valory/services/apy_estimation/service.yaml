@@ -9,18 +9,18 @@ fingerprint:
 fingerprint_ignore_patterns: []
 agent: valory/apy_estimation:0.1.0:bafybeidryfonr2svakngtutcm4ny6w6xsnvcu75y5h57qw46ljycg7xkye
 number_of_agents: 4
+deployment: {}
 ---
 extra:
   setup_params:
     args:
       setup: &id001
         all_participants:
-        - - '0x8d1D7b3cd99a3C35A481F069ec10513183d5d49E'
-          - '0x2c288d3f6FFC2548EC81808Fccbf7629352C49e4'
-          - '0xa6DB574Fc218F88508C225733ae9c07AC600B9Ae'
-          - '0x690f453Ca39ED23D5D8E481AddAea8b18fe0edB1'
-        consensus_threshold:
-        - null
+        - '0x8d1D7b3cd99a3C35A481F069ec10513183d5d49E'
+        - '0x2c288d3f6FFC2548EC81808Fccbf7629352C49e4'
+        - '0xa6DB574Fc218F88508C225733ae9c07AC600B9Ae'
+        - '0x690f453Ca39ED23D5D8E481AddAea8b18fe0edB1'
+        consensus_threshold: null
   deposit_endpoint:
     args: &id002
       url: ${SERVICE_APY_DEPOSIT_ENDPOINT:str:http://172.17.0.2:9999/apy/deposit}

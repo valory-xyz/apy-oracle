@@ -28,7 +28,7 @@ from packages.valory.skills.apy_estimation_abci.behaviours import (
     EstimatorRoundBehaviour,
 )
 from packages.valory.skills.apy_estimation_chained_abci.composition import (
-    APYEstimationAbciAppChained,
+    APYEstimationChainedAbciApp,
 )
 from packages.valory.skills.registration_abci.behaviours import (
     AgentRegistrationRoundBehaviour,
@@ -43,7 +43,7 @@ class APYEstimationConsensusBehaviour(AbstractRoundBehaviour):
     """This behaviour manages the consensus stages for the APY estimation."""
 
     initial_behaviour_cls = RegistrationStartupBehaviour
-    abci_app_cls = APYEstimationAbciAppChained
+    abci_app_cls = APYEstimationChainedAbciApp
 
     behaviours: Set[Type[BaseBehaviour]] = {
         *AgentRegistrationRoundBehaviour.behaviours,

@@ -66,7 +66,7 @@ class APYParamsKwargsType(TypedDict):
     retry_timeout: int
     request_timeout: float
     request_retry_delay: float
-    observation_interval: int
+    reset_pause_duration: int
     drand_public_key: str
     history_interval_in_unix: int
     n_observations: int
@@ -91,6 +91,7 @@ class APYParamsKwargsType(TypedDict):
     tendermint_p2p_url: str
     setup: Dict[str, Any]
     history_end: Optional[int]
+    use_termination: bool
 
 
 APY_PARAMS_ARGS = ("test",)
@@ -109,7 +110,7 @@ APY_PARAMS_KWARGS = APYParamsKwargsType(
     retry_timeout=0,
     request_timeout=0.1,
     request_retry_delay=0.1,
-    observation_interval=10,
+    reset_pause_duration=10,
     drand_public_key="test",
     history_interval_in_unix=86400,
     n_observations=10,
@@ -148,6 +149,7 @@ APY_PARAMS_KWARGS = APYParamsKwargsType(
     tendermint_p2p_url="test",
     setup={"test": [0]},
     history_end=0,
+    use_termination=False,
 )
 
 
