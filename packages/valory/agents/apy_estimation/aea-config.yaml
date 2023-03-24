@@ -92,6 +92,7 @@ models:
       setup:
         all_participants: ${list:[]}
         consensus_threshold: ${int:null}
+        safe_contract_address: ${str:'0x0000000000000000000000000000000000000000'}
       tendermint_url: ${str:http://localhost:26657}
       tendermint_com_url: ${str:http://localhost:8080}
       round_timeout_seconds: ${float:3650.0}
@@ -111,10 +112,13 @@ models:
         scoring: ${str:pinball}
         alpha: ${float:0.25}
       pair_ids: ${dict:{"uniswap_subgraph":["0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5"],"spooky_subgraph":["0x2a651563c9d3af67ae0388a5c8f89b867038089e"]}}
+      service_registry_address: ${str:null}
+      share_tm_config_on_startup: ${bool:false}
       sleep_time: ${int:10}
       ipfs_domain_name: ${str:/dns/localhost/tcp/5001/http}
       tendermint_p2p_url: ${str:localhost:26656}
       use_termination: ${bool:false}
+      on_chain_service_id: ${int:null}
   server_api:
     args:
       url: ${str:http://192.168.2.17:9999/apy/deposit}

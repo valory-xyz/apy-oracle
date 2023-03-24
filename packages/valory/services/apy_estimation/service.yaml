@@ -20,6 +20,7 @@ extra:
         - '0x2c288d3f6FFC2548EC81808Fccbf7629352C49e4'
         - '0xa6DB574Fc218F88508C225733ae9c07AC600B9Ae'
         - '0x690f453Ca39ED23D5D8E481AddAea8b18fe0edB1'
+        safe_contract_address: '0x0000000000000000000000000000000000000000'
         consensus_threshold: null
   deposit_endpoint:
     args: &id002
@@ -41,7 +42,9 @@ type: skill
         n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
         history_end: null
         ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
+        service_registry_address: ${SERVICE_REGISTRY:str:null}
         share_tm_config_on_startup: ${USE_ACN:bool:false}
+        on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node0:26656}
     server_api:
       args: *id002
@@ -60,7 +63,9 @@ type: skill
         n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
         history_end: null
         ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
+        service_registry_address: ${SERVICE_REGISTRY:str:null}
         share_tm_config_on_startup: ${USE_ACN:bool:false}
+        on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_1:str:node1:26666}
     server_api:
       args: *id002
@@ -79,7 +84,9 @@ type: skill
         n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
         history_end: null
         ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
+        service_registry_address: ${SERVICE_REGISTRY:str:null}
         share_tm_config_on_startup: ${USE_ACN:bool:false}
+        on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_2:str:node2:26676}
     server_api:
       args: *id002
@@ -98,7 +105,9 @@ type: skill
         n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
         history_end: null
         ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
+        service_registry_address: ${SERVICE_REGISTRY:str:null}
         share_tm_config_on_startup: ${USE_ACN:bool:false}
+        on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_3:str:node3:26686}
     server_api:
       args: *id002
