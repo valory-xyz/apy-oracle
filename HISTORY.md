@@ -3,7 +3,7 @@
 
 ## 0.10.0 (2023-02-24)
 
-- Bumps `open-autonomy` to `0.10.0.post1` #51
+- Bumps `open-autonomy`, `open-aea` and `tomte`, and addresses breaking changes #51
 - Fixes the release workflow #47
 - Adds licence check #50
 
