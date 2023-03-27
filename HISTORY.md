@@ -1,7 +1,7 @@
 # Release History - `apy-oracle`
 
 
-## 0.10.0 (2023-02-24)
+## 0.10.0 (2023-03-27)
 
 - Bumps `open-autonomy`, `open-aea` and `tomte`, and addresses breaking changes #51
 - Fixes the release workflow #47
