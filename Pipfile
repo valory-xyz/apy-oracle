@@ -11,24 +11,21 @@ name = "pypi"
 ### package deps
 aiohttp = "==3.7.4.post0"
 asn1crypto = "==1.4.0"
-# we pin this as the range specified in open-aea-ledger-cosmos is wide
-cosmpy = "==0.3.1"
 grpcio = "==1.43.0"
 hypothesis = "==6.21.6"
 joblib = "==1.1.0"
 # latest supported for Python 3.7
 numpy = "==1.21.6"
-open-aea = {version = "==1.29.0", extras = ["all"]}
-open-aea-ledger-ethereum = "==1.29.0"
-open-aea-ledger-cosmos = "==1.29.0"
-open-aea-test-autonomy = "==0.9.1"
-open-aea-cli-ipfs = "==1.29.0"
-open-autonomy = {version = "==0.9.1", extras = [ "all"]}
+open-aea = {version = "==1.31.0", extras = ["all"]}
+open-aea-ledger-ethereum = "==1.31.0"
+open-aea-ledger-cosmos = "==1.31.0"
+open-aea-test-autonomy = "==0.10.0.post1"
+open-aea-cli-ipfs = "==1.31.0"
+open-autonomy = {version = "==0.10.0.post1", extras = [ "all"]}
 optuna = "==2.10.1"
 pandas = "==1.3.5"
 pandas-stubs = "==1.2.0.62"
 pmdarima = "==2.0.1"
-protobuf = "==3.19.4"
 pytz = "==2022.2.1"
 pytest = "==7.2.1"
 pytest-asyncio = "==0.20.3"
@@ -46,7 +43,7 @@ scikit-learn = "==1.0.2"
 statsmodels = "==0.13.2"
 ### tests deps
 mistune = "==2.0.3"
-tomte = {version = "==0.2.2", extras = ["tox", "tests"]}
+tomte = {version = "==0.2.4", extras = ["tox", "tests"]}
 
 [requires]
 python_version = "3.10"

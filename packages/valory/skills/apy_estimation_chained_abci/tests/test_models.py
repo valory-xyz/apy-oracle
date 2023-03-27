@@ -27,7 +27,7 @@ import pytest
 
 from packages.valory.skills.apy_estimation_abci.rounds import Event
 from packages.valory.skills.apy_estimation_chained_abci.composition import (
-    APYEstimationAbciAppChained,
+    APYEstimationChainedAbciApp,
 )
 from packages.valory.skills.apy_estimation_chained_abci.models import (
     MARGIN,
@@ -53,12 +53,12 @@ class TestSharedState:
         shared_state.context.params.setup_params = {"test": []}
         shared_state.setup()
         assert (
-            APYEstimationAbciAppChained.event_to_timeout[Event.ROUND_TIMEOUT]
+            APYEstimationChainedAbciApp.event_to_timeout[Event.ROUND_TIMEOUT]
             == shared_state.context.params.round_timeout_seconds
         )
         assert (
-            APYEstimationAbciAppChained.event_to_timeout[
+            APYEstimationChainedAbciApp.event_to_timeout[
                 ResetPauseEvent.RESET_AND_PAUSE_TIMEOUT
             ]
-            == shared_state.context.params.observation_interval + MARGIN
+            == shared_state.context.params.reset_pause_duration + MARGIN
         )

@@ -50,7 +50,7 @@ abci_app_transition_mapping: AbciAppTransitionMapping = {
     FinishedResetAndPauseErrorRound: RegistrationRound,
 }
 
-APYEstimationAbciAppChained = chain(
+APYEstimationChainedAbciApp = chain(
     (
         AgentRegistrationAbciApp,
         APYEstimationAbciApp,

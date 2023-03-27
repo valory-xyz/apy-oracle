@@ -22,19 +22,19 @@ fingerprint:
   ml/preprocessing.py: bafybeieha65b5cslcyyjobjupebyqovod7aigohdidcawz5b6tlxqxpruq
   models.py: bafybeicneq2ye7rj62tcvtjr5ofehkvxshicyx2lsurfyzpf67wfcfrnom
   payloads.py: bafybeihaxphy4emmlvjpsrk2bh5hpqbdlra76hczf2jirvp77zcu5wfxmy
-  rounds.py: bafybeief7lqpwcyme7kv3du7rola2zcspypz4nppst2ewlv7bwdmxhbwmm
+  rounds.py: bafybeidy6sr6lfbgau52hkqw2gi3ixuh3dcy7sy3ymztdiivbbgayssvje
   tasks.py: bafybeihudp5vyhelqnl5eqakjpvuekaoamtbrghss4k2yysvkczspjbbia
   tests/__init__.py: bafybeiapnbylokinzkfybybxsuoz5sdwmfw7rzctbqhvnt2ydvvy5twhaa
   tests/conftest.py: bafybeibbj6lgdderes2skg7ykos2tlgmr6yzoxat73nhkatcxm2sqxq7hu
   tests/test_apis.py: bafybeia7d2n2cz5bzedtgsisy4gxvvll3tmkbmqa6ot7d3rwyvfhjbrqle
-  tests/test_behaviours.py: bafybeidarudfeeltr3qjlmcvqskzj6zlbuqsjjmmmls7t7t5gbn3qwqozi
+  tests/test_behaviours.py: bafybeieujggq4t6wqioi6asdsoe4tckggku7mxztn7kdxhwndvcq2m7yyq
   tests/test_dialogues.py: bafybeiab5la63tomj6272c727vo6fq2ltdatbbs4nglwj4te3ghdyli7sa
   tests/test_handlers.py: bafybeigcoykpzwmbh5hbwub3bx4lr4fwutstqmbjahqpwx3zwu5ing75de
   tests/test_ml/__init__.py: bafybeigluuyaz73cej42yohuvoxnrx65hqsqoqmpzgof4b7co246s3jxjy
   tests/test_ml/test_forecasting.py: bafybeih6un4hazyym2al5qjbjvk2c3a6hdnlpgfcsw3abwlanw6oesglce
   tests/test_ml/test_optimization.py: bafybeihnvcgqttwmbi2idvmkrrd5becqry4bannzuww6webxfuznjocdfy
   tests/test_ml/test_preprocessing.py: bafybeicqer5b6fhzoimtrk4mwmh62km6olwljmhxvi6p7zdm6o4jbycfji
-  tests/test_models.py: bafybeiharrdm2fcy3x3injcpxmzpo5xv3etun43mlexvcltwcku5sfkiyy
+  tests/test_models.py: bafybeiblfzfbv52tkeg6fyo2mimetl6ke2gioxyqjuoe4toxlu5zn2jcgm
   tests/test_payloads.py: bafybeidq6ghopkvp6tta22zclhcf3ojv4vvt2xbgi36pxafqhqiz56bgha
   tests/test_rounds.py: bafybeigsjzuincxqa6igrbvecvjkusptxbhlry3czp7l54luwtowww2n3e
   tests/test_tasks.py: bafybeifumykfnu4ymcgbpimgmg5ipmfhwgdjggfblyejc3m4eceij554je
@@ -55,7 +55,7 @@ protocols:
 - valory/abci:0.1.0:bafybeig3dj5jhsowlvg3t73kgobf6xn4nka7rkttakdb2gwsg5bp7rt7q4
 - valory/http:1.0.0:bafybeifyoio7nlh5zzyn5yz7krkou56l22to3cwg7gw5v5o3vxwklibhty
 skills:
-- valory/abstract_round_abci:0.1.0:bafybeib2jw7hjccou42wis35orckwycb2dgjk7yw46anuqysf2h7su3fi4
+- valory/abstract_round_abci:0.1.0:bafybeicn5utwviq46ubguok5rl5go4hb7oxluj7t6bja2ut4epjw2hevei
 behaviours:
   main:
     args: {}
@@ -160,7 +160,6 @@ models:
       max_healthcheck: 120
       n_estimations_before_retrain: 60
       n_observations: 10
-      observation_interval: 10
       on_chain_service_id: null
       optimizer:
         n_trials: 2
@@ -178,6 +177,7 @@ models:
         - '0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c'
       request_retry_delay: 1.0
       request_timeout: 10.0
+      reset_pause_duration: 10
       reset_tendermint_after: 2
       retry_attempts: 400
       retry_timeout: 3
@@ -186,9 +186,8 @@ models:
       service_registry_address: null
       setup:
         all_participants:
-        - - '0x0000000000000000000000000000000000000000'
-        safe_contract_address:
         - '0x0000000000000000000000000000000000000000'
+        safe_contract_address: '0x0000000000000000000000000000000000000000'
       share_tm_config_on_startup: false
       sleep_time: 5
       tendermint_check_sleep_delay: 3
@@ -199,6 +198,7 @@ models:
       testing:
         steps_forward: 1
       tx_timeout: 10.0
+      use_termination: false
     class_name: APYParams
   randomness_api:
     args:
@@ -272,7 +272,7 @@ dependencies:
   numpy:
     version: ==1.21.6
   open-aea-test-autonomy:
-    version: ==0.9.1
+    version: ==0.10.0.post1
   optuna:
     version: ==2.10.1
   pandas:

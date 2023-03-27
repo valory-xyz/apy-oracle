@@ -11,7 +11,7 @@ alphabet_in:
 - ROUND_TIMEOUT
 default_start_state: RegistrationStartupRound
 final_states: []
-label: APYEstimationAbciAppChained
+label: APYEstimationChainedAbciApp
 start_states:
 - RegistrationRound
 - RegistrationStartupRound

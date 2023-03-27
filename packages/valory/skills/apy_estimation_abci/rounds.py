@@ -633,14 +633,16 @@ class APYEstimationAbciApp(AbciApp[Event]):  # pylint: disable=too-few-public-me
         FinishedAPYEstimationRound: {},
         FailedAPYRound: {},
     }
-    cross_period_persisted_keys = {
-        get_name(SynchronizedData.full_training),
-        get_name(SynchronizedData.n_estimations),
-        get_name(SynchronizedData.models_hash),
-        get_name(SynchronizedData.latest_transformation_period),
-        get_name(SynchronizedData.transformed_history_hash),
-        get_name(SynchronizedData.latest_observation_hist_hash),
-    }
+    cross_period_persisted_keys = frozenset(
+        {
+            get_name(SynchronizedData.full_training),
+            get_name(SynchronizedData.n_estimations),
+            get_name(SynchronizedData.models_hash),
+            get_name(SynchronizedData.latest_transformation_period),
+            get_name(SynchronizedData.transformed_history_hash),
+            get_name(SynchronizedData.latest_observation_hist_hash),
+        }
+    )
     final_states: Set[AppState] = {FinishedAPYEstimationRound, FailedAPYRound}
     event_to_timeout: Dict[Event, float] = {
         Event.ROUND_TIMEOUT: 30.0,

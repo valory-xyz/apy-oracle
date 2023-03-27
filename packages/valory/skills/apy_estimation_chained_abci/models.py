@@ -50,7 +50,7 @@ from packages.valory.skills.apy_estimation_abci.models import (
 )
 from packages.valory.skills.apy_estimation_abci.rounds import Event
 from packages.valory.skills.apy_estimation_chained_abci.composition import (
-    APYEstimationAbciAppChained,
+    APYEstimationChainedAbciApp,
 )
 from packages.valory.skills.reset_pause_abci.rounds import Event as ResetPauseEvent
 
@@ -71,7 +71,7 @@ MARGIN = 5
 class SharedState(BaseSharedState):
     """Keep the current shared state of the skill."""
 
-    abci_app_cls = APYEstimationAbciAppChained
+    abci_app_cls = APYEstimationChainedAbciApp
 
     def setup(self) -> None:
         """Set up."""
@@ -79,9 +79,9 @@ class SharedState(BaseSharedState):
 
         event_to_timeout_overrides = {
             Event.ROUND_TIMEOUT: self.context.params.round_timeout_seconds,
-            ResetPauseEvent.RESET_AND_PAUSE_TIMEOUT: self.context.params.observation_interval
+            ResetPauseEvent.RESET_AND_PAUSE_TIMEOUT: self.context.params.reset_pause_duration
             + MARGIN,
         }
 
         for event, override in event_to_timeout_overrides.items():
-            APYEstimationAbciAppChained.event_to_timeout[event] = override
+            APYEstimationChainedAbciApp.event_to_timeout[event] = override
