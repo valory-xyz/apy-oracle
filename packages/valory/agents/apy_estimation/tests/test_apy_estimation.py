@@ -107,6 +107,10 @@ class BaseTestABCIAPYEstimationSkillNormalExecution(
             "dotted_path": f"{__args_prefix}.optimizer.timeout",
             "value": 1,
         },
+        {
+            "dotted_path": f"vendor.valory.connections.p2p_libp2p_client.is_abstract",
+            "value": True,
+        },
     ]
     package_registry_src_rel = Path(__file__).parents[4]
     key_pairs_override = KEY_PAIRS[:4]
