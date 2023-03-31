@@ -1,5 +1,10 @@
 # Release History - `apy-oracle`
 
+## 0.10.0.post1 (2023-03-31)
+
+- Adds ledger connection overrides in the agent and the service configurations #53
+- Bumps `open-autonomy` framework #53
+- Sets the `p2p_libp2p_client` as none abstract to enable `ACN` #53
 
 ## 0.10.0 (2023-03-27)
 
