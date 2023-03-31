@@ -108,7 +108,7 @@ class BaseTestABCIAPYEstimationSkillNormalExecution(
             "value": 1,
         },
         {
-            "dotted_path": f"vendor.valory.connections.p2p_libp2p_client.is_abstract",
+            "dotted_path": "vendor.valory.connections.p2p_libp2p_client.is_abstract",
             "value": True,
         },
     ]
