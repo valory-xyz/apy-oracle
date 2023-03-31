@@ -11,12 +11,12 @@ fingerprint:
   tests/test_apy_estimation.py: bafybeih6ocxp6fbdkruiat75bu3ratq5askmtob6k3mnrxuillexfoj24a
 fingerprint_ignore_patterns: []
 connections:
-- valory/abci:0.1.0:bafybeienpqzsym3rg7nnomd6mxgbt4didwd4wfj72oadde27trdmcgsu5y
+- valory/abci:0.1.0:bafybeidyfpwu7hpanfj74zn6nkzmzoz2qharxfsnxzjr7bfldho2xzualu
 - valory/http_client:0.23.0:bafybeidykl4elwbcjkqn32wt5h4h7tlpeqovrcq3c5bcplt6nhpznhgczi
 - valory/ledger:0.19.0:bafybeighon6i2qfl2xrg7t3lbdzlkyo4v2a7ayvwso7m5w7pf2hvjfs2ma
 - valory/p2p_libp2p_client:0.1.0:bafybeidwcobzb7ut3efegoedad7jfckvt2n6prcmd4g7xnkm6hp6aafrva
 contracts:
-- valory/service_registry:0.1.0:bafybeigvob5pgz527goh2cgibjejnmbu6xz2e3knjsocjq533m3xe5uzti
+- valory/service_registry:0.1.0:bafybeiem5v2pukaklmhng3cckncdihs4shtwc4trejdrezt53lioejtk4u
 protocols:
 - open_aea/signing:1.0.0:bafybeibqlfmikg5hk4phzak6gqzhpkt6akckx7xppbp53mvwt6r73h7tk4
 - valory/abci:0.1.0:bafybeig3dj5jhsowlvg3t73kgobf6xn4nka7rkttakdb2gwsg5bp7rt7q4
@@ -26,12 +26,12 @@ protocols:
 - valory/ledger_api:1.0.0:bafybeidluywxchkacc7cz65nktqjg3y2vzzp43sw5hdhnvvonozogrmfie
 - valory/tendermint:0.1.0:bafybeicusvezoqlmyt6iqomcbwaz3xkhk2qf3d56q5zprmj3xdxfy64k54
 skills:
-- valory/abstract_abci:0.1.0:bafybeigg5ofide2gxwgjvljjgpyy6ombby7ph6pg7erj3h6itduwpn6pqu
-- valory/abstract_round_abci:0.1.0:bafybeicn5utwviq46ubguok5rl5go4hb7oxluj7t6bja2ut4epjw2hevei
-- valory/apy_estimation_abci:0.1.0:bafybeidqg2guac73hjn3b3mzc5ag53hni7ks7c524rd4ooem4ylpdqotli
-- valory/apy_estimation_chained_abci:0.1.0:bafybeibtjchxwfsu6p5n43axbd6gor47bzdwiejzmgymi6i4iuuy32n4ba
-- valory/registration_abci:0.1.0:bafybeid7gh35wnotm27hwuuuv3oozu33izjfafy7vbyzejdy3scx4oc7cu
-- valory/reset_pause_abci:0.1.0:bafybeidtb4v44zbxx7uw2c5yrbmmvzuh4mkgvcqdfyf4eq2xuhvxnbfiru
+- valory/abstract_abci:0.1.0:bafybeiai2t36ht3blisjneahv5almyfieqokl4auj2n43rj4k5chun2i44
+- valory/abstract_round_abci:0.1.0:bafybeib7q4t5jh6gic3i2pzuzlk7q2xmnueyxjpftm4gl56vnnz4vs4f7a
+- valory/apy_estimation_abci:0.1.0:bafybeib46ilspcrliuki6c4jlzdga3bypqeluweopalqjpfh4bouji3vou
+- valory/apy_estimation_chained_abci:0.1.0:bafybeibfh5sghvdes5qgdmj4bnrnigvtftwtksabipjbu6xmahqr6g67da
+- valory/registration_abci:0.1.0:bafybeidc6iv54mr2antvrw3r4tldm635othi62bhzeyyid7kejzxw4fwiq
+- valory/reset_pause_abci:0.1.0:bafybeige4ncfhwlqbthmfvdu7aogl2qqsozpz3h5el3xokmq4hcqujgsqy
 default_ledger: ethereum
 required_ledgers:
 - ethereum
@@ -67,7 +67,7 @@ dependencies:
   open-aea-ledger-ethereum:
     version: ==1.31.0
   open-aea-test-autonomy:
-    version: ==0.10.0.post1
+    version: ==0.10.0.post2
 skill_exception_policy: just_log
 connection_exception_policy: just_log
 default_connection: null
@@ -137,4 +137,12 @@ cert_requests:
   not_before: '2023-01-01'
   public_key: ${str:02d3a830c9d6ea1ae91936951430dee11f4662f33118b02190693be835359a9d77}
   save_path: .certs/acn_cosmos_9005.txt
-is_abstract: true
+---
+public_id: valory/ledger:0.19.0
+type: connection
+config:
+  ledger_apis:
+    ethereum:
+      address: ${str:http://host.docker.internal:8545}
+      chain_id: ${int:1337}
+      default_gas_price_strategy: ${str:eip1559}
