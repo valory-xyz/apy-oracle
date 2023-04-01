@@ -7,7 +7,7 @@ license: Apache-2.0
 fingerprint:
   README.md: bafybeidfpoo35wyhz2cilrsjptzx75hvjqga5oh34ta2tgfumxj4yoj3k4
 fingerprint_ignore_patterns: []
-agent: valory/apy_estimation:0.1.0:bafybeibllskwww6u32cdyjn4b2hpelib3tmqwklwqbtoybiocwe6ge4h7q
+agent: valory/apy_estimation:0.1.0:bafybeihddbyxdgnowylnjd4ro4ytwtazuxbvgbp35c466fbtg4agak5noq
 number_of_agents: 4
 deployment: {}
 ---
@@ -15,12 +15,10 @@ extra:
   setup_params:
     args:
       setup: &id001
-        all_participants:
-        - '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65'
-        - '0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc'
-        - '0x976EA74026E726554dB657fA54763abd0C3a0aa9'
-        - '0x14dC79964da2C08b23698B3D3cc7Ca32193d9955'
-        safe_contract_address: '0x0000000000000000000000000000000000000000'
+        all_participants: ${ALL_PARTICIPANTS:list:['0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65',
+          '0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc', '0x976EA74026E726554dB657fA54763abd0C3a0aa9',
+          '0x14dC79964da2C08b23698B3D3cc7Ca32193d9955']}
+        safe_contract_address: ${SAFE_CONTRACT_ADDRESS:str:0x0000000000000000000000000000000000000000}
         consensus_threshold: null
   deposit_endpoint:
     args: &id002
@@ -42,8 +40,8 @@ type: skill
         n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
         history_end: null
         ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
-        service_registry_address: ${SERVICE_REGISTRY:str:null}
-        share_tm_config_on_startup: ${USE_ACN:bool:false}
+        service_registry_address: ${SERVICE_REGISTRY_ADDRESS:str:null}
+        share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node0:26656}
     server_api:
@@ -63,8 +61,8 @@ type: skill
         n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
         history_end: null
         ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
-        service_registry_address: ${SERVICE_REGISTRY:str:null}
-        share_tm_config_on_startup: ${USE_ACN:bool:false}
+        service_registry_address: ${SERVICE_REGISTRY_ADDRESS:str:null}
+        share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_1:str:node1:26666}
     server_api:
@@ -84,8 +82,8 @@ type: skill
         n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
         history_end: null
         ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
-        service_registry_address: ${SERVICE_REGISTRY:str:null}
-        share_tm_config_on_startup: ${USE_ACN:bool:false}
+        service_registry_address: ${SERVICE_REGISTRY_ADDRESS:str:null}
+        share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_2:str:node2:26676}
     server_api:
@@ -105,9 +103,40 @@ type: skill
         n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
         history_end: null
         ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
-        service_registry_address: ${SERVICE_REGISTRY:str:null}
-        share_tm_config_on_startup: ${USE_ACN:bool:false}
+        service_registry_address: ${SERVICE_REGISTRY_ADDRESS:str:null}
+        share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_3:str:node3:26686}
     server_api:
       args: *id002
+---
+public_id: valory/ledger:0.19.0
+type: connection
+0:
+  config:
+    ledger_apis:
+      ethereum:
+        address: ${RPC_0:str:http://host.docker.internal:8545}
+        chain_id: ${CHAIN_ID:int:1337}
+        default_gas_price_strategy: eip1559
+1:
+  config:
+    ledger_apis:
+      ethereum:
+        address: ${RPC_1:str:http://host.docker.internal:8545}
+        chain_id: ${CHAIN_ID:int:1337}
+        default_gas_price_strategy: eip1559
+2:
+  config:
+    ledger_apis:
+      ethereum:
+        address: ${RPC_2:str:http://host.docker.internal:8545}
+        chain_id: ${CHAIN_ID:int:1337}
+        default_gas_price_strategy: eip1559
+3:
+  config:
+    ledger_apis:
+      ethereum:
+        address: ${RPC_3:str:http://host.docker.internal:8545}
+        chain_id: ${CHAIN_ID:int:1337}
+        default_gas_price_strategy: eip1559
