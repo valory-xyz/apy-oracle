@@ -15,9 +15,7 @@ extra:
   setup_params:
     args:
       setup: &id001
-        all_participants: ${ALL_PARTICIPANTS:list:["0x8d1D7b3cd99a3C35A481F069ec10513183d5d49E",
-          "0x2c288d3f6FFC2548EC81808Fccbf7629352C49e4", "0xa6DB574Fc218F88508C225733ae9c07AC600B9Ae",
-          "0x690f453Ca39ED23D5D8E481AddAea8b18fe0edB1"]}
+        all_participants: ${ALL_PARTICIPANTS:list:["0x8d1D7b3cd99a3C35A481F069ec10513183d5d49E","0x2c288d3f6FFC2548EC81808Fccbf7629352C49e4","0xa6DB574Fc218F88508C225733ae9c07AC600B9Ae","0x690f453Ca39ED23D5D8E481AddAea8b18fe0edB1"]}
         safe_contract_address: ${SAFE_CONTRACT_ADDRESS:str:0x0000000000000000000000000000000000000000}
         consensus_threshold: null
   deposit_endpoint:

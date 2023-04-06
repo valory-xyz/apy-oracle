@@ -6,10 +6,10 @@ This document outlines security procedures and general policies for the `apy` pr
 
 The following table shows which versions of `apy` are currently being supported with security updates.
 
-| Version     | Supported          |
-|-------------| ------------------ |
-| `v0.10.0`   | :white_check_mark: |
-| `< v0.10.0` | :x:                |
+| Version           | Supported          |
+|-------------------|--------------------|
+| `v0.10.0.post2`   | :white_check_mark: |
+| `< v0.10.0.post2` | :x:                |
 
 ## Reporting a Vulnerability
 

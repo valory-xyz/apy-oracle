@@ -1,5 +1,9 @@
 # Release History - `apy-oracle`
 
+## 0.10.0.post2 (2023-04-06)
+
+- Fixes `all-participants` formatting #54
+
 ## 0.10.0.post1 (2023-03-31)
 
 - Adds ledger connection overrides in the agent and the service configurations #53
