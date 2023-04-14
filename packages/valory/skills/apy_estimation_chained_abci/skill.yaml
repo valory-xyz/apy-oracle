@@ -247,7 +247,7 @@ dependencies:
   numpy:
     version: ==1.21.6
   open-aea-cli-ipfs:
-    version: ==1.31.0
+    version: ==1.32.0
   optuna:
     version: ==2.10.1
   pandas:
