@@ -98,6 +98,7 @@ models:
       round_timeout_seconds: ${float:3650.0}
       reset_pause_duration: ${int:3600}
       max_healthcheck: ${int:43200}
+      n_estimations_before_retrain: ${int:60}
       drand_public_key: ${str:868f005eb8e6e4ca0a47c8a77ceaa5309a47978a7c71bc5cce96366b5d7a569937c529eeda66c7293784a9402801af31}
       estimation:
         steps_forward: ${int:1}
@@ -111,6 +112,7 @@ models:
         show_progress_bar: ${bool:false}
         scoring: ${str:pinball}
         alpha: ${float:0.25}
+        window_size: ${int:null}
       pair_ids: ${dict:{"uniswap_subgraph":["0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5"],"spooky_subgraph":["0x2a651563c9d3af67ae0388a5c8f89b867038089e"]}}
       service_registry_address: ${str:null}
       share_tm_config_on_startup: ${bool:false}
@@ -146,3 +148,4 @@ config:
       address: ${str:http://host.docker.internal:8545}
       chain_id: ${int:1337}
       default_gas_price_strategy: ${str:eip1559}
+      poa_chain: false
