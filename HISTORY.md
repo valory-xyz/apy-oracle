@@ -1,5 +1,11 @@
 # Release History - `apy-oracle`
 
+## 0.10.1 (2023-04-14)
+
+- Bumps `open-autonomy` and `open-aea` frameworks #55
+- Removes unnecessary demo service #55
+- Adds extra overrides to the agent and the service #55
+
 ## 0.10.0.post2 (2023-04-06)
 
 - Fixes `all-participants` formatting #54

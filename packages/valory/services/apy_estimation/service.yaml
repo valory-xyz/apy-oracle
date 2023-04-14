@@ -7,27 +7,20 @@ license: Apache-2.0
 fingerprint:
   README.md: bafybeibhbkelnxxvsln677imq65vgbglmlhyxtax4iqtzempjiwcoef3gq
 fingerprint_ignore_patterns: []
-agent: valory/apy_estimation:0.1.0:bafybeihddbyxdgnowylnjd4ro4ytwtazuxbvgbp35c466fbtg4agak5noq
+agent: valory/apy_estimation:0.1.0:bafybeia4shphutcnwbei4sj5lvs2eyobsgx5zcifhqqt3g5v2zkdpf3ury
 number_of_agents: 4
 deployment: {}
 ---
-extra:
-  setup_params:
-    args:
-      setup: &id001
-        all_participants: ${ALL_PARTICIPANTS:list:["0x8d1D7b3cd99a3C35A481F069ec10513183d5d49E","0x2c288d3f6FFC2548EC81808Fccbf7629352C49e4","0xa6DB574Fc218F88508C225733ae9c07AC600B9Ae","0x690f453Ca39ED23D5D8E481AddAea8b18fe0edB1"]}
-        safe_contract_address: ${SAFE_CONTRACT_ADDRESS:str:0x0000000000000000000000000000000000000000}
-        consensus_threshold: null
-  deposit_endpoint:
-    args: &id002
-      url: ${SERVICE_APY_DEPOSIT_ENDPOINT:str:http://172.17.0.2:9999/apy/deposit}
 public_id: valory/apy_estimation_chained_abci:0.1.0
 type: skill
 0:
   models:
     params:
       args:
-        setup: *id001
+        setup: &id001
+          all_participants: ${ALL_PARTICIPANTS:list:["0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65","0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc","0x976EA74026E726554dB657fA54763abd0C3a0aa9","0x14dC79964da2C08b23698B3D3cc7Ca32193d9955"]}
+          safe_contract_address: ${SAFE_CONTRACT_ADDRESS:str:0x0000000000000000000000000000000000000000}
+          consensus_threshold: null
         broadcast_to_server: true
         pair_ids:
           uniswap_subgraph:
@@ -42,8 +35,13 @@ type: skill
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node0:26656}
-    server_api:
-      args: *id002
+        n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
+    server_api: &id002
+      args:
+        url: ${SERVICE_APY_DEPOSIT_ENDPOINT:str:http://172.17.0.2:9999/apy/deposit}
+    benchmark_tool: &id003
+      args:
+        log_dir: /benchmarks
 1:
   models:
     params:
@@ -63,8 +61,9 @@ type: skill
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_1:str:node1:26666}
-    server_api:
-      args: *id002
+        n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
+    server_api: *id002
+    benchmark_tool: *id003
 2:
   models:
     params:
@@ -84,8 +83,9 @@ type: skill
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_2:str:node2:26676}
-    server_api:
-      args: *id002
+        n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
+    server_api: *id002
+    benchmark_tool: *id003
 3:
   models:
     params:
@@ -105,8 +105,9 @@ type: skill
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_3:str:node3:26686}
-    server_api:
-      args: *id002
+        n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
+    server_api: *id002
+    benchmark_tool: *id003
 ---
 public_id: valory/ledger:0.19.0
 type: connection
@@ -116,25 +117,29 @@ type: connection
       ethereum:
         address: ${RPC_0:str:http://host.docker.internal:8545}
         chain_id: ${CHAIN_ID:int:1337}
-        default_gas_price_strategy: eip1559
+        default_gas_price_strategy: ${DEFAULT_GAS_PRICE_STRATEGY:str:eip1559}
+        poa_chain: ${POA_CHAIN:bool:false}
 1:
   config:
     ledger_apis:
       ethereum:
         address: ${RPC_1:str:http://host.docker.internal:8545}
         chain_id: ${CHAIN_ID:int:1337}
-        default_gas_price_strategy: eip1559
+        default_gas_price_strategy: ${DEFAULT_GAS_PRICE_STRATEGY:str:eip1559}
+        poa_chain: ${POA_CHAIN:bool:false}
 2:
   config:
     ledger_apis:
       ethereum:
         address: ${RPC_2:str:http://host.docker.internal:8545}
         chain_id: ${CHAIN_ID:int:1337}
-        default_gas_price_strategy: eip1559
+        default_gas_price_strategy: ${DEFAULT_GAS_PRICE_STRATEGY:str:eip1559}
+        poa_chain: ${POA_CHAIN:bool:false}
 3:
   config:
     ledger_apis:
       ethereum:
         address: ${RPC_3:str:http://host.docker.internal:8545}
         chain_id: ${CHAIN_ID:int:1337}
-        default_gas_price_strategy: eip1559
+        default_gas_price_strategy: ${DEFAULT_GAS_PRICE_STRATEGY:str:eip1559}
+        poa_chain: ${POA_CHAIN:bool:false}
