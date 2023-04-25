@@ -8,8 +8,8 @@ The following table shows which versions of `apy` are currently being supported 
 
 | Version           | Supported          |
 |-------------------|--------------------|
-| `v0.10.1`   | :white_check_mark: |
-| `< v0.10.1` | :x:                |
+| `v0.10.2`   | :white_check_mark: |
+| `< v0.10.2` | :x:                |
 
 ## Reporting a Vulnerability
 
