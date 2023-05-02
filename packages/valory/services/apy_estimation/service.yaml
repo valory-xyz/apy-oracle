@@ -22,6 +22,7 @@ type: skill
           safe_contract_address: ${SAFE_CONTRACT_ADDRESS:str:0x0000000000000000000000000000000000000000}
           consensus_threshold: null
         broadcast_to_server: true
+        multisend_address: ${MULTISEND_ADDRESS:str:0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761}
         pair_ids:
           uniswap_subgraph:
           - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
@@ -35,6 +36,7 @@ type: skill
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node0:26656}
+        termination_sleep: ${TERMINATION_SLEEP:int:900}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: &id002
       args:
@@ -48,6 +50,7 @@ type: skill
       args:
         setup: *id001
         broadcast_to_server: true
+        multisend_address: ${MULTISEND_ADDRESS:str:0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761}
         pair_ids:
           uniswap_subgraph:
           - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
@@ -61,6 +64,7 @@ type: skill
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_1:str:node1:26666}
+        termination_sleep: ${TERMINATION_SLEEP:int:900}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: *id002
     benchmark_tool: *id003
@@ -70,6 +74,7 @@ type: skill
       args:
         setup: *id001
         broadcast_to_server: true
+        multisend_address: ${MULTISEND_ADDRESS:str:0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761}
         pair_ids:
           uniswap_subgraph:
           - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
@@ -83,6 +88,7 @@ type: skill
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_2:str:node2:26676}
+        termination_sleep: ${TERMINATION_SLEEP:int:900}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: *id002
     benchmark_tool: *id003
@@ -92,6 +98,7 @@ type: skill
       args:
         setup: *id001
         broadcast_to_server: true
+        multisend_address: ${MULTISEND_ADDRESS:str:0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761}
         pair_ids:
           uniswap_subgraph:
           - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
@@ -105,6 +112,7 @@ type: skill
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_3:str:node3:26686}
+        termination_sleep: ${TERMINATION_SLEEP:int:900}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: *id002
     benchmark_tool: *id003

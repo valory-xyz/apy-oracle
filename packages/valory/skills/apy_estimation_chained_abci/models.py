@@ -53,6 +53,7 @@ from packages.valory.skills.apy_estimation_chained_abci.composition import (
     APYEstimationChainedAbciApp,
 )
 from packages.valory.skills.reset_pause_abci.rounds import Event as ResetPauseEvent
+from packages.valory.skills.termination_abci.models import TerminationParams
 
 
 Requests = BaseRequests
@@ -63,7 +64,6 @@ ETHSubgraph = APYEstimationETHSubgraph
 UniswapSubgraph = APYEstimationUniswapSubgraph
 SpookySwapSubgraph = APYEstimationSpookySwapSubgraph
 ServerApi = APYEstimationServerApi
-APYParams = APYEstimationAPYParams
 
 MARGIN = 5
 
@@ -85,3 +85,7 @@ class SharedState(BaseSharedState):
 
         for event, override in event_to_timeout_overrides.items():
             APYEstimationChainedAbciApp.event_to_timeout[event] = override
+
+
+class APYParams(APYEstimationAPYParams, TerminationParams):
+    """A model to represent the APY params."""

@@ -34,6 +34,8 @@ skills:
 - valory/apy_estimation_chained_abci:0.1.0:bafybeibh64rrneyosis65alzc5ftxn2gpo5cff6dydzgccfluyo5pztu5q
 - valory/registration_abci:0.1.0:bafybeigjzfdhhu6ody2qo5v2xjobafujnodklia4zw6bkkhahxtjfo3wby
 - valory/reset_pause_abci:0.1.0:bafybeieeux3rdlcwgjbdfrluvkhqv26qdparre6pabatietw7juklljil4
+- valory/termination_abci:0.1.0:bafybeifkl4ab6dnvtsaefe56dbzshmp5mozn7exwcaj2a3wjeq7u3hpezm
+- valory/transaction_settlement_abci:0.1.0:bafybeifsz2ll7gmy6vmx34t6q5bdv6zzwp5zrehr6di6v3thcpc3sztkta
 default_ledger: ethereum
 required_ledgers:
 - ethereum
@@ -100,6 +102,7 @@ models:
       round_timeout_seconds: ${float:3650.0}
       reset_pause_duration: ${int:3600}
       max_healthcheck: ${int:43200}
+      multisend_address: ${str:0x0000000000000000000000000000000000000000}
       n_estimations_before_retrain: ${int:60}
       drand_public_key: ${str:868f005eb8e6e4ca0a47c8a77ceaa5309a47978a7c71bc5cce96366b5d7a569937c529eeda66c7293784a9402801af31}
       estimation:
@@ -121,6 +124,7 @@ models:
       sleep_time: ${int:10}
       ipfs_domain_name: ${str:/dns/localhost/tcp/5001/http}
       tendermint_p2p_url: ${str:localhost:26656}
+      termination_sleep: ${int:900}
       use_termination: ${bool:false}
       on_chain_service_id: ${int:null}
   server_api:
