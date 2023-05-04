@@ -36,6 +36,7 @@ type: skill
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node0:26656}
+        round_timeout_seconds: ${ROUND_TIMEOUT:int:3650}
         termination_sleep: ${TERMINATION_SLEEP:int:900}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: &id002
@@ -64,6 +65,7 @@ type: skill
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_1:str:node1:26666}
+        round_timeout_seconds: ${ROUND_TIMEOUT:int:3650}
         termination_sleep: ${TERMINATION_SLEEP:int:900}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: *id002
@@ -88,6 +90,7 @@ type: skill
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_2:str:node2:26676}
+        round_timeout_seconds: ${ROUND_TIMEOUT:int:3650}
         termination_sleep: ${TERMINATION_SLEEP:int:900}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: *id002
@@ -112,6 +115,7 @@ type: skill
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_3:str:node3:26686}
+        round_timeout_seconds: ${ROUND_TIMEOUT:int:3650}
         termination_sleep: ${TERMINATION_SLEEP:int:900}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: *id002
