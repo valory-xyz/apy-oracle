@@ -26,8 +26,8 @@ fingerprint:
   tasks.py: bafybeihudp5vyhelqnl5eqakjpvuekaoamtbrghss4k2yysvkczspjbbia
   tests/__init__.py: bafybeiapnbylokinzkfybybxsuoz5sdwmfw7rzctbqhvnt2ydvvy5twhaa
   tests/conftest.py: bafybeibbj6lgdderes2skg7ykos2tlgmr6yzoxat73nhkatcxm2sqxq7hu
-  tests/test_apis.py: bafybeia7d2n2cz5bzedtgsisy4gxvvll3tmkbmqa6ot7d3rwyvfhjbrqle
-  tests/test_behaviours.py: bafybeieujggq4t6wqioi6asdsoe4tckggku7mxztn7kdxhwndvcq2m7yyq
+  tests/test_apis.py: bafybeiav2c3frjs5zgmfn2thawedxxcfujgze3373s3alh3p37v2ptyeny
+  tests/test_behaviours.py: bafybeiana4frumvgdknaaove3b6irsefosrrl5us4vhodr4ukc6mr4fapm
   tests/test_dialogues.py: bafybeiab5la63tomj6272c727vo6fq2ltdatbbs4nglwj4te3ghdyli7sa
   tests/test_handlers.py: bafybeigcoykpzwmbh5hbwub3bx4lr4fwutstqmbjahqpwx3zwu5ing75de
   tests/test_ml/__init__.py: bafybeigluuyaz73cej42yohuvoxnrx65hqsqoqmpzgof4b7co246s3jxjy
@@ -51,9 +51,7 @@ fingerprint:
 fingerprint_ignore_patterns: []
 connections: []
 contracts: []
-protocols:
-- valory/abci:0.1.0:bafybeig3dj5jhsowlvg3t73kgobf6xn4nka7rkttakdb2gwsg5bp7rt7q4
-- valory/http:1.0.0:bafybeifyoio7nlh5zzyn5yz7krkou56l22to3cwg7gw5v5o3vxwklibhty
+protocols: []
 skills:
 - valory/abstract_round_abci:0.1.0:bafybeigiolzp3i6b3wwuau3yv2h5udqape3i7of73mlm2d6ud22irlkbme
 behaviours:

@@ -22,17 +22,15 @@
 # pylint: skip-file
 
 import ast
-import logging  # noqa: F401
 import re
 import time
-from typing import Dict, List, Tuple, Type, cast
+from typing import Dict, List, Tuple, Type
 from unittest.mock import MagicMock
 
 import pytest
 import requests
 from _pytest.fixtures import FixtureRequest
 
-from packages.valory.protocols.http import HttpMessage
 from packages.valory.skills.abstract_round_abci.models import ApiSpecs
 from packages.valory.skills.apy_estimation_abci.behaviours import NON_INDEXED_BLOCK_RES
 from packages.valory.skills.apy_estimation_abci.models import (
@@ -194,7 +192,7 @@ class TestSubgraphs:
 
         query: str = request.getfixturevalue(raising_q_fixture)
         res = make_request(api.get_spec(), query, raise_on_error=False)
-        processed = api.process_response(cast(HttpMessage, MagicMock(body=res.content)))
+        processed = api.process_response(MagicMock(body=res.content))
         assert processed is None
         non_indexed_error = api.response_info.error_data["message"]
         match = re.match(pattern, non_indexed_error)
