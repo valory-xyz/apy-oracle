@@ -154,4 +154,4 @@ config:
       address: ${str:http://host.docker.internal:8545}
       chain_id: ${int:1337}
       default_gas_price_strategy: ${str:eip1559}
-      poa_chain: false
+      poa_chain: ${bool:false}
