@@ -13,6 +13,7 @@ fingerprint_ignore_patterns: []
 connections:
 - valory/abci:0.1.0:bafybeih2l6ssf5ebkvgbag3hx2pd22shytszqavveib2e2s6rv4va5khv4
 - valory/http_client:0.23.0:bafybeidykl4elwbcjkqn32wt5h4h7tlpeqovrcq3c5bcplt6nhpznhgczi
+- valory/ipfs:0.1.0:bafybeihubpyw2t3bwncz3l7jt4gf5xvfydwmob463vvgf3ikkhlwxakm3m
 - valory/ledger:0.19.0:bafybeicgfupeudtmvehbwziqfxiz6ztsxr5rxzvalzvsdsspzz73o5fzfi
 - valory/p2p_libp2p_client:0.1.0:bafybeidwcobzb7ut3efegoedad7jfckvt2n6prcmd4g7xnkm6hp6aafrva
 contracts:
@@ -23,15 +24,18 @@ protocols:
 - valory/acn:1.1.0:bafybeignmc5uh3vgpuckljcj2tgg7hdqyytkm6m5b6v6mxtazdcvubibva
 - valory/contract_api:1.0.0:bafybeidv6wxpjyb2sdyibnmmum45et4zcla6tl63bnol6ztyoqvpl4spmy
 - valory/http:1.0.0:bafybeifyoio7nlh5zzyn5yz7krkou56l22to3cwg7gw5v5o3vxwklibhty
+- valory/ipfs:0.1.0:bafybeic72ncgqbzoz2guj4p4yjqulid7mv6yroeh65hxznloamoveeg7hq
 - valory/ledger_api:1.0.0:bafybeibo4bdtcrxi2suyzldwoetjar6pqfzm6vt5xal22ravkkcvdmtksi
 - valory/tendermint:0.1.0:bafybeicusvezoqlmyt6iqomcbwaz3xkhk2qf3d56q5zprmj3xdxfy64k54
 skills:
 - valory/abstract_abci:0.1.0:bafybeifuclb6cikagtg2zn7dkjnnv3f7re2tfgzk6c4h3scgyzaaqeg55m
 - valory/abstract_round_abci:0.1.0:bafybeigiolzp3i6b3wwuau3yv2h5udqape3i7of73mlm2d6ud22irlkbme
-- valory/apy_estimation_abci:0.1.0:bafybeia4u7rlcii6luxlkzxlcfx555bg7cwscsmbmv5fwkkyobsr3sy2yu
-- valory/apy_estimation_chained_abci:0.1.0:bafybeibh64rrneyosis65alzc5ftxn2gpo5cff6dydzgccfluyo5pztu5q
+- valory/apy_estimation_abci:0.1.0:bafybeicy7rcjwo3udzfrugehvgp4sfjp7yvkth4xjcfofkj2ak6vn2mbmi
+- valory/apy_estimation_chained_abci:0.1.0:bafybeif6bfyjetvnpxs7bp62ipwfh3ndlpkfnyvdnjb3w5oxzy56x4x3oi
 - valory/registration_abci:0.1.0:bafybeigjzfdhhu6ody2qo5v2xjobafujnodklia4zw6bkkhahxtjfo3wby
 - valory/reset_pause_abci:0.1.0:bafybeieeux3rdlcwgjbdfrluvkhqv26qdparre6pabatietw7juklljil4
+- valory/termination_abci:0.1.0:bafybeifkl4ab6dnvtsaefe56dbzshmp5mozn7exwcaj2a3wjeq7u3hpezm
+- valory/transaction_settlement_abci:0.1.0:bafybeifsz2ll7gmy6vmx34t6q5bdv6zzwp5zrehr6di6v3thcpc3sztkta
 default_ledger: ethereum
 required_ledgers:
 - ethereum
@@ -98,6 +102,7 @@ models:
       round_timeout_seconds: ${float:3650.0}
       reset_pause_duration: ${int:3600}
       max_healthcheck: ${int:43200}
+      multisend_address: ${str:0x0000000000000000000000000000000000000000}
       n_estimations_before_retrain: ${int:60}
       drand_public_key: ${str:868f005eb8e6e4ca0a47c8a77ceaa5309a47978a7c71bc5cce96366b5d7a569937c529eeda66c7293784a9402801af31}
       estimation:
@@ -119,6 +124,7 @@ models:
       sleep_time: ${int:10}
       ipfs_domain_name: ${str:/dns/localhost/tcp/5001/http}
       tendermint_p2p_url: ${str:localhost:26656}
+      termination_sleep: ${int:900}
       use_termination: ${bool:false}
       on_chain_service_id: ${int:null}
   server_api:
