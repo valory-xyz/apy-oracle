@@ -8,12 +8,12 @@ aea_version: '>=1.0.0, <2.0.0'
 fingerprint:
   README.md: bafybeic3ztoxxldipv6v6h6ovpmto6ifhqi2mdkl5hhaaeymbwrw7wf7km
   __init__.py: bafybeidae7gbyipqow44nxwnrvd5jyllepqbfq6xwako2o4bv2mjiwwo4u
-  behaviours.py: bafybeifyqjnayxbgkhxcg2ct5pihwgz3ehmsahw6sgbozpxbagqf6frgzi
-  composition.py: bafybeibmpk7i2w4ti5rix5373mg6ubkyictazq55vohsm7qsmfz7qick44
+  behaviours.py: bafybeihi7ilgk3wk3ghpiuevnj2ovpvjnj75wpbofprpgpbr3gtb7l7anq
+  composition.py: bafybeicfriv4kvzzwlmdzm4ri27q36dieiv2zsivjc7ii7etavdsmiocsa
   dialogues.py: bafybeihp3ujpngrqm6fencr25azq7zccvdcszljie7532l4uugxipnxn3q
   fsm_specification.yaml: bafybeidrwqstclskfkerbmwldxzvt7kci2vqblw2yojw4rw5vcdwtixdbe
   handlers.py: bafybeicize7jjlb22grwb7fkwo36fh7ja3ajtta56utg4l4pn7ckvbnqa4
-  models.py: bafybeigivfuqom35dqr5szqvdjzaho2vgjbeqeulcq4k3ysivwbh6zlrq4
+  models.py: bafybeibtkalrldvehy2pmdjysqmbjnz23xqbyaxp2i7vpjnky4gusgndqm
   tests/__init__.py: bafybeiapnbylokinzkfybybxsuoz5sdwmfw7rzctbqhvnt2ydvvy5twhaa
   tests/test_behaviours.py: bafybeidwejgvyhfiswn4e4jt6czz3xjy6dfw65zbm2euyoe5wn3u3dvpne
   tests/test_dialogues.py: bafybeihfvevfoo6h42ibcjxhhdopusgygikcrlgipgnyoivdkpk64uxpey
@@ -25,7 +25,7 @@ contracts: []
 protocols: []
 skills:
 - valory/abstract_round_abci:0.1.0:bafybeigiolzp3i6b3wwuau3yv2h5udqape3i7of73mlm2d6ud22irlkbme
-- valory/apy_estimation_abci:0.1.0:bafybeia4u7rlcii6luxlkzxlcfx555bg7cwscsmbmv5fwkkyobsr3sy2yu
+- valory/apy_estimation_abci:0.1.0:bafybeicy7rcjwo3udzfrugehvgp4sfjp7yvkth4xjcfofkj2ak6vn2mbmi
 - valory/registration_abci:0.1.0:bafybeigjzfdhhu6ody2qo5v2xjobafujnodklia4zw6bkkhahxtjfo3wby
 - valory/reset_pause_abci:0.1.0:bafybeieeux3rdlcwgjbdfrluvkhqv26qdparre6pabatietw7juklljil4
 - valory/termination_abci:0.1.0:bafybeifkl4ab6dnvtsaefe56dbzshmp5mozn7exwcaj2a3wjeq7u3hpezm
