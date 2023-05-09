@@ -62,7 +62,6 @@ from aea.skills.tasks import TaskManager
 from hypothesis import HealthCheck, assume, database, given, settings
 from hypothesis import strategies as st
 
-from packages.valory.protocols.abci import AbciMessage  # noqa: F401
 from packages.valory.skills.abstract_round_abci.base import AbciAppDB
 from packages.valory.skills.abstract_round_abci.behaviour_utils import BaseBehaviour
 from packages.valory.skills.abstract_round_abci.models import ApiSpecs

@@ -1,6 +1,14 @@
 # Release History - `apy-oracle`
 
 
+## 0.10.3 (2023-05-05)
+
+- Bumps `open-autonomy` and `open-aea` frameworks #60
+- Adds mint data #59
+- Adds termination #58
+- Adds IPFS connection and protocol to the agent's dependencies #58 
+- Adds mint data #57
+
 ## 0.10.2 (2023-04-25)
 
 - Bumps `open-autonomy` framework #56

@@ -18,6 +18,7 @@
 # ------------------------------------------------------------------------------
 
 """This module contains the behaviours for the APY estimation skill."""
+
 from typing import Set, Type
 
 from packages.valory.skills.abstract_round_abci.behaviours import (
@@ -37,6 +38,10 @@ from packages.valory.skills.registration_abci.behaviours import (
 from packages.valory.skills.reset_pause_abci.behaviours import (
     ResetPauseABCIConsensusBehaviour,
 )
+from packages.valory.skills.termination_abci.behaviours import (
+    BackgroundBehaviour,
+    TerminationAbciBehaviours,
+)
 
 
 class APYEstimationConsensusBehaviour(AbstractRoundBehaviour):
@@ -49,4 +54,6 @@ class APYEstimationConsensusBehaviour(AbstractRoundBehaviour):
         *AgentRegistrationRoundBehaviour.behaviours,
         *EstimatorRoundBehaviour.behaviours,
         *ResetPauseABCIConsensusBehaviour.behaviours,
+        *TerminationAbciBehaviours.behaviours,
     }
+    background_behaviour_cls = BackgroundBehaviour

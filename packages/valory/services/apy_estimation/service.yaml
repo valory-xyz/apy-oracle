@@ -7,7 +7,7 @@ license: Apache-2.0
 fingerprint:
   README.md: bafybeibhbkelnxxvsln677imq65vgbglmlhyxtax4iqtzempjiwcoef3gq
 fingerprint_ignore_patterns: []
-agent: valory/apy_estimation:0.1.0:bafybeidionq74glicppwlyl56bpvflzjevykrbui4rspi37yqphmygkmmm
+agent: valory/apy_estimation:0.1.0:bafybeieuxxm7uw5colub4qudadherxtohreoyj6wmh7rcbu5vhsjcswp2e
 number_of_agents: 4
 deployment: {}
 ---
@@ -20,8 +20,9 @@ type: skill
         setup: &id001
           all_participants: ${ALL_PARTICIPANTS:list:["0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65","0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc","0x976EA74026E726554dB657fA54763abd0C3a0aa9","0x14dC79964da2C08b23698B3D3cc7Ca32193d9955"]}
           safe_contract_address: ${SAFE_CONTRACT_ADDRESS:str:0x0000000000000000000000000000000000000000}
-          consensus_threshold: null
-        broadcast_to_server: true
+          consensus_threshold: ${CONSENSUS_THRESHOLD:int:null}
+        broadcast_to_server: ${BROADCAST_TO_SERVER:bool:true}
+        multisend_address: ${MULTISEND_ADDRESS:str:0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761}
         pair_ids:
           uniswap_subgraph:
           - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
@@ -29,25 +30,28 @@ type: skill
           - '0x2a651563c9d3af67ae0388a5c8f89b867038089e'
           - '0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c'
         n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
-        history_end: null
-        ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
+        history_end: ${HISTORY_END:int:null}
+        ipfs_domain_name: ${IPFS_DOMAIN_NAME:str:/dns/178.62.4.138/tcp/5001/http}
         service_registry_address: ${SERVICE_REGISTRY_ADDRESS:str:null}
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node0:26656}
+        round_timeout_seconds: ${ROUND_TIMEOUT:int:3650}
+        termination_sleep: ${TERMINATION_SLEEP:int:900}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: &id002
       args:
         url: ${SERVICE_APY_DEPOSIT_ENDPOINT:str:http://172.17.0.2:9999/apy/deposit}
     benchmark_tool: &id003
       args:
-        log_dir: /benchmarks
+        log_dir: ${LOG_DIR:str:/benchmarks}
 1:
   models:
     params:
       args:
         setup: *id001
-        broadcast_to_server: true
+        broadcast_to_server: ${BROADCAST_TO_SERVER:bool:true}
+        multisend_address: ${MULTISEND_ADDRESS:str:0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761}
         pair_ids:
           uniswap_subgraph:
           - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
@@ -55,12 +59,14 @@ type: skill
           - '0x2a651563c9d3af67ae0388a5c8f89b867038089e'
           - '0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c'
         n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
-        history_end: null
-        ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
+        history_end: ${HISTORY_END:int:null}
+        ipfs_domain_name: ${IPFS_DOMAIN_NAME:str:/dns/178.62.4.138/tcp/5001/http}
         service_registry_address: ${SERVICE_REGISTRY_ADDRESS:str:null}
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_1:str:node1:26666}
+        round_timeout_seconds: ${ROUND_TIMEOUT:int:3650}
+        termination_sleep: ${TERMINATION_SLEEP:int:900}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: *id002
     benchmark_tool: *id003
@@ -69,7 +75,8 @@ type: skill
     params:
       args:
         setup: *id001
-        broadcast_to_server: true
+        broadcast_to_server: ${BROADCAST_TO_SERVER:bool:true}
+        multisend_address: ${MULTISEND_ADDRESS:str:0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761}
         pair_ids:
           uniswap_subgraph:
           - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
@@ -77,12 +84,14 @@ type: skill
           - '0x2a651563c9d3af67ae0388a5c8f89b867038089e'
           - '0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c'
         n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
-        history_end: null
-        ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
+        history_end: ${HISTORY_END:int:null}
+        ipfs_domain_name: ${IPFS_DOMAIN_NAME:str:/dns/178.62.4.138/tcp/5001/http}
         service_registry_address: ${SERVICE_REGISTRY_ADDRESS:str:null}
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_2:str:node2:26676}
+        round_timeout_seconds: ${ROUND_TIMEOUT:int:3650}
+        termination_sleep: ${TERMINATION_SLEEP:int:900}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: *id002
     benchmark_tool: *id003
@@ -91,7 +100,8 @@ type: skill
     params:
       args:
         setup: *id001
-        broadcast_to_server: true
+        broadcast_to_server: ${BROADCAST_TO_SERVER:bool:true}
+        multisend_address: ${MULTISEND_ADDRESS:str:0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761}
         pair_ids:
           uniswap_subgraph:
           - '0xae461ca67b15dc8dc81ce7615e0320da1a9ab8d5'
@@ -99,12 +109,14 @@ type: skill
           - '0x2a651563c9d3af67ae0388a5c8f89b867038089e'
           - '0x2b4c76d0dc16be1c31d4c1dc53bf9b45987fc75c'
         n_observations: ${SERVICE_APY_N_OBSERVATIONS:int:120}
-        history_end: null
-        ipfs_domain_name: /dns/178.62.4.138/tcp/5001/http
+        history_end: ${HISTORY_END:int:null}
+        ipfs_domain_name: ${IPFS_DOMAIN_NAME:str:/dns/178.62.4.138/tcp/5001/http}
         service_registry_address: ${SERVICE_REGISTRY_ADDRESS:str:null}
         share_tm_config_on_startup: ${SHARE_TM_CONFIG_ON_STARTUP:bool:false}
         on_chain_service_id: ${ON_CHAIN_SERVICE_ID:int:null}
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_3:str:node3:26686}
+        round_timeout_seconds: ${ROUND_TIMEOUT:int:3650}
+        termination_sleep: ${TERMINATION_SLEEP:int:900}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: *id002
     benchmark_tool: *id003
