@@ -7,7 +7,7 @@ license: Apache-2.0
 fingerprint:
   README.md: bafybeibhbkelnxxvsln677imq65vgbglmlhyxtax4iqtzempjiwcoef3gq
 fingerprint_ignore_patterns: []
-agent: valory/apy_estimation:0.1.0:bafybeieuxxm7uw5colub4qudadherxtohreoyj6wmh7rcbu5vhsjcswp2e
+agent: valory/apy_estimation:0.1.0:bafybeieekrsgq6ts6lp4omv2vcb47d4saquhgruecb3fcmgsksoilhk3me
 number_of_agents: 4
 deployment: {}
 ---
@@ -38,6 +38,7 @@ type: skill
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_0:str:node0:26656}
         round_timeout_seconds: ${ROUND_TIMEOUT:int:3650}
         termination_sleep: ${TERMINATION_SLEEP:int:900}
+        use_termination: ${USE_TERMINATION:bool:true}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: &id002
       args:
@@ -67,6 +68,7 @@ type: skill
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_1:str:node1:26666}
         round_timeout_seconds: ${ROUND_TIMEOUT:int:3650}
         termination_sleep: ${TERMINATION_SLEEP:int:900}
+        use_termination: ${USE_TERMINATION:bool:true}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: *id002
     benchmark_tool: *id003
@@ -92,6 +94,7 @@ type: skill
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_2:str:node2:26676}
         round_timeout_seconds: ${ROUND_TIMEOUT:int:3650}
         termination_sleep: ${TERMINATION_SLEEP:int:900}
+        use_termination: ${USE_TERMINATION:bool:true}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: *id002
     benchmark_tool: *id003
@@ -117,6 +120,7 @@ type: skill
         tendermint_p2p_url: ${TM_P2P_ENDPOINT_NODE_3:str:node3:26686}
         round_timeout_seconds: ${ROUND_TIMEOUT:int:3650}
         termination_sleep: ${TERMINATION_SLEEP:int:900}
+        use_termination: ${USE_TERMINATION:bool:true}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
     server_api: *id002
     benchmark_tool: *id003
