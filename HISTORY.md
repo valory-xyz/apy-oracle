@@ -1,5 +1,9 @@
 # Release History - `apy-oracle`
 
+## 0.10.4 (2023-05-12)
+
+- Bumps to `open-autonomy@v0.10.4` #60
+- Overrides `use_termination` on service #60 
 
 ## 0.10.3 (2023-05-05)
 
