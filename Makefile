@@ -82,7 +82,7 @@ generators: clean-cache
 common-checks-1:
 	tomte check-copyright --author valory --exclude-part connections --exclude-part contracts --exclude-part protocols --exclude-part abstract_abci --exclude-part abstract_round_abci --exclude-part registration_abci --exclude-part reset_pause_abci --exclude-part termination_abci --exclude-part transaction_settlement_abci
 	tomte check-doc-links
-	tox -p -e check-hash -e check-packages -e check-doc-hashes
+	tox -p -e check-hash -e check-packages -e check-doc-hashes -e analyse-service
 
 .PHONY: common-checks-2
 common-checks-2:
