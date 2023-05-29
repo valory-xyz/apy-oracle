@@ -1,5 +1,9 @@
 # Release History - `apy-oracle`
 
+## (TBD)
+
+- Bumps to `tomte@v0.2.12` and cleans up the repo #61
+
 ## 0.10.4 (2023-05-12)
 
 - Bumps to `open-autonomy@v0.10.4` #60

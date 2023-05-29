@@ -44,7 +44,7 @@ scikit-learn = "==1.0.2"
 statsmodels = "==0.13.2"
 ### tests deps
 mistune = "==2.0.3"
-tomte = {version = "==0.2.4", extras = ["tox", "tests"]}
+tomte = {version = "==0.2.12", extras = ["cli", "tests"]}
 
 [requires]
 python_version = "3.10"
