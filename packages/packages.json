@@ -1,9 +1,9 @@
 {
     "dev": {
-        "skill/valory/apy_estimation_abci/0.1.0": "bafybeicwbmrwyl3nh7qr4ahfynltyox34zqn4zg6txg5bv5tkkcqpvnnfy",
-        "skill/valory/apy_estimation_chained_abci/0.1.0": "bafybeicfttkagmw7n2hw3olvvydsnbdotjujxj3cavh54kg56j6ue4qfby",
-        "agent/valory/apy_estimation/0.1.0": "bafybeieekrsgq6ts6lp4omv2vcb47d4saquhgruecb3fcmgsksoilhk3me",
-        "service/valory/apy_estimation/0.1.0": "bafybeibrad5fy2uyvjh4stlz2wkl3syfhyb6tjdvhdxkoay2h34vbmiara"
+        "skill/valory/apy_estimation_abci/0.1.0": "bafybeigthvuguyk4q7ewkiry2en6y6cdin2zex535tipclmhaj3garjzf4",
+        "skill/valory/apy_estimation_chained_abci/0.1.0": "bafybeicnhdfzrovhm24smuqambtnurjt5xpwmvfn3kiaq5gwct6rlpphpi",
+        "agent/valory/apy_estimation/0.1.0": "bafybeih7ihe6b2blo7szn7cmmm6gefti2bkc3hdyqby5e3hdhnsi4figly",
+        "service/valory/apy_estimation/0.1.0": "bafybeialjujxvogseswsed2oysn2shymraxykqwha7a2ur6a555slq6w5e"
     },
     "third_party": {
         "connection/valory/ipfs/0.1.0": "bafybeigr2cipad23aebjpnqtzpgymiwrwgmnior2fk4inbscdnqyl5epla",
