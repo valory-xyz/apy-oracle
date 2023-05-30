@@ -24,11 +24,11 @@ connections: []
 contracts: []
 protocols: []
 skills:
-- valory/abstract_round_abci:0.1.0:bafybeich3i7gwcyuqg6t3zrvsapoxrkvadpjcs4klaf7ngsmzqdshhpadm
-- valory/apy_estimation_abci:0.1.0:bafybeicwbmrwyl3nh7qr4ahfynltyox34zqn4zg6txg5bv5tkkcqpvnnfy
-- valory/registration_abci:0.1.0:bafybeicnrovt3uixevtq6iq74qmeowr3mol3vbbbri7aik3ph5ykyrof7m
-- valory/reset_pause_abci:0.1.0:bafybeiguazfpzemsyodwnw5hcvye5ayvdkqoyiv4scwoxty2xcik6ydg64
-- valory/termination_abci:0.1.0:bafybeifqnkcg5okyniuv4yf6hml7acsn63hlwobrdnkiu4j5mmsyxkg5ca
+- valory/abstract_round_abci:0.1.0:bafybeigsbglflua5vdwmwmo2rjsogp4anxtpqjbtrcwfivuxjiv6xczpba
+- valory/apy_estimation_abci:0.1.0:bafybeigthvuguyk4q7ewkiry2en6y6cdin2zex535tipclmhaj3garjzf4
+- valory/registration_abci:0.1.0:bafybeidc7vaj5rw3rzkd6aj3x7bl7r76kcaklqwat2cg7dlzh4yo6h6hhu
+- valory/reset_pause_abci:0.1.0:bafybeigvfkbdmro6dddejdo5vcimdbp7macbez4ejv2beucm7nrje5oz34
+- valory/termination_abci:0.1.0:bafybeif7y4wcmjc4g5iyjkfedephvqwzgkxnkj3tucu24rqz6fsw267l2e
 behaviours:
   main:
     args: {}
@@ -255,7 +255,7 @@ dependencies:
   numpy:
     version: ==1.21.6
   open-aea-cli-ipfs:
-    version: ==1.33.0
+    version: ==1.34.0
   optuna:
     version: ==2.10.1
   pandas:
