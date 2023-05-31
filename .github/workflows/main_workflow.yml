@@ -110,24 +110,13 @@ jobs:
     - name: Check generate protocols
       run: tox -e check-generate-all-protocols
     - name: Security checks
-      run: |
-        tox -e bandit
-        tox -e safety
+      run: tomte check-security
     - name: Check packages
       run: tox -e check-packages
     - name: Check hash
       run: tox -e check-hash
-    - name: Code style check
-      run: |
-        tox -e black-check
-        tox -e isort-check
-        tox -e flake8
-        tox -e vulture
-        tox -e darglint
-    - name: Static type check
-      run: tox -e mypy
-    - name: Pylint
-      run: tox -e pylint
+    - name: Code checks
+      run: tomte check-code
     - name: Check spelling
       run: tomte check-spelling
     - name: AbciApp consistency checks

@@ -11,16 +11,9 @@ function run_check(){
 
 make clean
 
-run_check black-check
-run_check isort-check
-run_check flake8
-run_check mypy
-run_check pylint
-run_check darglint
-run_check vulture
-run_check bandit
-run_check safety
-run_check check-copyright
+tomte check-code
+tomte check-security
+tomte check-copyright --author valory --exclude-part connections --exclude-part contracts --exclude-part protocols --exclude-part abstract_abci --exclude-part abstract_round_abci --exclude-part registration_abci --exclude-part reset_pause_abci --exclude-part termination_abci --exclude-part transaction_settlement_abci
 run_check check-abciapp-specs
 run_check check-packages
 run_check check-hash
