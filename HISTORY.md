@@ -1,7 +1,8 @@
 # Release History - `apy-oracle`
 
-## (TBD)
+## (2023-05-31)
 
+- Further clean-up of the repo #63
 - Bumps `open-aea` and `open-autonomy` frameworks to `v1.34.0` and `v0.10.5.post1` correspondingly #62
 - Bumps to `tomte@v0.2.12` and cleans up the repo #61
 
