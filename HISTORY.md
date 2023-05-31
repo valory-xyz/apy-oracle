@@ -1,6 +1,6 @@
 # Release History - `apy-oracle`
 
-## (2023-05-31)
+## 0.10.5 (2023-05-31)
 
 - Further clean-up of the repo #63
 - Bumps `open-aea` and `open-autonomy` frameworks to `v1.34.0` and `v0.10.5.post1` correspondingly #62
