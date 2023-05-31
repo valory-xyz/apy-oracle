@@ -53,7 +53,6 @@ formatters:
 # flake8: wrapper around various code checks, https://flake8.pycqa.org/en/latest/user/error-codes.html
 # mypy: static type checker
 # pylint: code analysis for code smells and refactoring suggestions
-# vulture: finds dead code
 # darglint: docstring linter
 .PHONY: code-checks
 code-checks:
