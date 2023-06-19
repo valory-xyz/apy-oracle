@@ -23,7 +23,7 @@ In order to run a local demo of the ML APY Prediction Oracle service:
 2. Fetch the ML APY Prediction Oracle service.
 
 	```bash
-	autonomy fetch valory/apy_estimation:0.1.0:bafybeigsulcxuugkqkum3xxjlyurz5zmqvzw3y274tgc2eerkfhvqiwrf4 --service
+	autonomy fetch valory/apy_estimation:0.1.0:bafybeidgdeaayhqmc6nksb24uz35blwni6fdc257uweqav2j335xn5dcba --service
 	```
 
 3. Build the Docker image of the service agents
