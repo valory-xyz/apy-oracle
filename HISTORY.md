@@ -1,5 +1,9 @@
 # Release History - `apy-oracle`
 
+## 0.10.7 (2023-06-19)
+
+- Bumps `open-autonomy` framework to `v0.10.6` #65
+
 ## 0.10.6 (2023-06-07)
 
 - Bumps `open-autonomy` framework to `v0.10.5.post2` #64
