@@ -20,9 +20,9 @@ numpy = "==1.21.6"
 open-aea = {version = "==1.34.0", extras = ["all"]}
 open-aea-ledger-ethereum = "==1.34.0"
 open-aea-ledger-cosmos = "==1.34.0"
-open-aea-test-autonomy = "==0.10.5.post2"
+open-aea-test-autonomy = "==0.10.6"
 open-aea-cli-ipfs = "==1.34.0"
-open-autonomy = {version = "==0.10.5.post2", extras = [ "all"]}
+open-autonomy = {version = "==0.10.6", extras = [ "all"]}
 optuna = "==2.10.1"
 pandas = "==1.3.5"
 pandas-stubs = "==1.2.0.62"
