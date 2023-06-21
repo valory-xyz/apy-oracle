@@ -1,6 +1,6 @@
 ![MLKit](images/mlkit.svg){ align=left }
 The MLKit helps you build services with custom machine-learning capabilities.
-For example, the ML APY Prediction Oracle is an {{agent_service_link}} that predicts the yield of liquidity pools using customizable machine learning techniques. Currently, the live demo makes predictions for [Uniswap](https://uniswap.org/) and [SpookySwap](https://spooky.fi).
+For example, the ML APY Prediction Oracle is an [agent service](https://docs.autonolas.network/open-autonomy/get_started/what_is_an_agent_service/) that predicts the yield of liquidity pools using customizable machine learning techniques. Currently, the live demo makes predictions for [Uniswap](https://uniswap.org/) and [SpookySwap](https://spooky.fi).
 
 The agents collect historical liquidity pool data by making [subgraph](https://thegraph.com) queries. They preprocess the data, run an optimizer, train a prediction algorithm on a split of the data using the hyperparameters found on the previous step, test on the left-out data, and then train on the full data to prepare the algorithm for forecasting. Then, the agents transit to an estimation stage where they periodically compute the predictions and update the model's weights based on the most recent data that they fetch. Note that the agents reach consensus on all the steps involving the collection, preprocessing, optimization, training, testing, training on the full data, and forecasting.
 
