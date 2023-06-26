@@ -1,5 +1,11 @@
 # Release History - `apy-oracle`
 
+## 0.10.8 (2023-06-26)
+
+- Bumps `open-aea` and `open-autonomy` frameworks to `v1.35.0` and `v0.10.7` correspondingly #67
+- Fixes olas links #66
+
+
 ## 0.10.7 (2023-06-19)
 
 - Bumps `open-autonomy` framework to `v0.10.6` #65
