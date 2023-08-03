@@ -36,7 +36,7 @@ pytest-rerunfailures = "==11.0"
 py-ecc = "==5.2.0"
 py-eth-sig-utils = "==0.4.0"
 docker = "==6.1.2"
-docker-compose = "==1.29.2"
+valory-docker-compose = "==1.29.3"
 Flask = "==2.0.2"
 Werkzeug= "==2.0.3"
 # latest supported for Python 3.7
