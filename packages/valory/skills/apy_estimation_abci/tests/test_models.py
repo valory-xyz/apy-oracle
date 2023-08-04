@@ -24,7 +24,7 @@
 import re
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, TypedDict, Union
 from unittest.mock import MagicMock
 
 import hypothesis.strategies as st
@@ -40,11 +40,6 @@ from packages.valory.skills.apy_estimation_abci.models import (
 )
 from packages.valory.skills.apy_estimation_abci.rounds import APYEstimationAbciApp
 
-
-try:
-    from typing import TypedDict  # >=3.8
-except ImportError:
-    from mypy_extensions import TypedDict  # <=3.7
 
 APYParamsArgsType = Tuple[str]
 
