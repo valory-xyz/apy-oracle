@@ -24,7 +24,7 @@
 
 import warnings
 from collections import OrderedDict
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, TypedDict, Union
 from unittest import mock
 from unittest.mock import MagicMock, PropertyMock
 
@@ -53,12 +53,6 @@ from packages.valory.skills.apy_estimation_abci.ml.optimization import (
 from packages.valory.skills.apy_estimation_abci.models import SharedState
 from packages.valory.skills.apy_estimation_abci.tools.etl import ResponseItemType
 from packages.valory.skills.apy_estimation_abci.tools.queries import SAFE_BLOCK_TIME
-
-
-try:
-    from typing import TypedDict  # >=3.8
-except ImportError:
-    from mypy_extensions import TypedDict  # <=3.7
 
 
 HeaderType = Dict[str, str]
