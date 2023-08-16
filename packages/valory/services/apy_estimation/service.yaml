@@ -6,7 +6,6 @@ aea_version: '>=1.0.0, <2.0.0'
 license: Apache-2.0
 fingerprint:
   README.md: bafybeibhbkelnxxvsln677imq65vgbglmlhyxtax4iqtzempjiwcoef3gq
-  abci_build/docker-compose.yaml: bafybeiaqlwczr5u2x6h563wd4wmth5hlwln7h3jmefjocn2qmx53uhmi2e
 fingerprint_ignore_patterns: []
 agent: valory/apy_estimation:0.1.0:bafybeibyejr2kiteshh6w7tiz627lsntrehynu5kphj7l2x2rczcjq53g4
 number_of_agents: 4
