@@ -278,9 +278,9 @@ dependencies:
   pandas:
     version: ==1.5.3
   pmdarima:
-    version: ==2.0.1
+    version: '>=2.0.1'
   scikit-learn:
-    version: ==1.0.2
+    version: ==1.3.0
   statsmodels:
-    version: ==0.13.2
+    version: '>=0.13.2'
 is_abstract: true
