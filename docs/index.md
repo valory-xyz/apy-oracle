@@ -16,14 +16,14 @@ In order to run a local demo of the ML APY Prediction Oracle service:
     mkdir your_workspace && cd your_workspace
     touch Pipfile && pipenv --python 3.10 && pipenv shell
 
-    pipenv install open-autonomy[all]==0.10.10.post1
+    pipenv install open-autonomy[all]==0.11.1
     autonomy init --remote --ipfs --reset --author=your_name
     ```
 
 2. Fetch the ML APY Prediction Oracle service.
 
 	```bash
-	autonomy fetch valory/apy_estimation:0.1.0:bafybeicwpbtcscaks5at5dc3ss6f6nox2rl3zbvrqgbjxckuay47kdzmoi --service
+	autonomy fetch valory/apy_estimation:0.1.0:bafybeib6ityqkvyiqpmx5kig4iakr2cksqaonuqwll7nw7d4adrgtusgp4 --service
 	```
 
 3. Build the Docker image of the service agents

@@ -24,11 +24,11 @@ connections: []
 contracts: []
 protocols: []
 skills:
-- valory/abstract_round_abci:0.1.0:bafybeibqpzbklnljvtc67yon4ciijxj75d7vazm7rurcvbbfnk6jtudukm
-- valory/apy_estimation_abci:0.1.0:bafybeiejrnn4zvyggfgqwunva6msuxfdodwcedoqerzzygeldcqi7cafwm
-- valory/registration_abci:0.1.0:bafybeia25gpusnkakb2dp4heqkwtuftbc2apppq3i4bds6sphltsovgzvi
-- valory/reset_pause_abci:0.1.0:bafybeigzvwbzktclahjbsyiwqnj6poree4iveon5pric6s5ixb6wrhkdhq
-- valory/termination_abci:0.1.0:bafybeibcdgnarxyyqexncpfewcemraryywtwueuv7qthsjuean5l77lp2e
+- valory/abstract_round_abci:0.1.0:bafybeigxjcci53vwytymzlhr37436yvenh7jup4astrn7dgyixo24aq2pq
+- valory/apy_estimation_abci:0.1.0:bafybeibiuthvlfblapmcgbk5u2hwbfvbn7e77jhbxpx3touskoqytrfjre
+- valory/registration_abci:0.1.0:bafybeibc4kczqbh23sc6tufrzn3axmhp3vjav7fa3u6cnpvolrbbc2fd7i
+- valory/reset_pause_abci:0.1.0:bafybeid445uy6wwvugf3byzl7r73c7teu6xr5ezxb4h7cxbenghg3copvy
+- valory/termination_abci:0.1.0:bafybeiguy7pkrcptg6c754ioig4mlkr7truccym3fpv6jwpjx2tmpdbzhi
 behaviours:
   main:
     args: {}
@@ -255,15 +255,15 @@ dependencies:
   numpy:
     version: ==1.23.5
   open-aea-cli-ipfs:
-    version: ==1.37.0
+    version: ==1.38.0
   optuna:
     version: ==2.10.1
   pandas:
-    version: ==1.3.5
+    version: ==1.5.3
   pmdarima:
-    version: ==2.0.1
+    version: '>=2.0.1'
   scikit-learn:
-    version: ==1.0.2
+    version: ==1.3.0
   statsmodels:
-    version: ==0.13.2
+    version: '>=0.13.2'
 is_abstract: false
