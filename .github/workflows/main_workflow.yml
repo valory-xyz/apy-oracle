@@ -26,7 +26,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Pipenv install requirements and check it can be locked
       run: |
-        pip install pipenv
+        pip install pipenv==2023.7.23
         pipenv --clear
         pipenv install --dev --skip-lock
         pipenv run pip install -e .[all]
