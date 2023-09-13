@@ -96,6 +96,7 @@ class BaseTestABCIAPYEstimationSkillNormalExecution(
     skill_package = "valory/apy_estimation_chained_abci:0.1.0"
     happy_path = HAPPY_PATH
     ROUND_TIMEOUT_SECONDS = 480
+    BASE_PORT = 18000
     wait_to_finish = 480
     __args_prefix = f"vendor.valory.skills.{PublicId.from_str(skill_package).name}.models.params.args"
     extra_configs = [
@@ -114,6 +115,20 @@ class BaseTestABCIAPYEstimationSkillNormalExecution(
     ]
     package_registry_src_rel = Path(__file__).parents[4]
     key_pairs_override = KEY_PAIRS[:4]
+
+    def prepare(self, nb_nodes: int) -> None:
+        """Set up the agents."""
+        super().prepare(nb_nodes)
+
+        for i in range(nb_nodes):
+            agent_name = self._get_agent_name(i)
+            self.set_agent_context(agent_name)
+            port = self.BASE_PORT + i
+            self.set_config(
+                dotted_path="vendor.fetchai.connections.http_server.config.port",
+                value=port,
+                type_="int",
+            )
 
     def prepare_and_launch(self, nb_nodes: int) -> None:
         """Prepare and launch the agents."""
