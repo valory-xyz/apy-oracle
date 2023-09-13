@@ -145,6 +145,7 @@ APY_PARAMS_KWARGS = APYParamsKwargsType(
     setup={"test": [0]},
     history_end=0,
     use_termination=False,
+    service_endpoint_base="https://dummy_service.autonolas.tech/",
 )
 
 
