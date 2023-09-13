@@ -7,7 +7,7 @@ license: Apache-2.0
 fingerprint:
   README.md: bafybeibhbkelnxxvsln677imq65vgbglmlhyxtax4iqtzempjiwcoef3gq
 fingerprint_ignore_patterns: []
-agent: valory/apy_estimation:0.1.0:bafybeifeslp767tqkkjt5ntf2ryan5ixdvt4qwwtphqnttk5n5ojex27cq
+agent: valory/apy_estimation:0.1.0:bafybeid5bdesy6rs7sqytqrisubdlnplh7w2aabeakfmp6bpiefdwamgxe
 number_of_agents: 4
 deployment: {}
 ---
@@ -40,6 +40,7 @@ type: skill
         termination_sleep: ${TERMINATION_SLEEP:int:900}
         use_termination: ${USE_TERMINATION:bool:true}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
+        service_endpoint_base: ${SERVICE_ENDPOINT_BASE:str:https://dummy_service.autonolas.tech/}
     server_api: &id002
       args:
         url: ${SERVICE_APY_DEPOSIT_ENDPOINT:str:http://172.17.0.2:9999/apy/deposit}
@@ -70,6 +71,7 @@ type: skill
         termination_sleep: ${TERMINATION_SLEEP:int:900}
         use_termination: ${USE_TERMINATION:bool:true}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
+        service_endpoint_base: ${SERVICE_ENDPOINT_BASE:str:https://dummy_service.autonolas.tech/}
     server_api: *id002
     benchmark_tool: *id003
 2:
@@ -96,6 +98,7 @@ type: skill
         termination_sleep: ${TERMINATION_SLEEP:int:900}
         use_termination: ${USE_TERMINATION:bool:true}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
+        service_endpoint_base: ${SERVICE_ENDPOINT_BASE:str:https://dummy_service.autonolas.tech/}
     server_api: *id002
     benchmark_tool: *id003
 3:
@@ -122,6 +125,7 @@ type: skill
         termination_sleep: ${TERMINATION_SLEEP:int:900}
         use_termination: ${USE_TERMINATION:bool:true}
         n_estimations_before_retrain: ${N_ESTIMATIONS_BEFORE_RETRAIN:int:60}
+        service_endpoint_base: ${SERVICE_ENDPOINT_BASE:str:https://dummy_service.autonolas.tech/}
     server_api: *id002
     benchmark_tool: *id003
 ---

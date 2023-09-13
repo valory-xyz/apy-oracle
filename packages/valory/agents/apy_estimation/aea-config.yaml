@@ -11,6 +11,7 @@ fingerprint:
   tests/test_apy_estimation.py: bafybeigv6wcjilg6ylt7kys574oaxwm3rtyd7rupusbavroiubahap3k5i
 fingerprint_ignore_patterns: []
 connections:
+- fetchai/http_server:0.22.0:bafybeihp5umafxzx45aad5pj7s3343se2wjkgnbirt4pybrape22swm6de
 - valory/abci:0.1.0:bafybeicasheudousm2unmh5qmy5n3qdq5hmkg2j42fxfm2crxmgq3nzjkq
 - valory/http_client:0.23.0:bafybeieoeuy4brzimtnubmokwirhrx27ezls6cdnl5qik4rkykfle3nn2y
 - valory/ipfs:0.1.0:bafybeiau32pzy55ta6ugl2bebevlxudal6pnlfomhplfm5mph6reaw3krq
@@ -30,8 +31,8 @@ protocols:
 skills:
 - valory/abstract_abci:0.1.0:bafybeicg7dv7cff34nv2k2z47c4yp4kddsxp3wozonzow6tnvfvwndz3cy
 - valory/abstract_round_abci:0.1.0:bafybeigxjcci53vwytymzlhr37436yvenh7jup4astrn7dgyixo24aq2pq
-- valory/apy_estimation_abci:0.1.0:bafybeicklr4wrv7ccvylimwaxifeokgj274rrr4awjurnmo7yymexqkcpe
-- valory/apy_estimation_chained_abci:0.1.0:bafybeiek4jp5fgfkxc7nwvo2ipgmw66vwqsjbgbryon72k3o2ro75zwejm
+- valory/apy_estimation_abci:0.1.0:bafybeic5x4n4kqmyj4njiqh62fk67vpaafade2oj3j5nk2tidaomelx6bm
+- valory/apy_estimation_chained_abci:0.1.0:bafybeifcigrqhpehsx2ju3zica4pf3dce3rkkumdntwg6pzl26j7aiyuga
 - valory/registration_abci:0.1.0:bafybeibc4kczqbh23sc6tufrzn3axmhp3vjav7fa3u6cnpvolrbbc2fd7i
 - valory/reset_pause_abci:0.1.0:bafybeid445uy6wwvugf3byzl7r73c7teu6xr5ezxb4h7cxbenghg3copvy
 - valory/termination_abci:0.1.0:bafybeiguy7pkrcptg6c754ioig4mlkr7truccym3fpv6jwpjx2tmpdbzhi
@@ -127,6 +128,7 @@ models:
       termination_sleep: ${int:900}
       use_termination: ${bool:false}
       on_chain_service_id: ${int:null}
+      service_endpoint_base: ${str:https://dummy_service.autonolas.tech/}
   server_api:
     args:
       url: ${str:http://192.168.2.17:9999/apy/deposit}
@@ -155,3 +157,9 @@ config:
       chain_id: ${int:1337}
       default_gas_price_strategy: ${str:eip1559}
       poa_chain: ${bool:false}
+---
+public_id: fetchai/http_server:0.22.0:bafybeicblltx7ha3ulthg7bzfccuqqyjmihhrvfeztlgrlcoxhr7kf6nbq
+type: connection
+config:
+  host: 0.0.0.0
+  target_skill_id: valory/apy_estimation_chained_abci:0.1.0

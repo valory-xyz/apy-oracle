@@ -202,6 +202,7 @@ class APYParams(BaseParams):  # pylint: disable=too-many-instance-attributes
             "broadcast_to_server", kwargs, bool
         )
         self.decimals: int = self._ensure("decimals", kwargs, int)
+        self.service_endpoint_base = self._ensure("service_endpoint_base", kwargs, str)
         super().__init__(*args, **kwargs)
 
         self.__validate_params()

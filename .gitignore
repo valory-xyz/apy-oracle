@@ -26,3 +26,4 @@ packages/valory/skills/termination_abci
 packages/open_aea
 /apy_estimation/
 /logs/
+/packages/fetchai/

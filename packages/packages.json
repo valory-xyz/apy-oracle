@@ -1,9 +1,9 @@
 {
     "dev": {
-        "skill/valory/apy_estimation_abci/0.1.0": "bafybeicklr4wrv7ccvylimwaxifeokgj274rrr4awjurnmo7yymexqkcpe",
-        "skill/valory/apy_estimation_chained_abci/0.1.0": "bafybeiek4jp5fgfkxc7nwvo2ipgmw66vwqsjbgbryon72k3o2ro75zwejm",
-        "agent/valory/apy_estimation/0.1.0": "bafybeifeslp767tqkkjt5ntf2ryan5ixdvt4qwwtphqnttk5n5ojex27cq",
-        "service/valory/apy_estimation/0.1.0": "bafybeibz7ncp524hlmv4t57qh5idgmecapcu2ad6wdtavwjg5a6znufsi4"
+        "skill/valory/apy_estimation_abci/0.1.0": "bafybeic5x4n4kqmyj4njiqh62fk67vpaafade2oj3j5nk2tidaomelx6bm",
+        "skill/valory/apy_estimation_chained_abci/0.1.0": "bafybeifcigrqhpehsx2ju3zica4pf3dce3rkkumdntwg6pzl26j7aiyuga",
+        "agent/valory/apy_estimation/0.1.0": "bafybeid5bdesy6rs7sqytqrisubdlnplh7w2aabeakfmp6bpiefdwamgxe",
+        "service/valory/apy_estimation/0.1.0": "bafybeideezmseuxepzy2ydkojjhlvlxbczeg2ktui7kbluabsliz7qlefm"
     },
     "third_party": {
         "connection/valory/ipfs/0.1.0": "bafybeiau32pzy55ta6ugl2bebevlxudal6pnlfomhplfm5mph6reaw3krq",
@@ -28,6 +28,7 @@
         "contract/valory/multisend/0.1.0": "bafybeie7m7pjbnw7cccpbvmbgkut24dtlt4cgvug3tbac7gej37xvwbv3a",
         "skill/valory/termination_abci/0.1.0": "bafybeiguy7pkrcptg6c754ioig4mlkr7truccym3fpv6jwpjx2tmpdbzhi",
         "contract/valory/gnosis_safe/0.1.0": "bafybeigvqg4lapdaa23dpc3pv67rdptdhey6e435mxqsw2gb2u74yw4yei",
-        "contract/valory/gnosis_safe_proxy_factory/0.1.0": "bafybeie4iivrxcd5dcwzj3y2t66mc5mdvtsuqu426gk2kcdc6fxbki6neu"
+        "contract/valory/gnosis_safe_proxy_factory/0.1.0": "bafybeie4iivrxcd5dcwzj3y2t66mc5mdvtsuqu426gk2kcdc6fxbki6neu",
+        "connection/fetchai/http_server/0.22.0": "bafybeihp5umafxzx45aad5pj7s3343se2wjkgnbirt4pybrape22swm6de"
     }
 }
