@@ -87,6 +87,7 @@ class APYParamsKwargsType(TypedDict):
     setup: Dict[str, Any]
     history_end: Optional[int]
     use_termination: bool
+    service_endpoint_base: str
 
 
 APY_PARAMS_ARGS = ("test",)

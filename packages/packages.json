@@ -1,9 +1,9 @@
 {
     "dev": {
-        "skill/valory/apy_estimation_abci/0.1.0": "bafybeicvok2g5pizbux7dwgiwtiaugydrf2pljd6xijq7np7y42qv66ziy",
-        "skill/valory/apy_estimation_chained_abci/0.1.0": "bafybeihxp6ujjaek36y5k7mzrvjczsm522omcoexd3e2gnaydtmvwhdake",
-        "agent/valory/apy_estimation/0.1.0": "bafybeiefggr2mmwqruze5m72rjkkciwhoxdphc6s7gwlgmle3cla7f375m",
-        "service/valory/apy_estimation/0.1.0": "bafybeiakw6cbotmaot4kmr5e4qtrokdwn7r3kjpjleq5yg5u3sisq72nlm"
+        "skill/valory/apy_estimation_abci/0.1.0": "bafybeid7jqi54gbw7ase2tzt3vgw4kg7wcwficelp3rrptzhgwl37d7nuq",
+        "skill/valory/apy_estimation_chained_abci/0.1.0": "bafybeibw6xqs5jvkqyeixj7htsd2pk4rzw7yjk3d3vyh6kjl4olscszgdy",
+        "agent/valory/apy_estimation/0.1.0": "bafybeigmvcut2gfkwi5vww7ybd2w7j66zfaftrrtcljmprx3ckiaojxkby",
+        "service/valory/apy_estimation/0.1.0": "bafybeihuphwu7gwtz6kzulqpgj6n5btksqncwwcnxlk2fjvxhez3ik25ju"
     },
     "third_party": {
         "connection/valory/ipfs/0.1.0": "bafybeiau32pzy55ta6ugl2bebevlxudal6pnlfomhplfm5mph6reaw3krq",
