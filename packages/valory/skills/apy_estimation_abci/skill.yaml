@@ -20,7 +20,7 @@ fingerprint:
   ml/forecasting.py: bafybeiafpvnosan4ubm35tcl3wlxlro43nbx6hf5il6pn43f7win2hcsei
   ml/optimization.py: bafybeicyfabutvdyfvv2u3b6sdxfr4c5f7vvgvba4snovy5atx3zuj3nha
   ml/preprocessing.py: bafybeieha65b5cslcyyjobjupebyqovod7aigohdidcawz5b6tlxqxpruq
-  models.py: bafybeicneq2ye7rj62tcvtjr5ofehkvxshicyx2lsurfyzpf67wfcfrnom
+  models.py: bafybeiggmgo4tfl4qlvbegac4siaejv4a5y7t2gltp7yt2yknngcfusnum
   payloads.py: bafybeihaxphy4emmlvjpsrk2bh5hpqbdlra76hczf2jirvp77zcu5wfxmy
   rounds.py: bafybeidy6sr6lfbgau52hkqw2gi3ixuh3dcy7sy3ymztdiivbbgayssvje
   tasks.py: bafybeihudp5vyhelqnl5eqakjpvuekaoamtbrghss4k2yysvkczspjbbia
@@ -34,7 +34,7 @@ fingerprint:
   tests/test_ml/test_forecasting.py: bafybeih6un4hazyym2al5qjbjvk2c3a6hdnlpgfcsw3abwlanw6oesglce
   tests/test_ml/test_optimization.py: bafybeihnvcgqttwmbi2idvmkrrd5becqry4bannzuww6webxfuznjocdfy
   tests/test_ml/test_preprocessing.py: bafybeicqer5b6fhzoimtrk4mwmh62km6olwljmhxvi6p7zdm6o4jbycfji
-  tests/test_models.py: bafybeia7n7jnfhpu22o6hqrr2qyfsksdcqoifywiwliyybygzaxgta5aoy
+  tests/test_models.py: bafybeidjg3e7553nelvuxpvfgdmotk3le6pfxfhuq7sbbz3ep7s6jil3xm
   tests/test_payloads.py: bafybeidq6ghopkvp6tta22zclhcf3ojv4vvt2xbgi36pxafqhqiz56bgha
   tests/test_rounds.py: bafybeigsjzuincxqa6igrbvecvjkusptxbhlry3czp7l54luwtowww2n3e
   tests/test_tasks.py: bafybeifumykfnu4ymcgbpimgmg5ipmfhwgdjggfblyejc3m4eceij554je
@@ -181,6 +181,7 @@ models:
       retry_attempts: 400
       retry_timeout: 3
       round_timeout_seconds: 120.0
+      service_endpoint_base: https://dummy_service.autonolas.tech/
       service_id: apy_estimation
       service_registry_address: null
       setup:

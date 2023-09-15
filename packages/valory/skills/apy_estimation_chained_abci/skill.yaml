@@ -12,7 +12,7 @@ fingerprint:
   composition.py: bafybeicfriv4kvzzwlmdzm4ri27q36dieiv2zsivjc7ii7etavdsmiocsa
   dialogues.py: bafybeihp3ujpngrqm6fencr25azq7zccvdcszljie7532l4uugxipnxn3q
   fsm_specification.yaml: bafybeidrwqstclskfkerbmwldxzvt7kci2vqblw2yojw4rw5vcdwtixdbe
-  handlers.py: bafybeicize7jjlb22grwb7fkwo36fh7ja3ajtta56utg4l4pn7ckvbnqa4
+  handlers.py: bafybeiadvynk6t47o66mkq57ve3jff7uuqxnymvl7banmxpgo747n7glme
   models.py: bafybeibtkalrldvehy2pmdjysqmbjnz23xqbyaxp2i7vpjnky4gusgndqm
   tests/__init__.py: bafybeiapnbylokinzkfybybxsuoz5sdwmfw7rzctbqhvnt2ydvvy5twhaa
   tests/test_behaviours.py: bafybeidwejgvyhfiswn4e4jt6czz3xjy6dfw65zbm2euyoe5wn3u3dvpne
@@ -20,12 +20,14 @@ fingerprint:
   tests/test_handlers.py: bafybeic2lfcmgaahaamemmsw5chw64lpawrjstcwazuif6fza5rzzwcmt4
   tests/test_models.py: bafybeibw43sgnikidbulapqmwuh5pubcw34zqvohi6vxmabhzn5uwu4t34
 fingerprint_ignore_patterns: []
-connections: []
+connections:
+- fetchai/http_server:0.22.0:bafybeihp5umafxzx45aad5pj7s3343se2wjkgnbirt4pybrape22swm6de
 contracts: []
-protocols: []
+protocols:
+- valory/http:1.0.0:bafybeia5bxdua2i6chw6pg47bvoljzcpuqxzy4rdrorbdmcbnwmnfdobtu
 skills:
 - valory/abstract_round_abci:0.1.0:bafybeigxjcci53vwytymzlhr37436yvenh7jup4astrn7dgyixo24aq2pq
-- valory/apy_estimation_abci:0.1.0:bafybeicklr4wrv7ccvylimwaxifeokgj274rrr4awjurnmo7yymexqkcpe
+- valory/apy_estimation_abci:0.1.0:bafybeid7jqi54gbw7ase2tzt3vgw4kg7wcwficelp3rrptzhgwl37d7nuq
 - valory/registration_abci:0.1.0:bafybeibc4kczqbh23sc6tufrzn3axmhp3vjav7fa3u6cnpvolrbbc2fd7i
 - valory/reset_pause_abci:0.1.0:bafybeid445uy6wwvugf3byzl7r73c7teu6xr5ezxb4h7cxbenghg3copvy
 - valory/termination_abci:0.1.0:bafybeiguy7pkrcptg6c754ioig4mlkr7truccym3fpv6jwpjx2tmpdbzhi
@@ -159,6 +161,7 @@ models:
       retry_attempts: 400
       retry_timeout: 3
       round_timeout_seconds: 120.0
+      service_endpoint_base: https://dummy_service.autonolas.tech/
       service_id: apy_estimation
       service_registry_address: null
       setup:
