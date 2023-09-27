@@ -23,7 +23,7 @@
 from typing import Dict, FrozenSet, Optional, Tuple
 
 import pytest
-
+from unittest import mock
 from packages.valory.skills.abstract_round_abci.base import AbciAppDB, CollectionRound
 from packages.valory.skills.abstract_round_abci.test_tools.rounds import (
     BaseCollectSameUntilThresholdRoundTest,
@@ -194,7 +194,7 @@ class TestCollectHistoryRound(BaseCollectSameUntilThresholdRoundTest):
         expected_event: Event,
     ) -> None:
         """Runs test."""
-        test_round = CollectHistoryRound(self.synchronized_data)
+        test_round = CollectHistoryRound(self.synchronized_data, mock.MagicMock())
         self._complete_run(
             self._test_round(
                 test_round=test_round,
@@ -210,7 +210,7 @@ class TestCollectHistoryRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = CollectHistoryRound(self.synchronized_data)
+        test_round = CollectHistoryRound(self.synchronized_data, mock.MagicMock())
         self._test_no_majority_event(test_round)
 
 
@@ -239,7 +239,8 @@ class TestTransformRound(BaseCollectSameUntilThresholdRoundTest):
             self.synchronized_data.update(
                 latest_transformation_period=initial_latest_transformation_period,
                 period_count=initial_period_count,
-            )
+            ),
+            mock.MagicMock()
         )
         self._complete_run(
             self._test_round(
@@ -264,7 +265,7 @@ class TestTransformRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = TransformRound(self.synchronized_data)
+        test_round = TransformRound(self.synchronized_data, mock.MagicMock())
         self._test_no_majority_event(test_round)
 
 
@@ -285,7 +286,7 @@ class TestPreprocessRound(BaseCollectSameUntilThresholdRoundTest):
     ) -> None:
         """Runs test."""
 
-        test_round = PreprocessRound(self.synchronized_data)
+        test_round = PreprocessRound(self.synchronized_data, mock.MagicMock())
         self._complete_run(
             self._test_round(
                 test_round=test_round,
@@ -303,7 +304,7 @@ class TestPreprocessRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = PreprocessRound(self.synchronized_data)
+        test_round = PreprocessRound(self.synchronized_data, mock.MagicMock())
         self._test_no_majority_event(test_round)
 
 
@@ -318,7 +319,7 @@ class TestRandomnessRound(BaseCollectSameUntilThresholdRoundTest):
     ) -> None:
         """Run tests."""
 
-        test_round = RandomnessRound(self.synchronized_data)
+        test_round = RandomnessRound(self.synchronized_data, mock.MagicMock())
         self._complete_run(
             self._test_round(
                 test_round=test_round,
@@ -332,7 +333,7 @@ class TestRandomnessRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_invalid_randomness(self) -> None:
         """Test the no-majority event."""
-        test_round = RandomnessRound(self.synchronized_data)
+        test_round = RandomnessRound(self.synchronized_data, mock.MagicMock())
         self._complete_run(
             self._test_round(
                 test_round=test_round,
@@ -346,7 +347,7 @@ class TestRandomnessRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = RandomnessRound(self.synchronized_data)
+        test_round = RandomnessRound(self.synchronized_data, mock.MagicMock())
         self._test_no_majority_event(test_round)
 
 
@@ -359,7 +360,7 @@ class TestOptimizeRound(BaseCollectSameUntilThresholdRoundTest):
     def test_run(self) -> None:
         """Runs test."""
 
-        test_round = OptimizeRound(self.synchronized_data)
+        test_round = OptimizeRound(self.synchronized_data, mock.MagicMock())
         self._complete_run(
             self._test_round(
                 test_round=test_round,
@@ -373,7 +374,7 @@ class TestOptimizeRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = OptimizeRound(self.synchronized_data)
+        test_round = OptimizeRound(self.synchronized_data, mock.MagicMock())
         self._test_no_majority_event(test_round)
 
 
@@ -400,7 +401,7 @@ class TestTrainRound(BaseCollectSameUntilThresholdRoundTest):
         """Runs test."""
 
         test_round = TrainRound(
-            self.synchronized_data.update(full_training=full_training)
+            self.synchronized_data.update(full_training=full_training), mock.MagicMock()
         )
         self._complete_run(
             self._test_round(
@@ -417,7 +418,7 @@ class TestTrainRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = TrainRound(self.synchronized_data)
+        test_round = TrainRound(self.synchronized_data, mock.MagicMock())
         self._test_no_majority_event(test_round)
 
 
@@ -430,7 +431,7 @@ class TestTestRound(BaseCollectSameUntilThresholdRoundTest):
     def test_run(self) -> None:
         """Runs test."""
 
-        test_round = _TestRound(self.synchronized_data.update(full_training=False))
+        test_round = _TestRound(self.synchronized_data.update(full_training=False), mock.MagicMock())
         self._complete_run(
             self._test_round(
                 test_round=test_round,
@@ -448,7 +449,7 @@ class TestTestRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = _TestRound(self.synchronized_data)
+        test_round = _TestRound(self.synchronized_data, mock.MagicMock())
         self._test_no_majority_event(test_round)
 
 
@@ -472,7 +473,7 @@ class TestEstimateRound(BaseCollectSameUntilThresholdRoundTest):
         expected_event: Event,
     ) -> None:
         """Runs test."""
-        test_round = EstimateRound(self.synchronized_data.update(n_estimations=0))
+        test_round = EstimateRound(self.synchronized_data.update(n_estimations=0), mock.MagicMock())
         self._complete_run(
             self._test_round(
                 test_round=test_round,
@@ -492,7 +493,7 @@ class TestEstimateRound(BaseCollectSameUntilThresholdRoundTest):
 
     def test_no_majority_event(self) -> None:
         """Test the no-majority event."""
-        test_round = EstimateRound(self.synchronized_data)
+        test_round = EstimateRound(self.synchronized_data, mock.MagicMock())
         self._test_no_majority_event(test_round)
 
 

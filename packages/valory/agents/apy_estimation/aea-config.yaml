@@ -129,6 +129,11 @@ models:
       use_termination: ${bool:false}
       on_chain_service_id: ${int:null}
       service_endpoint_base: ${str:https://dummy_service.autonolas.tech/}
+      use_slashing: ${bool:false}
+      slash_cooldown_hours: ${int:3}
+      slash_threshold_amount: ${int:10000000000000000}
+      light_slash_unit_amount: ${int:5000000000000000}
+      serious_slash_unit_amount: ${int:8000000000000000}
   server_api:
     args:
       url: ${str:http://192.168.2.17:9999/apy/deposit}
