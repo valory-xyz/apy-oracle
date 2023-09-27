@@ -23,6 +23,7 @@ from packages.valory.skills.abstract_round_abci.abci_app_chain import (
     AbciAppTransitionMapping,
     chain,
 )
+from packages.valory.skills.abstract_round_abci.base import BackgroundAppConfig
 from packages.valory.skills.apy_estimation_abci.rounds import (
     APYEstimationAbciApp,
     FailedAPYRound,
@@ -40,7 +41,6 @@ from packages.valory.skills.reset_pause_abci.rounds import (
     ResetAndPauseRound,
     ResetPauseAbciApp,
 )
-from packages.valory.skills.abstract_round_abci.base import BackgroundAppConfig
 from packages.valory.skills.termination_abci.rounds import (
     BackgroundRound,
     Event,

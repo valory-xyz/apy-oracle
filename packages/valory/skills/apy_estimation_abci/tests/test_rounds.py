@@ -21,9 +21,10 @@
 
 
 from typing import Dict, FrozenSet, Optional, Tuple
+from unittest import mock
 
 import pytest
-from unittest import mock
+
 from packages.valory.skills.abstract_round_abci.base import AbciAppDB, CollectionRound
 from packages.valory.skills.abstract_round_abci.test_tools.rounds import (
     BaseCollectSameUntilThresholdRoundTest,
@@ -240,7 +241,7 @@ class TestTransformRound(BaseCollectSameUntilThresholdRoundTest):
                 latest_transformation_period=initial_latest_transformation_period,
                 period_count=initial_period_count,
             ),
-            mock.MagicMock()
+            mock.MagicMock(),
         )
         self._complete_run(
             self._test_round(
@@ -431,7 +432,9 @@ class TestTestRound(BaseCollectSameUntilThresholdRoundTest):
     def test_run(self) -> None:
         """Runs test."""
 
-        test_round = _TestRound(self.synchronized_data.update(full_training=False), mock.MagicMock())
+        test_round = _TestRound(
+            self.synchronized_data.update(full_training=False), mock.MagicMock()
+        )
         self._complete_run(
             self._test_round(
                 test_round=test_round,
@@ -473,7 +476,9 @@ class TestEstimateRound(BaseCollectSameUntilThresholdRoundTest):
         expected_event: Event,
     ) -> None:
         """Runs test."""
-        test_round = EstimateRound(self.synchronized_data.update(n_estimations=0), mock.MagicMock())
+        test_round = EstimateRound(
+            self.synchronized_data.update(n_estimations=0), mock.MagicMock()
+        )
         self._complete_run(
             self._test_round(
                 test_round=test_round,
