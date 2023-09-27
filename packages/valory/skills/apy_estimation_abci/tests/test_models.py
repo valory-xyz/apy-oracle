@@ -88,6 +88,11 @@ class APYParamsKwargsType(TypedDict):
     history_end: Optional[int]
     use_termination: bool
     service_endpoint_base: str
+    use_slashing: bool
+    slash_cooldown_hours: int
+    slash_threshold_amount: int
+    light_slash_unit_amount: int
+    serious_slash_unit_amount: int
 
 
 APY_PARAMS_ARGS = ("test",)
@@ -147,6 +152,11 @@ APY_PARAMS_KWARGS = APYParamsKwargsType(
     history_end=0,
     use_termination=False,
     service_endpoint_base="https://dummy_service.autonolas.tech/",
+    use_slashing=False,
+    slash_cooldown_hours=3,
+    slash_threshold_amount=10000000000000000,
+    light_slash_unit_amount=5000000000000000,
+    serious_slash_unit_amount=8000000000000000,
 )
 
 
