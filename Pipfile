@@ -16,12 +16,12 @@ grpcio = "==1.53.0"
 hypothesis = "==6.21.6"
 joblib = "==1.1.0"
 numpy = "==1.23.5"
-open-aea = {version = "==1.38.0", extras = ["all"]}
-open-aea-ledger-ethereum = "==1.38.0"
-open-aea-ledger-cosmos = "==1.38.0"
-open-aea-test-autonomy = "==0.11.1"
-open-aea-cli-ipfs = "==1.38.0"
-open-autonomy = {version = "==0.11.1", extras = [ "all"]}
+open-aea = {version = "==1.39.0.post1", extras = ["all"]}
+open-aea-ledger-ethereum = "==1.39.0.post1"
+open-aea-ledger-cosmos = "==1.39.0.post1"
+open-aea-test-autonomy = "==0.12.1.post4"
+open-aea-cli-ipfs = "==1.39.0.post1"
+open-autonomy = {version = "==0.12.1.post4", extras = [ "all"]}
 optuna = "==2.10.1"
 pandas = "==1.5.3"
 pandas-stubs = "==1.2.0.62"

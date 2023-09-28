@@ -34,9 +34,9 @@ fingerprint:
   tests/test_ml/test_forecasting.py: bafybeih6un4hazyym2al5qjbjvk2c3a6hdnlpgfcsw3abwlanw6oesglce
   tests/test_ml/test_optimization.py: bafybeihnvcgqttwmbi2idvmkrrd5becqry4bannzuww6webxfuznjocdfy
   tests/test_ml/test_preprocessing.py: bafybeicqer5b6fhzoimtrk4mwmh62km6olwljmhxvi6p7zdm6o4jbycfji
-  tests/test_models.py: bafybeidjg3e7553nelvuxpvfgdmotk3le6pfxfhuq7sbbz3ep7s6jil3xm
+  tests/test_models.py: bafybeihb6hqkcwfqo3qrebx6sa46ci4fdcpgbblbxmgr5bor4lfucpwcfu
   tests/test_payloads.py: bafybeidq6ghopkvp6tta22zclhcf3ojv4vvt2xbgi36pxafqhqiz56bgha
-  tests/test_rounds.py: bafybeigsjzuincxqa6igrbvecvjkusptxbhlry3czp7l54luwtowww2n3e
+  tests/test_rounds.py: bafybeihkfqdmk2kyhftfhsurgjsz5fn4eijrstmskwdgny4c26hn3b7ziy
   tests/test_tasks.py: bafybeifumykfnu4ymcgbpimgmg5ipmfhwgdjggfblyejc3m4eceij554je
   tests/test_tools/__init__.py: bafybeidxxdakfp7rkavdx24vv3bwp6siep7plys7nfrnlwh2opmwbflj2q
   tests/test_tools/conftest.py: bafybeifagmpxjwj5aas2mhuk46k6hocyklmrvwut7h5pxsxuqx6vyyveyu
@@ -53,7 +53,7 @@ connections: []
 contracts: []
 protocols: []
 skills:
-- valory/abstract_round_abci:0.1.0:bafybeigxjcci53vwytymzlhr37436yvenh7jup4astrn7dgyixo24aq2pq
+- valory/abstract_round_abci:0.1.0:bafybeih2fyfb6kkf7r45pvdk7pyyebr5xloia4xiqxtb3qsrasnstqmepq
 behaviours:
   main:
     args: {}
@@ -200,6 +200,11 @@ models:
         steps_forward: 1
       tx_timeout: 10.0
       use_termination: false
+      use_slashing: false
+      slash_cooldown_hours: 3
+      slash_threshold_amount: 10000000000000000
+      light_slash_unit_amount: 5000000000000000
+      serious_slash_unit_amount: 8000000000000000
     class_name: APYParams
   randomness_api:
     args:
@@ -273,7 +278,7 @@ dependencies:
   numpy:
     version: ==1.23.5
   open-aea-test-autonomy:
-    version: ==0.11.1
+    version: ==0.12.1.post4
   optuna:
     version: ==2.10.1
   pandas:

@@ -8,8 +8,8 @@ aea_version: '>=1.0.0, <2.0.0'
 fingerprint:
   README.md: bafybeic3ztoxxldipv6v6h6ovpmto6ifhqi2mdkl5hhaaeymbwrw7wf7km
   __init__.py: bafybeidae7gbyipqow44nxwnrvd5jyllepqbfq6xwako2o4bv2mjiwwo4u
-  behaviours.py: bafybeihi7ilgk3wk3ghpiuevnj2ovpvjnj75wpbofprpgpbr3gtb7l7anq
-  composition.py: bafybeicfriv4kvzzwlmdzm4ri27q36dieiv2zsivjc7ii7etavdsmiocsa
+  behaviours.py: bafybeic5tx5q73pahzlej6hqsxzzfgcb4mdyz7cqmkall65xccslgdemf4
+  composition.py: bafybeif44425nyvzbsxeq5vtwce6rjx34rbosagyz7efu5b3jvkpmoijny
   dialogues.py: bafybeihp3ujpngrqm6fencr25azq7zccvdcszljie7532l4uugxipnxn3q
   fsm_specification.yaml: bafybeidrwqstclskfkerbmwldxzvt7kci2vqblw2yojw4rw5vcdwtixdbe
   handlers.py: bafybeiadvynk6t47o66mkq57ve3jff7uuqxnymvl7banmxpgo747n7glme
@@ -26,11 +26,11 @@ contracts: []
 protocols:
 - valory/http:1.0.0:bafybeia5bxdua2i6chw6pg47bvoljzcpuqxzy4rdrorbdmcbnwmnfdobtu
 skills:
-- valory/abstract_round_abci:0.1.0:bafybeigxjcci53vwytymzlhr37436yvenh7jup4astrn7dgyixo24aq2pq
-- valory/apy_estimation_abci:0.1.0:bafybeid7jqi54gbw7ase2tzt3vgw4kg7wcwficelp3rrptzhgwl37d7nuq
-- valory/registration_abci:0.1.0:bafybeibc4kczqbh23sc6tufrzn3axmhp3vjav7fa3u6cnpvolrbbc2fd7i
-- valory/reset_pause_abci:0.1.0:bafybeid445uy6wwvugf3byzl7r73c7teu6xr5ezxb4h7cxbenghg3copvy
-- valory/termination_abci:0.1.0:bafybeiguy7pkrcptg6c754ioig4mlkr7truccym3fpv6jwpjx2tmpdbzhi
+- valory/abstract_round_abci:0.1.0:bafybeih2fyfb6kkf7r45pvdk7pyyebr5xloia4xiqxtb3qsrasnstqmepq
+- valory/apy_estimation_abci:0.1.0:bafybeidq3bdpg5rxb6jsqplwjaigswgtswm7z6b576yawhkncriza7jm3q
+- valory/registration_abci:0.1.0:bafybeibndt6vxiwc2edgtaxpjbhwto3eyu33ujz3zmvtygvo2qz7xme5li
+- valory/reset_pause_abci:0.1.0:bafybeigeoc363gv3wp2rrmk6p2fdxney33nxd3owtpfugzapgruwe4klyu
+- valory/termination_abci:0.1.0:bafybeigqpij2sgrpnilqjljfciixop4fldq5qceixc7534q6af4potdmdm
 behaviours:
   main:
     args: {}
@@ -182,6 +182,11 @@ models:
       tx_timeout: 10.0
       use_termination: false
       validate_timeout: 1205
+      use_slashing: false
+      slash_cooldown_hours: 3
+      slash_threshold_amount: 10000000000000000
+      light_slash_unit_amount: 5000000000000000
+      serious_slash_unit_amount: 8000000000000000
     class_name: APYParams
   randomness_api:
     args:
@@ -258,7 +263,7 @@ dependencies:
   numpy:
     version: ==1.23.5
   open-aea-cli-ipfs:
-    version: ==1.38.0
+    version: ==1.39.0.post1
   optuna:
     version: ==2.10.1
   pandas:
