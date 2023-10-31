@@ -2,7 +2,7 @@
 
 ## 0.10.13 (2023-10-18)
 
-- Bumps `open-aea` and `open-autonomy` frameworks to `v1.41.0` and `v0.13.1` correspondingly #74
+- Bumps `open-aea` and `open-autonomy` frameworks to `v1.41.0.post1` and `v0.13.1` correspondingly #74
 
 ## 0.10.9 (2023-08-03)
 
