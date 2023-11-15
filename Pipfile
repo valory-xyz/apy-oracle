@@ -19,9 +19,9 @@ numpy = "==1.23.5"
 open-aea = {version = "==1.41.0.post1", extras = ["all"]}
 open-aea-ledger-ethereum = "==1.41.0.post1"
 open-aea-ledger-cosmos = "==1.41.0.post1"
-open-aea-test-autonomy = "==0.13.2"
+open-aea-test-autonomy = "==0.13.4"
 open-aea-cli-ipfs = "==1.41.0.post1"
-open-autonomy = {version = "==0.13.2", extras = [ "all"]}
+open-autonomy = {version = "==0.13.4", extras = [ "all"]}
 optuna = "==2.10.1"
 pandas = "==1.5.3"
 pandas-stubs = "==1.2.0.62"
@@ -45,6 +45,7 @@ tomte = {version = "==0.2.12", extras = ["cli", "tests"]}
 # for http server connection
 openapi-core = "==0.13.2"
 openapi-spec-validator = "==0.2.8"
+protobuf = "<4.25.0,>=4.21.6"
 
 [requires]
 python_version = "3.10"
