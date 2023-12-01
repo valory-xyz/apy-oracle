@@ -9,19 +9,19 @@ name = "pypi"
 
 [dev-packages]
 ### package deps
-requests = "==2.28.2"
+requests = "==2.28.1"
 aiohttp = "==3.7.4.post0"
 asn1crypto = "==1.4.0"
 grpcio = "==1.53.0"
 hypothesis = "==6.21.6"
 joblib = "==1.1.0"
 numpy = "==1.23.5"
-open-aea = {version = "==1.41.0.post1", extras = ["all"]}
-open-aea-ledger-ethereum = "==1.41.0.post1"
-open-aea-ledger-cosmos = "==1.41.0.post1"
-open-aea-test-autonomy = "==0.13.4"
-open-aea-cli-ipfs = "==1.41.0.post1"
-open-autonomy = {version = "==0.13.4", extras = [ "all"]}
+open-aea = {version = "==1.42.0", extras = ["all"]}
+open-aea-ledger-ethereum = "==1.42.0"
+open-aea-ledger-cosmos = "==1.42.0"
+open-aea-test-autonomy = "==0.13.8"
+open-aea-cli-ipfs = "==1.42.0"
+open-autonomy = {version = "==0.13.8", extras = ["all"]}
 optuna = "==2.10.1"
 pandas = "==1.5.3"
 pandas-stubs = "==1.2.0.62"
@@ -41,7 +41,7 @@ scikit-learn = ">=1.0.2"
 statsmodels = ">=0.13.2"
 ### tests deps
 mistune = "==2.0.3"
-tomte = {version = "==0.2.12", extras = ["cli", "tests"]}
+tomte = {version = "==0.2.15", extras = ["cli", "tests"]}
 # for http server connection
 openapi-core = "==0.13.2"
 openapi-spec-validator = "==0.2.8"
