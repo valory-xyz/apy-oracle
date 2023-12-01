@@ -8,7 +8,7 @@ fingerprint:
   README.md: bafybeihxalbstbm7kufnxftkn6mrvculqxyibsk4tzhrq5jbdh5ihejteq
   __init__.py: bafybeieqcegj4n54zhu376tlt6ydyavz5la7o465cofm5zj4vj4urs65oe
   tests/__ini__.py: bafybeihv3hw6rgpini4hovtge7oru3pzxv2gyzd6pnh6ypwdtmkradkgim
-  tests/test_apy_estimation.py: bafybeifsa3emxlhm23apolv4nh44haq225nuqrmdwd6nyeytrizns4lkuy
+  tests/test_apy_estimation.py: bafybeigyoxaot4c6z6cfkyk54w5kflyinteuh66nvnvkkx4b6vftfdy2iy
 fingerprint_ignore_patterns: []
 connections:
 - valory/http_server:0.22.0:bafybeiesafy2af2wakqvsal4hz6ldycb73j5w62szhwy25iyhlf2wgyg44
@@ -32,7 +32,7 @@ skills:
 - valory/abstract_abci:0.1.0:bafybeiflcfufixmsrhobf56bn5745m2iipcfqyulwk2qegtnagb3kvaaxi
 - valory/abstract_round_abci:0.1.0:bafybeiaqcl7h2famylusiffigwem7tevkcsyocdu5xd42jkmgq6kvowzgq
 - valory/apy_estimation_abci:0.1.0:bafybeidzw32l2xoj7nsfzwmuczyxwkp5a5a7phvhonicufva7edquqof34
-- valory/apy_estimation_chained_abci:0.1.0:bafybeib23t76per423mwijehyiotigai6fckhuiqdijs63vadx37245eq4
+- valory/apy_estimation_chained_abci:0.1.0:bafybeig3m7lea37mo6aeuezxbklfocppn5p5oj7dspgl7kxdjdzg6eso3u
 - valory/registration_abci:0.1.0:bafybeic2ynseiak7jpta7jfwuqwyp453b4p7lolr4wihxmpn633uekv5am
 - valory/reset_pause_abci:0.1.0:bafybeidzajbe3erygeh2xbd6lrjv7nsptznjuzrt24ykgvhgotdeyhfnba
 - valory/termination_abci:0.1.0:bafybeie4zvjfxvdu7qrulmur3chpjz3kpj5m4bjsxvpk4gvj5zbyyayfaa

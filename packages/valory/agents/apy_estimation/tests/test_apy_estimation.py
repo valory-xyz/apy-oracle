@@ -125,7 +125,7 @@ class BaseTestABCIAPYEstimationSkillNormalExecution(
             self.set_agent_context(agent_name)
             port = self.BASE_PORT + i
             self.set_config(
-                dotted_path="vendor.fetchai.connections.http_server.config.port",
+                dotted_path="vendor.valory.connections.http_server.config.port",
                 value=port,
                 type_="int",
             )
