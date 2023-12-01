@@ -1,8 +1,8 @@
 {
     "dev": {
         "skill/valory/apy_estimation_abci/0.1.0": "bafybeidzw32l2xoj7nsfzwmuczyxwkp5a5a7phvhonicufva7edquqof34",
-        "skill/valory/apy_estimation_chained_abci/0.1.0": "bafybeigkeluxrowhhbfilhjvpwd3rf7ruyyu4uxbb3fryy6xpud2fsl7yi",
-        "agent/valory/apy_estimation/0.1.0": "bafybeigjf37cfrzv4moh6egtr6izfbigzllr2pvbffbayfqs7jwwi3epby",
+        "skill/valory/apy_estimation_chained_abci/0.1.0": "bafybeib23t76per423mwijehyiotigai6fckhuiqdijs63vadx37245eq4",
+        "agent/valory/apy_estimation/0.1.0": "bafybeidognoqc7rgx2gczgm4jbaq67l7yt2nz54yf7pcuoemb3yhzf7wja",
         "service/valory/apy_estimation/0.1.0": "bafybeibe2gji3x7pvio7kh4cd35oyepu4iskekog4b6bbub5m4lkynsbge"
     },
     "third_party": {
@@ -29,7 +29,6 @@
         "skill/valory/termination_abci/0.1.0": "bafybeie4zvjfxvdu7qrulmur3chpjz3kpj5m4bjsxvpk4gvj5zbyyayfaa",
         "contract/valory/gnosis_safe/0.1.0": "bafybeidll7frtdsq2ckiluazkwk4zpkp7natt4kdejjehwvykqwzyuf6ei",
         "contract/valory/gnosis_safe_proxy_factory/0.1.0": "bafybeidvcgnbbmjtha6tl7st2ysna2l3iiqfhnzjfasyvml5unecozeeka",
-        "connection/fetchai/http_server/0.22.0": "bafybeihvscddpxjbtqsetngmxo3kiht2wqhosmwiyuh3f6zjti3x3byu5u",
         "connection/valory/http_server/0.22.0": "bafybeiesafy2af2wakqvsal4hz6ldycb73j5w62szhwy25iyhlf2wgyg44"
     }
 }
