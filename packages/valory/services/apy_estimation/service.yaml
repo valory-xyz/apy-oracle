@@ -46,6 +46,7 @@ type: skill
         slash_threshold_amount: ${SLASH_THRESHOLD_AMOUNT:int:10000000000000000}
         light_slash_unit_amount: ${LIGHT_SLASH_UNIT_AMOUNT:int:5000000000000000}
         serious_slash_unit_amount: ${SERIOUS_SLASH_UNIT_AMOUNT:int:8000000000000000}
+        termination_from_block: ${TERMINATION_FROM_BLOCK:int:0}
     server_api: &id002
       args:
         url: ${SERVICE_APY_DEPOSIT_ENDPOINT:str:http://172.17.0.2:9999/apy/deposit}
@@ -82,6 +83,7 @@ type: skill
         slash_threshold_amount: ${SLASH_THRESHOLD_AMOUNT:int:10000000000000000}
         light_slash_unit_amount: ${LIGHT_SLASH_UNIT_AMOUNT:int:5000000000000000}
         serious_slash_unit_amount: ${SERIOUS_SLASH_UNIT_AMOUNT:int:8000000000000000}
+        termination_from_block: ${TERMINATION_FROM_BLOCK:int:0}
     server_api: *id002
     benchmark_tool: *id003
 2:
@@ -114,6 +116,7 @@ type: skill
         slash_threshold_amount: ${SLASH_THRESHOLD_AMOUNT:int:10000000000000000}
         light_slash_unit_amount: ${LIGHT_SLASH_UNIT_AMOUNT:int:5000000000000000}
         serious_slash_unit_amount: ${SERIOUS_SLASH_UNIT_AMOUNT:int:8000000000000000}
+        termination_from_block: ${TERMINATION_FROM_BLOCK:int:0}
     server_api: *id002
     benchmark_tool: *id003
 3:
@@ -146,6 +149,7 @@ type: skill
         slash_threshold_amount: ${SLASH_THRESHOLD_AMOUNT:int:10000000000000000}
         light_slash_unit_amount: ${LIGHT_SLASH_UNIT_AMOUNT:int:5000000000000000}
         serious_slash_unit_amount: ${SERIOUS_SLASH_UNIT_AMOUNT:int:8000000000000000}
+        termination_from_block: ${TERMINATION_FROM_BLOCK:int:0}
     server_api: *id002
     benchmark_tool: *id003
 ---
