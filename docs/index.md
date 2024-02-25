@@ -16,7 +16,7 @@ In order to run a local demo of the ML APY Prediction Oracle service:
     mkdir your_workspace && cd your_workspace
     touch Pipfile && pipenv --python 3.10 && pipenv shell
 
-    pipenv install open-autonomy[all]==0.13.2
+    pipenv install open-autonomy[all]==0.14.6
     autonomy init --remote --ipfs --reset --author=your_name
     ```
 
